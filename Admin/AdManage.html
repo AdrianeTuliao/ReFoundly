@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Items</title>
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">ReFoundly- Admin</div>
+        <nav>
+            <a href="AdHome.html">Dashboard</a>
+            <a href="AdManage.html" class="active">Manage Items</a>
+            <a href="AdReport.html">Reports</a>
+            <a href="AdUsers.html">Users</a>
+        </nav>
+        <div class="sidebar-footer">
+            <hr>
+            <a href="/logout">Logout</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- TOP NAV -->
+        <header class="top-nav">
+            <div class="admin-controls">
+                <span>Admin</span>
+                <i class="fa-solid fa-bell"></i>
+
+              <a href="AdAccount.html" class="avatar-link">
+                <div class="user-avatar"></div>
+              </a>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <section class="content-wrapper">
+
+            <h1>Manage Items</h1>
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <select>
+                    <option>Category</option>
+                    <option>Personal</option>
+                    <option>Gadget</option>
+                    <option>Bag</option>
+                </select>
+
+                <select>
+                    <option>Status</option>
+                    <option>Lost</option>
+                    <option>Found</option>
+                </select>
+
+                <input type="text" placeholder="Search Items" class="search-input">
+                <button class="btn-generate">Clear</button>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Wallet</td>
+                            <td>Personal</td>
+                            <td><span class="badge resolved">Found</span></td>
+                            <td>Jan. 7, 2026</td>
+                            <td>
+                                <button class="btn-view">Approve</button>
+                                <button class="btn-archive-sm">Deny</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

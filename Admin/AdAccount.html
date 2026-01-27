@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Account</title>
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">Digital Lost & Found</div>
+        <nav>
+            <a href="AdHome.html">Dashboard</a>
+            <a href="AdManage.html">Manage Items</a>
+            <a href="AdReport.html">Reports</a>
+            <a href="AdUsers.html">Users</a>
+        </nav>
+        <div class="sidebar-footer">
+            <hr>
+            <a href="/logout">Logout</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- TOP NAV -->
+        <header class="top-nav">
+            <div class="admin-controls">
+                <span>Admin</span>
+                <i class="fa-solid fa-bell"></i>
+
+                <!-- CLICKING THIS GOES TO ACCOUNT -->
+                <a href="AdAccount.html" class="avatar-link">
+                    <div class="user-avatar"></div>
+                </a>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <section class="content-wrapper">
+
+            <h1>Account</h1>
+
+            <!-- ACCOUNT CARD -->
+            <div class="account-card">
+
+                <div class="profile-left">
+                    <div class="profile-avatar"></div>
+                    <h3>Admin</h3>
+                    <p>Admin00@gmail.com</p>
+                </div>
+
+                <div class="profile-right">
+                    <h2>Admin Information</h2>
+
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <label>Email</label>
+                            <p>Admin00@gmail.com</p>
+                            <a href="#" class="link">Edit</a>
+                        </div>
+
+                        <div class="info-box">
+                            <label>Contact Number</label>
+                            <p>+</p>
+                        </div>
+
+                        <div class="info-box">
+                            <label>Password</label>
+                            <p>••••••••</p>
+                            <a href="#" class="link">Change Password</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="signout-wrap">
+                <button class="btn-signout">Sign Out</button>
+            </div>
+
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

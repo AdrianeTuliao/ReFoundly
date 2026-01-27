@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Dashboard</title>
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">ReFoundly- Admin</div>
+        <nav>
+            <a href="AdHome.html" class="active">Dashboard</a>
+            <a href="AdManage.html">Manage Items</a>
+            <a href="AdReport.html">Reports</a>
+            <a href="AdUsers.html">Users</a>
+        </nav>
+        <div class="sidebar-footer">
+            <hr>
+            <a href="/logout">Logout</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- TOP NAV -->
+        <header class="top-nav">
+            <div class="admin-controls">
+                <span>Admin</span>
+                <i class="fa-solid fa-bell"></i>
+
+              <a href="AdAccount.html" class="avatar-link">
+                <div class="user-avatar"></div>
+              </a>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <section class="content-wrapper">
+
+            <h1>Dashboard</h1>
+
+            <!-- STATS -->
+            <div class="summary-cards">
+                <div class="card">
+                    <div class="icon"></div>
+                    <div>
+                        <p>Total Lost Items</p>
+                        <h3>12</h3>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="icon"></div>
+                    <div>
+                        <p>Total Found Items</p>
+                        <h3>22</h3>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="icon"></div>
+                    <div>
+                        <p>Pending Items</p>
+                        <h3>14</h3>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="icon"></div>
+                    <div>
+                        <p>Claimed Items</p>
+                        <h3>17</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-container">
+                <h2>Recent Activity</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Wallet</td>
+                            <td>Personal</td>
+                            <td><span class="badge resolved">Found</span></td>
+                            <td>Jan. 7, 2026</td>
+                            <td>
+                                <button class="btn-view">Approve</button>
+                                <button class="btn-archive-sm">Deny</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Phone</td>
+                            <td>Gadget</td>
+                            <td><span class="badge pending">Lost</span></td>
+                            <td>Dec. 17, 2025</td>
+                            <td>
+                                <button class="btn-view">Approve</button>
+                                <button class="btn-archive-sm">Deny</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+    </main>
+</div>
+
+</body>
+</html>
