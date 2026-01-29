@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Messages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="message.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <h1>ReFoundly</h1>
+        <div class="nav-icons">
+            <a href="history.html" class="history-link">
+                <i class="fas fa-history"></i>
+            </a>
+            <a href="message.html" class="history-link active-link">
+                <i class="fas fa-comment-dots"></i>
+            </a>
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-user-circle"></i>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Messages</span>
+        </nav>
+
+        <div class="messaging-wrapper">
+            <aside class="inbox-sidebar">
+                <div class="sidebar-header-box">
+                    <h3>Inbox</h3>
+                </div>
+                <div class="search-inbox">
+                    <div class="search-bar-pill-small">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search chats...">
+                    </div>
+                </div>
+                <div class="chat-list">
+                    <div class="chat-item active">
+                        <img src="https://ui-avatars.com/api/?name=Juan+Dela+Cruz&background=6B9E45&color=fff" alt="User">
+                        <div class="preview-text">
+                            <h4>Juan Dela Cruz</h4>
+                            <p>Nakuha ko na po yung wallet...</p>
+                        </div>
+                    </div>
+                    <div class="chat-item">
+                        <img src="https://ui-avatars.com/api/?name=Maria+Clara&background=999&color=fff" alt="User">
+                        <div class="preview-text">
+                            <h4>Maria Clara</h4>
+                            <p>Sige po, salamat!</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="chat-view">
+                <header class="chat-view-header">
+                    <div class="current-user">
+                        <img src="https://ui-avatars.com/api/?name=Juan+Dela+Cruz&background=6B9E45&color=fff" alt="User">
+                        <h4>Juan Dela Cruz</h4>
+                    </div>
+                </header>
+
+                <div class="chat-body">
+                    <div class="msg received">Hello! Owner po ako nung Black Wallet.</div>
+                    <div class="msg sent">Sige po, kailan niyo po balak kunin?</div>
+                    <div class="msg received">Mamaya po sana sa SM.</div>
+                </div>
+
+                <div class="chat-footer">
+                    <input type="text" placeholder="Write a message...">
+                    <button class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i>
+            <i class="fab fa-instagram"></i>
+            <i class="fab fa-linkedin"></i>
+        </div>
+        <p>© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+</body>
+</html>

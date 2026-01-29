@@ -1,0 +1,140 @@
+/* Galing sa code mo */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header & Nav */
+.navbar {
+    background-color: var(--primary-green);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover { color: var(--accent-green); }
+
+.history-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;     
+}
+
+.history-link:hover {
+    color: var(--accent-green);        
+}
+
+/* CONTAINER */
+.container {
+    width: 95%;
+    max-width: 1600px;
+    margin: 40px auto;
+}
+
+/* BREADCRUMB (Exact Match) */
+.breadcrumb { font-size: 1.2rem; font-weight: 600; margin-bottom: 25px; }
+.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; color: var(--accent-green); }
+
+/* MESSAGING BOX */
+.messaging-wrapper {
+    display: flex;
+    background: white;
+    height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+/* SIDEBAR */
+.inbox-sidebar {
+    width: 350px;
+    border-right: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-header-box { padding: 20px; border-bottom: 2px solid var(--accent-green); }
+.sidebar-header-box h3 { border: none; margin: 0; padding: 0; color: var(--primary-green); }
+
+.search-inbox { padding: 15px; background: var(--bg-gray); }
+.search-bar-pill-small {
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+}
+.search-bar-pill-small input { border: none; outline: none; margin-left: 10px; width: 100%; }
+
+.chat-list { overflow-y: auto; flex: 1; }
+.chat-item {
+    display: flex;
+    padding: 15px;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+.chat-item:hover { background: #f0f7eb; }
+.chat-item.active { background: #e9f5e1; border-left: 5px solid var(--primary-green); }
+.chat-item img { width: 50px; height: 50px; border-radius: 50%; }
+.preview-text h4 { margin: 0; font-size: 1rem; }
+.preview-text p { margin: 3px 0 0; font-size: 0.85rem; color: #777; }
+
+/* CHAT MAIN */
+.chat-view { flex: 1; display: flex; flex-direction: column; }
+.chat-view-header { padding: 15px 25px; border-bottom: 1px solid #eee; background: #fff; }
+.current-user { display: flex; align-items: center; gap: 15px; }
+.current-user img { width: 40px; height: 40px; border-radius: 50%; }
+
+.chat-body { flex: 1; padding: 20px; background: #fcfcfc; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.msg { padding: 10px 15px; border-radius: 15px; max-width: 70%; font-size: 0.95rem; }
+.received { background: #eee; align-self: flex-start; }
+.sent { background: var(--primary-green); color: white; align-self: flex-end; }
+
+.chat-footer { padding: 20px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+.chat-footer input { flex: 1; padding: 10px 20px; border-radius: 30px; border: 1px solid #ddd; outline: none; }
+.send-btn { background: var(--primary-green); color: white; border: none; padding: 10px 20px; border-radius: 50%; cursor: pointer; transition: 0.3s; }
+.send-btn:hover { background: var(--dark-green); }
+
+/* FOOTER (Exact Match) */
+footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; margin-top: 40px; }
+.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-size: 18px; }
+.footer-links a:hover { color: var(--accent-green); text-decoration: underline; }
+.socials { margin-top: 20px; margin-bottom: 20px; }
+.socials i { font-size: 35px; margin: 0 10px; cursor: pointer; transition: 0.3s; }
+.socials i:hover { transform: scale(1.2); color: var(--accent-green); }
+footer p { font-size: 14px; opacity: 0.8; margin-top: 20px; }

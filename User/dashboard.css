@@ -1,0 +1,367 @@
+/* Color Variables */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    
+    /* 'to top' para magsimula ang dark green sa baba paakyat sa light green/white */
+    background: linear-gradient(to top, #94D85D 0%, #f0f7eb 30%);
+    
+    /* Ito ang pipigil sa background na gumalaw habang nag-sscroll */
+    background-attachment: fixed;
+    
+    /* Sinisiguro nito na laging sakop ang buong viewport */
+    background-size: cover;
+    background-repeat: no-repeat;
+    
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+/* Header & Nav */
+.navbar {
+    background-color: var(--primary-green);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover { color: var(--accent-green); }
+
+.history-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;     
+}
+
+.history-link:hover {
+    color: var(--accent-green);        
+}
+
+/* Hero Section */
+.hero {
+    height: 400px;
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                url('bgheader.png'); /* Siguraduhing tama ang filename */
+    background-size: cover;
+    background-position: center 57%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 6rem;
+    color: white;
+}
+
+.hero h2 {
+    font-size: 40px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px; /* Adjust spacing between words/letters */
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.hero-actions { display: flex; gap: 25px; }
+
+.btn-main { 
+    background-color: var(--accent-green); 
+    color: white; 
+    border: none; 
+    padding: 12px 24px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.btn-main:hover {
+    background-color: var(--primary-green);
+}
+
+/* Search Bar Overlay - Modern Floating Effect */
+.search-container {
+    font-family: sans-serif;
+    font-size: 22px;
+    max-width: 1500px;
+    
+    /* Ginawang -60px ang top margin para pumatong sa Hero section */
+    margin: -60px auto 50px; 
+    
+    background: white;
+    padding: 50px;
+    border-radius: 12px;
+    
+    /* Deep shadow para magmukhang lumulutang (Floating) */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    
+    /* Gradient line sa itaas para mag-match sa body gradient */
+    border-top: 6px solid var(--accent-green);
+    
+    /* Sinisiguradong laging nasa ibabaw ng Hero */
+    position: relative;
+    z-index: 5;
+}
+
+.search-group { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+}
+
+/* Label styling sa loob ng search container */
+.search-group label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-left: 2px;
+}
+
+.search-group input, .search-group select {
+    font-family: sans-serif;
+    font-size: 16px;
+    padding: 14px;
+    border: 1px solid #e0e0e0; /* Subtle border */
+    background: #f8f8f8;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+/* Interactive Focus Effect */
+.search-group input:focus, .search-group select:focus {
+    outline: none;
+    background: white;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 10px rgba(148, 216, 93, 0.2);
+}
+
+.search-group input {
+    width: 95%; /* Adjusted for better alignment */
+}
+
+/* Button adjustment sa loob ng container para pantay sa inputs */
+.search-container .btn-main {
+    height: 50px;
+    padding: 0 40px;
+    margin-bottom: 2px; /* Alignment fix */
+}
+
+/* Container ng dropdown */
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+/* Ang dropdown menu mismo */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #616161; /* Dark background gaya ng screenshot mo */
+    color: white;
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+    border-radius: 8px;
+    z-index: 1000;
+    
+    /* ITO ANG PINAKA-IMPORTANTE: Scrollable settings */
+    max-height: 200px; /* Tantya para sa 5 items (approx 40px bawat isa) */
+    overflow-y: auto; /* Lalabas ang scrollbar pag lumampas sa height */
+    display: none; /* Itatago muna */
+}
+
+/* Style ng bawat item sa listahan */
+.dropdown-menu li {
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 15px;
+    border-bottom: 1px solid #444;
+}
+
+.dropdown-menu li:hover {
+    background-color: var(--accent-green);
+    color: white;
+}
+
+/* Lalabas ang menu pag cliniclick ang input */
+.custom-dropdown input:focus + .dropdown-menu,
+.dropdown-menu:active {
+    display: block;
+}
+
+/* Custom Scrollbar para magmukhang modern */
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 10px;
+}
+
+/* Items Grid */
+.content-wrapper { 
+    font-family: sans-serif;
+    font-size: 18px;
+    max-width: 1600px; 
+    margin: 0 auto; 
+    padding: 0 20px; 
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 300px);
+    gap: 160px; /* Ang hiling mong malaking pagitan */
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* Card Hover Effect */
+.card {
+    font-family: sans-serif;
+    font-size: 20px;
+    color: black;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Para sa smooth na hover */
+}
+
+.card:hover {
+    transform: translateY(-10px); /* Itataas ang card nang kaunti */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15); /* Patitindihin ang shadow */
+}
+
+.card-img { 
+    height: 200px; 
+    background: #ddd; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-style: italic; 
+    color: #888; 
+}
+
+.card-body { padding: 20px; }
+.badge { background: var(--accent-green); color: white; padding: 3px 10px; border-radius: 4px; font-size: 18px; }
+
+/* Pagination Container (View All, Page Info, Next) */
+.pagination-container {
+    font-family: sans-serif;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1220px; /* Pantay sa grid width */
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.page-info {
+    color: #777;
+    font-weight: 500;
+}
+
+.btn-pagination {
+    font-family: sans-serif;
+    font-size: 16px;
+    background-color: var(--accent-green);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-pagination:hover {
+    background-color: var(--primary-green);
+}
+
+/* How It Works */
+.how-it-works {
+    background: white;
+    padding: 40px;
+    margin: 60px auto;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+}
+
+.step-card { text-align: center; border: 1px solid #eee; padding: 20px; border-radius: 8px; font-family: sans-serif; font-size: 16px;}
+.step-line { height: 10px; background: var(--accent-green); width: 70%; margin: 15px auto; border-radius: 4px; }
+
+/* Footer */
+footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
+.footer-links { margin-bottom: 20px;}
+.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
+.footer-links a:hover {
+    color: var(--accent-green); 
+    text-decoration: underline; 
+}
+
+footer p {
+    font-size: 14px; /* Taasan mula sa dating 12px */
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+.nav-buttons button {
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.socials i {
+    font-size: 35px; /* Palitan mo ito (e.g., 40px) kung gusto mo pang mas malaki */
+    margin: 0 10px; /* Spacing sa pagitan ng mga icons */
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.socials i:hover {
+    transform: scale(1.2); /* Lalaki nang kaunti kapag hino-hover */
+    color: var(--accent-green);
+}
+
+.btn-login { background: transparent; border: 1px solid white; color: white; margin-right: 10px; }
+.btn-register { background: white; border: none; color: var(--primary-green); }

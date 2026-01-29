@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Lost & Found</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>ReFoundly</h1>
+        <div class="nav-icons">
+            <a href="history.html" class="history-link">
+                <i class="fas fa-history"></i>
+            </a>
+            <a href="message.html" class="history-link active-link">
+                <i class="fas fa-comment-dots"></i>
+            </a>
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-user-circle"></i>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h2>Lost Something? Found Something?</h2>
+        <p>Browse lost items or report one to help reconnect owners with their belongings.</p>
+        <div class="hero-actions">
+            <a href="found.html" class="btn-main" style="display: inline-block; text-decoration: none; text-align: center;">
+    Browse Found Items
+</a>
+            <a href="lost.html" class="btn-main" style="display: inline-block; text-decoration: none; text-align: center;">
+    Browse Lost Items
+</a>
+            <a href="report.html" class="btn-main" style="display: inline-block; text-decoration: none; text-align: center;">
+    Report Found/Lost Items
+</a>
+        </div>
+    </header>
+
+    <section class="search-container">
+        <div class="search-group">
+        <label><strong>Search for an Item</strong></label>
+            <div class="custom-dropdown">
+            <input type="text" placeholder="Select category" id="categoryInput">
+            <ul class="dropdown-menu" id="categoryList">
+            <li>Wallet</li>
+            <li>Cellphone</li>
+            <li>Laptop</li>
+            <li>Gadgets</li>
+            <li>Accessories</li>
+            <li>Clothing</li>
+            <li>ID</li>
+            <li>Documents</li>
+            <li>Books</li>
+            <li>School Supplies</li>
+            <li>Tools</li>
+            <li>Others</li>
+        </ul>
+        </div>
+        </div>
+        <div class="search-group">
+    <label><strong>Location</strong></label>
+        <div class="custom-dropdown">
+        <input type="text" placeholder="Enter or search location..." id="locationInput" autocomplete="off">
+        <ul class="dropdown-menu" id="locationList">
+            <li>Bacayao Norte</li>
+            <li>Bacayao Sur</li>
+            <li>Barangay I (T. Bugallon)</li>
+            <li>Barangay II (Nueva)</li>
+            <li>Barangay III (Galvan)</li>
+            <li>Barangay IV (Zamora)</li>
+            <li>Bolosan</li>
+            <li>Bonuan Binloc</li>
+            <li>Bonuan Boquig</li>
+            <li>Bonuan Gueset</li>
+            <li>Calmay</li>
+            <li>Carael</li>
+            <li>Caranglaan</li>
+            <li>Dagupaneñol</li>
+            <li>Herrero</li>
+            <li>Lasip Chico</li>
+            <li>Lasip Grande</li>
+            <li>Lomboy</li>
+            <li>Lucao</li>
+            <li>Malued</li>
+            <li>Mamalingling</li>
+            <li>Mangin</li>
+            <li>Mayombo</li>
+            <li>Pantal</li>
+            <li>Poblacion Oeste</li>
+            <li>Puelay</li>
+            <li>Salapingao</li>
+            <li>Salisay</li>
+            <li>Tambac</li>
+            <li>Tapuac</li>
+            <li>Tebeng</li>
+        </ul>
+        </div>
+        </div>
+        <div class="search-group">
+            <input type="text" placeholder="Search item name...">
+        </div>
+        <button class="btn-main" style="padding: 12px 40px;">Search</button>
+    </section>
+
+    <div class="content-wrapper">
+        <h3>Recent Lost and Found Items</h3>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-img">Image</div>
+                <div class="card-body">
+                    <h4>Black Wallet</h4>
+                    <span class="badge">Wallet</span>
+                    <p style="font-size: 12px; color: #999;">Posted: Jan 5, 2026</p>
+                    <button class="btn-main" style="width:100%; margin-top:15px;">View Details</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-img">Image</div>
+                <div class="card-body">
+                    <h4>ROG II/black</h4>
+                    <span class="badge">Cellphone</span>
+                    <p style="font-size: 12px; color: #999;">Posted: Jan 8, 2026</p>
+                    <button class="btn-main" style="width:100%; margin-top:15px;">View Details</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-img">Image</div>
+                <div class="card-body">
+                    <h4>Document</h4>
+                    <span class="badge">Document</span>
+                    <p style="font-size: 12px; color: #999;">Posted: Jan 12, 2026</p>
+                    <button class="btn-main" style="width:100%; margin-top:15px;">View Details</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination-container">
+            <button class="btn-pagination">View All</button>
+            <span class="page-info">Page 1 of 5</span>
+            <button class="btn-pagination">Next</button>
+        </div>
+
+        <section class="how-it-works">
+            <div class="step-card">
+                <p>Step 1</p>
+                <div class="step-line"></div>
+                <strong>Browse or Search Lost Items</strong>
+            </div>
+            <div class="step-card">
+                <p>Step 2</p>
+                <div class="step-line"></div>
+                <strong>Login to Post a Lost Item</strong>
+            </div>
+            <div class="step-card">
+                <p>Step 3</p>
+                <div class="step-line" style="background:#78A454;"></div>
+                <strong>Reconnect Items with Owners</strong>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
+        </div>
+        <div class="socials" style="font-size: 20px; margin-bottom: 20px;">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+<script>
+    function setupSearch(inputId, listId) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        const items = list.querySelectorAll('li');
+
+        // Search logic
+        input.addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            list.style.display = 'block'; // Ipakita ang list habang nag-type
+            
+            items.forEach(item => {
+                let text = item.textContent.toLowerCase();
+                item.style.display = text.includes(filter) ? "block" : "none";
+            });
+        });
+
+        // Click logic (pagpili sa listahan)
+        items.forEach(item => {
+            item.addEventListener('click', function() {
+                input.value = this.textContent;
+                list.style.display = 'none'; 
+            });
+        });
+
+        // Itago ang list pag nag-click sa labas
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !list.contains(e.target)) {
+                list.style.display = 'none';
+            }
+        });
+        
+        // Ipakita ang list pag ni-click ang input
+        input.addEventListener('focus', function() {
+            list.style.display = 'block';
+        });
+    }
+
+    // IAAPPLY SA PAREHONG DROPDOWN
+    setupSearch('categoryInput', 'categoryList');
+    setupSearch('locationInput', 'locationList');
+</script>
+</body>
+</html>
+

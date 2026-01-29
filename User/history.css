@@ -1,0 +1,232 @@
+/* Using your specific Color Variables */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+}
+
+/* Header & Nav */
+.navbar {
+    background-color: var(--primary-green);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover { color: var(--accent-green); }
+
+.history-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;     
+}
+
+.history-link:hover {
+    color: var(--accent-green);        
+}
+
+/* Container - Ultra Wide */
+.container {
+    width: 95%;
+    max-width: 1600px; 
+    margin: 40px auto;
+}
+
+/* Breadcrumb Styling */
+.breadcrumb {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+/* Base style para sa 'Home' link */
+.breadcrumb a {
+    color: var(--primary-green); /* Gamit ang iyong primary green variable */
+    text-decoration: none; /* Default na may underline */
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+/* Hover effect kapag tinapatan ng mouse */
+.breadcrumb a:hover {
+    color: var(--accent-green); /* Magbabago ang kulay sa accent green */
+    text-decoration: underline;      /* Pwede mong alisin ang underline sa hover para mas interactive */
+}
+
+/* Active/Pressed effect kapag pinindot (clicked) */
+.breadcrumb a:active {
+    color: var(--dark-green);
+}
+
+/* Search Bar - Sinunod yung nasa screenshot */
+.search-section {
+    background-color: var(--primary-green);
+    padding: 15px 40px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.search-bar-pill {
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 10px 25px;
+    border-radius: 50px; /* Pill shape */
+}
+
+.search-bar-pill i { color: #888; font-size: 18px; }
+
+.search-bar-pill input {
+    border: none;
+    outline: none;
+    width: 100%;
+    margin-left: 15px;
+    font-size: 16px;
+    color: #555;
+}
+
+/* 3-Column Horizontal Layout */
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Saktong tatlo horizontally */
+    gap: 30px;
+}
+
+/* Card Styling */
+.item-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-img-placeholder {
+    background-color: #d1d1d1;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #888;
+    border-radius: 4px;
+}
+
+.card-content h3 { 
+    font-family: sans-serif;
+    margin: 15px 0 5px 0; 
+    color: black; 
+    font-size: 20px;
+}
+
+.title-line { border: 0; border-top: 1px solid var(--primary-green); margin-bottom: 10px; }
+
+.badge {
+    font-family: sans-serif;
+    background-color: var(--accent-green);
+    color: white;
+    padding: 3px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.item-details p { margin: 4px 0; font-size: 16px; font-family: sans-serif; line-height: 1.4; }
+.status-found { color: #E6DC1D; font-weight: bold; font-family: sans-serif; }
+.status-lost { color: red; font-weight: bold; font-family: sans-serif; }
+.post-time { margin-top: 8px; color: #636363; font-family: sans-serif; font-size: 14px; }
+
+.comment-input {
+    width: 100%;
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Pagination Bar */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.pag-btn { border: 1px solid #ccc; background: white; padding: 5px 12px; cursor: pointer; }
+.pag-btn.active { background-color: #ddd; font-weight: bold; }
+
+/* Footer */
+footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
+.footer-links { margin-bottom: 20px;}
+.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
+.footer-links a:hover {
+    color: var(--accent-green); 
+    text-decoration: underline; 
+}
+
+footer p {
+    font-size: 14px; /* Taasan mula sa dating 12px */
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+.socials {
+    margin-bottom: 20px;
+}
+
+.socials i {
+    font-size: 35px; 
+    margin: 0 10px; 
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.socials i:hover {
+    transform: scale(1.2); 
+    color: var(--accent-green);
+}
+
+footer p {
+    font-size: 14px; 
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+h3 {
+    color: var(--primary-green);
+    border-bottom: 2px solid var(--accent-green);
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+
+.separator { border: 0; border-top: 1px solid #eee; margin: 40px 0; }
