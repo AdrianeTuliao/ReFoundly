@@ -9,92 +9,125 @@
 </head>
 <body>
 
-<div class="dashboard-container">
+    <div class="dashboard-container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">ReFoundly- Admin</div>
-        <nav>
-            <a href="AdHome.html">Dashboard</a>
-            <a href="AdManage.html" class="active">Manage Items</a>
-            <a href="AdReport.html">Reports</a>
-            <a href="AdUsers.html">Users</a>
-        </nav>
-        <div class="sidebar-footer">
-            <hr>
-            <a href="/logout">Logout</a>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="main-content">
-
-        <!-- TOP NAV -->
-        <header class="top-nav">
-            <div class="admin-controls">
-                <span>Admin</span>
-                <i class="fa-solid fa-bell"></i>
-
-              <a href="AdAccount.html" class="avatar-link">
-                <div class="user-avatar"></div>
-              </a>
+        <aside class="sidebar">
+            <div class="logo">ReFoundly- Admin</div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html" class="active">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="AdLogin.html">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
             </div>
-        </header>
+        </aside>
 
-        <!-- CONTENT -->
-        <section class="content-wrapper">
+        <main class="main-content">
 
-            <h1>Manage Items</h1>
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <i class="fa-solid fa-bell"></i>
 
-            <!-- FILTER BAR -->
-            <div class="filter-bar">
-                <select>
-                    <option>Category</option>
-                    <option>Personal</option>
-                    <option>Gadget</option>
-                    <option>Bag</option>
-                </select>
+                    <a href="AdAccount.html" class="avatar-link">
+                        <div class="user-avatar"></div>
+                    </a>
+                </div>
+            </header>
 
-                <select>
-                    <option>Status</option>
-                    <option>Lost</option>
-                    <option>Found</option>
-                </select>
+            <section class="content-wrapper">
 
-                <input type="text" placeholder="Search Items" class="search-input">
-                <button class="btn-generate">Clear</button>
-            </div>
+                <h1>Manage Items</h1>
 
-            <!-- TABLE -->
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Wallet</td>
-                            <td>Personal</td>
-                            <td><span class="badge resolved">Found</span></td>
-                            <td>Jan. 7, 2026</td>
-                            <td>
-                                <button class="btn-view">Approve</button>
-                                <button class="btn-archive-sm">Deny</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                <div class="filter-bar">
+                    <select>
+                        <option>Category</option>
+                        <option>Personal</option>
+                        <option>Gadget</option>
+                        <option>Bag</option>
+                    </select>
 
-        </section>
-    </main>
-</div>
+                    <select>
+                        <option>Status</option>
+                        <option>Lost</option>
+                        <option>Found</option>
+                    </select>
+
+                    <input type="text" placeholder="Search Items" class="search-input">
+                    <button class="btn-generate">Clear</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wallet</td>
+                                <td>Personal</td>
+                                <td><span class="badge resolved">Found</span></td>
+                                <td>Jan. 7, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
+
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100);
+            }
+
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+
+                        if (wrapper) wrapper.classList.remove("fade-in");
+
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>

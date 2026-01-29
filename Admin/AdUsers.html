@@ -9,142 +9,173 @@
 </head>
 <body>
 
-<div class="dashboard-container">
+    <div class="dashboard-container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">ReFoundly- Admin</div>
-        <nav>
-            <a href="AdHome.html">Dashboard</a>
-            <a href="AdManage.html">Manage Items</a>
-            <a href="AdReport.html">Reports</a>
-            <a href="AdUsers.html" class="active">Users</a>
-        </nav>
-        <div class="sidebar-footer">
-            <hr>
-            <a href="/logout">Logout</a>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="main-content">
-
-        <!-- TOP NAV -->
-        <header class="top-nav">
-            <div class="admin-controls">
-                <span>Admin</span>
-                <i class="fa-solid fa-bell"></i>
-
-              <a href="AdAccount.html" class="avatar-link">
-                <div class="user-avatar"></div>
-              </a>
+        <aside class="sidebar">
+            <div class="logo">ReFoundly- Admin</div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html" class="active">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="AdLogin.html">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
             </div>
-        </header>
+        </aside>
 
-        <!-- CONTENT -->
-        <section class="content-wrapper">
+        <main class="main-content">
 
-            <h1>Users</h1>
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <i class="fa-solid fa-bell"></i>
+                    <a href="AdAccount.html" class="avatar-link">
+                        <div class="user-avatar"></div>
+                    </a>
+                </div>
+            </header>
 
-            <!-- ACTION BAR -->
-            <div class="filter-bar">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search Users">
+            <section class="content-wrapper">
+
+                <h1>Users</h1>
+
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search Users">
+                    </div>
+
+                    <select>
+                        <option>Role</option>
+                        <option>Admin</option>
+                        <option>User</option>
+                    </select>
+
+                    <button class="btn-generate">+ Add User</button>
                 </div>
 
-                <select>
-                    <option>Role</option>
-                    <option>Admin</option>
-                    <option>User</option>
-                </select>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="user-cell">
+                                    <div class="avatar"></div>
+                                    Marvin
+                                </td>
+                                <td>marvin.mandapat@gmail.com</td>
+                                <td><span class="badge resolved">Admin</span></td>
+                                <td>Jan. 7, 2025</td>
+                                <td>
+                                    <button class="btn-view">
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </button>
+                                    <button class="btn-delete">Delete</button>
+                                </td>
+                            </tr>
 
-                <button class="btn-generate">+ Add User</button>
-            </div>
+                            <tr>
+                                <td class="user-cell">
+                                    <div class="avatar"></div>
+                                    Mar Adriane
+                                </td>
+                                <td>adriane.tuliao@gmail.com</td>
+                                <td><span class="badge pending">User</span></td>
+                                <td>Feb. 17, 2025</td>
+                                <td>
+                                    <button class="btn-view">
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </button>
+                                    <button class="btn-delete">Delete</button>
+                                </td>
+                            </tr>
 
-            <!-- TABLE -->
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Date Added</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="user-cell">
-                                <div class="avatar"></div>
-                                Marvin
-                            </td>
-                            <td>marvin.mandapat@gmail.com</td>
-                            <td><span class="badge resolved">Admin</span></td>
-                            <td>Jan. 7, 2025</td>
-                            <td>
-                                <button class="btn-view">
-                                    <i class="fa-solid fa-pen"></i> Edit
-                                </button>
-                                <button class="btn-delete">Delete</button>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="user-cell">
+                                    <div class="avatar"></div>
+                                    Hans
+                                </td>
+                                <td>hans.lambino@gmail.com</td>
+                                <td><span class="badge pending">User</span></td>
+                                <td>Mar. 11, 2025</td>
+                                <td>
+                                    <button class="btn-view">
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </button>
+                                    <button class="btn-delete">Delete</button>
+                                </td>
+                            </tr>
 
-                        <tr>
-                            <td class="user-cell">
-                                <div class="avatar"></div>
-                                Mar Adriane
-                            </td>
-                            <td>adriane.tuliao@gmail.com</td>
-                            <td><span class="badge pending">User</span></td>
-                            <td>Feb. 17, 2025</td>
-                            <td>
-                                <button class="btn-view">
-                                    <i class="fa-solid fa-pen"></i> Edit
-                                </button>
-                                <button class="btn-delete">Delete</button>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="user-cell">
+                                    <div class="avatar"></div>
+                                    Mark
+                                </td>
+                                <td>mark.lazaro@gmail.com</td>
+                                <td><span class="badge pending">User</span></td>
+                                <td>Apr. 12, 2025</td>
+                                <td>
+                                    <button class="btn-view">
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </button>
+                                    <button class="btn-delete">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                        <tr>
-                            <td class="user-cell">
-                                <div class="avatar"></div>
-                                Hans
-                            </td>
-                            <td>hans.lambino@gmail.com</td>
-                            <td><span class="badge pending">User</span></td>
-                            <td>Mar. 11, 2025</td>
-                            <td>
-                                <button class="btn-view">
-                                    <i class="fa-solid fa-pen"></i> Edit
-                                </button>
-                                <button class="btn-delete">Delete</button>
-                            </td>
-                        </tr>
+            </section>
+        </main>
+    </div>
 
-                        <tr>
-                            <td class="user-cell">
-                                <div class="avatar"></div>
-                                Mark
-                            </td>
-                            <td>mark.lazaro@gmail.com</td>
-                            <td><span class="badge pending">User</span></td>
-                            <td>Apr. 12, 2025</td>
-                            <td>
-                                <button class="btn-view">
-                                    <i class="fa-solid fa-pen"></i> Edit
-                                </button>
-                                <button class="btn-delete">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
 
-        </section>
-    </main>
-</div>
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100);
+            }
+
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+
+                        if (wrapper) wrapper.classList.remove("fade-in");
+
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>

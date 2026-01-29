@@ -9,85 +9,118 @@
 </head>
 <body>
 
-<div class="dashboard-container">
+    <div class="dashboard-container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">Digital Lost & Found</div>
-        <nav>
-            <a href="AdHome.html">Dashboard</a>
-            <a href="AdManage.html">Manage Items</a>
-            <a href="AdReport.html">Reports</a>
-            <a href="AdUsers.html">Users</a>
-        </nav>
-        <div class="sidebar-footer">
-            <hr>
-            <a href="/logout">Logout</a>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="main-content">
-
-        <!-- TOP NAV -->
-        <header class="top-nav">
-            <div class="admin-controls">
-                <span>Admin</span>
-                <i class="fa-solid fa-bell"></i>
-
-                <!-- CLICKING THIS GOES TO ACCOUNT -->
-                <a href="AdAccount.html" class="avatar-link">
-                    <div class="user-avatar"></div>
+        <aside class="sidebar">
+            <div class="logo">ReFoundly- Admin</div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="AdLogin.html">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </a>
             </div>
-        </header>
+        </aside>
 
-        <!-- CONTENT -->
-        <section class="content-wrapper">
+        <main class="main-content">
 
-            <h1>Account</h1>
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <i class="fa-solid fa-bell"></i>
 
-            <!-- ACCOUNT CARD -->
-            <div class="account-card">
-
-                <div class="profile-left">
-                    <div class="profile-avatar"></div>
-                    <h3>Admin</h3>
-                    <p>Admin00@gmail.com</p>
+                    <a href="AdAccount.html" class="avatar-link">
+                        <div class="user-avatar"></div>
+                    </a>
                 </div>
+            </header>
 
-                <div class="profile-right">
-                    <h2>Admin Information</h2>
+            <section class="content-wrapper">
+                <h1>Account</h1>
 
-                    <div class="info-grid">
-                        <div class="info-box">
-                            <label>Email</label>
-                            <p>Admin00@gmail.com</p>
-                            <a href="#" class="link">Edit</a>
-                        </div>
+                <div class="account-card">
+                    <div class="profile-left">
+                        <div class="profile-avatar"></div>
+                        <h3>Admin</h3>
+                        <p id="admin-subtext"></p>
+                    </div>
 
-                        <div class="info-box">
-                            <label>Contact Number</label>
-                            <p>+</p>
-                        </div>
+                    <div class="profile-right">
+                        <h2>Admin Information</h2>
 
-                        <div class="info-box">
-                            <label>Password</label>
-                            <p>••••••••</p>
-                            <a href="#" class="link">Change Password</a>
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <label>Email</label>
+                                <p id="admin-email">Loading...</p>
+                                <a href="#" class="link">Edit</a>
+                            </div>
+
+                            <div class="info-box">
+                                <label>Contact Number</label>
+                                <p id="admin-contact">Loading...</p>
+                                <a href="javascript:void(0)" class="link" onclick="editContact()">Edit</a>
+                            </div>
+
+                            <div class="info-box">
+                                <label>Password</label>
+                                <p>••••••••</p>
+                                <a href="#" class="link">Change Password</a>
+                            </div>
                         </div>
                     </div>
+                </div> <div class="signout-wrap">
+                    <button class="btn-signout" onclick="logout()">Sign Out</button>
                 </div>
+            </section>
+        </main>
+    </div>
 
-            </div>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
 
-            <div class="signout-wrap">
-                <button class="btn-signout">Sign Out</button>
-            </div>
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100);
+            }
 
-        </section>
-    </main>
-</div>
+            console.log("Attempting to fetch admin profile...");
+            if (typeof fetchAdminProfile === 'function') {
+                fetchAdminProfile();
+            }
+
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+                        
+                        if (wrapper) wrapper.classList.remove("fade-in");
+                        
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>

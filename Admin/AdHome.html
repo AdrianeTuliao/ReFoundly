@@ -4,124 +4,201 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Dashboard</title>
-    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdHome.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  
-<div class="dashboard-container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">ReFoundly- Admin</div>
-        <nav>
-            <a href="AdHome.html" class="active">Dashboard</a>
-            <a href="AdManage.html">Manage Items</a>
-            <a href="AdReport.html">Reports</a>
-            <a href="AdUsers.html">Users</a>
-        </nav>
-        <div class="sidebar-footer">
-            <hr>
-            <a href="/logout">Logout</a>
-        </div>
-    </aside>
+    <div class="dashboard-container">
 
-    <!-- MAIN -->
-    <main class="main-content">
-
-        <!-- TOP NAV -->
-        <header class="top-nav">
-            <div class="admin-controls">
-                <span>Admin</span>
-                <i class="fa-solid fa-bell"></i>
-
-              <a href="AdAccount.html" class="avatar-link">
-                <div class="user-avatar"></div>
-              </a>
+        <aside class="sidebar">
+            <div class="logo">ReFoundly- Admin</div>
+            <nav>
+                <a href="AdHome.html" class="active">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="AdLogin.html">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
             </div>
-        </header>
+        </aside>
 
-        <!-- CONTENT -->
-        <section class="content-wrapper">
+        <main class="main-content">
 
-            <h1>Dashboard</h1>
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <i class="fa-solid fa-bell"></i>
+                    <a href="AdAccount.html" class="avatar-link">
+                        <div class="user-avatar"></div>
+                    </a>
+                </div>
+            </header>
 
-            <!-- STATS -->
-            <div class="summary-cards">
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Total Lost Items</p>
-                        <h3>12</h3>
+            <section class="content-wrapper">
+
+                <h1>Dashboard</h1>
+
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="icon-box lost-bg">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <div>
+                            <p>Total Lost Items</p>
+                            <h3>12</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="icon-box found-bg">
+                            <i class="fa-solid fa-hand-holding-heart"></i>
+                        </div>
+                        <div>
+                            <p>Total Found Items</p>
+                            <h3>22</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="icon-box pending-bg">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div>
+                            <p>Pending Items</p>
+                            <h3>14</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="icon-box claimed-bg">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <div>
+                            <p>Claimed Items</p>
+                            <h3>17</h3>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Total Found Items</p>
-                        <h3>22</h3>
+                <div class="analytics-row">
+                    <div class="graph-card">
+                        <div class="graph-info">
+                            <h3>Monthly Resolution Rate</h3>
+                            <p>Percentage of items successfully returned this month.</p>
+                            <h2 class="percentage-text">15%</h2>
+                        </div>
+                        <div class="visual-graph">
+                            <div class="progress-circle">
+                                <span class="inner-number">15%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="graph-card">
+                        <div class="graph-info">
+                            <h3>Item Status Overview</h3>
+                            <p>Visualizing the distribution of all reported items.</p>
+                            <div class="legend">
+                                <div class="legend-item"><span class="dot lost"></span> Lost</div>
+                                <div class="legend-item"><span class="dot found"></span> Found</div>
+                                <div class="legend-item"><span class="dot pending"></span> Pending</div>
+                                <div class="legend-item"><span class="dot claimed"></span> Claimed</div>
+                            </div>
+                        </div>
+                        <div class="visual-bar-chart">
+                            <div class="bar-group">
+                                <div class="bar lost" style="height: 54%;"><span>12</span></div>
+                                <div class="bar found" style="height: 100%;"><span>22</span></div>
+                                <div class="bar pending" style="height: 63%;"><span>14</span></div>
+                                <div class="bar claimed" style="height: 77%;"><span>17</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Pending Items</p>
-                        <h3>14</h3>
-                    </div>
+                <div class="table-container">
+                    <h2>Recent Activity</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wallet</td>
+                                <td>Personal</td>
+                                <td><span class="badge resolved">Found</span></td>
+                                <td>Jan. 7, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Phone</td>
+                                <td>Gadget</td>
+                                <td><span class="badge pending">Lost</span></td>
+                                <td>Dec. 17, 2025</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Claimed Items</p>
-                        <h3>17</h3>
-                    </div>
-                </div>
-            </div>
+            </section>
+        </main>
+    </div>
 
-            <!-- TABLE -->
-            <div class="table-container">
-                <h2>Recent Activity</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Wallet</td>
-                            <td>Personal</td>
-                            <td><span class="badge resolved">Found</span></td>
-                            <td>Jan. 7, 2026</td>
-                            <td>
-                                <button class="btn-view">Approve</button>
-                                <button class="btn-archive-sm">Deny</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Phone</td>
-                            <td>Gadget</td>
-                            <td><span class="badge pending">Lost</span></td>
-                            <td>Dec. 17, 2025</td>
-                            <td>
-                                <button class="btn-view">Approve</button>
-                                <button class="btn-archive-sm">Deny</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
 
-        </section>
-    </main>
-</div>
+            // 1. Entrance Fade-in
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100);
+            }
 
+            // 2. Smooth Navigation Transitions
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname && !link.hash) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+
+                        wrapper.classList.remove("fade-in");
+
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

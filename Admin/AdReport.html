@@ -8,126 +8,164 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<div class="dashboard-container">
+    <div class="dashboard-container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">ReFoundly- Admin</div>
-        <nav>
-            <a href="AdHome.html">Dashboard</a>
-            <a href="AdManage.html">Manage Items</a>
-            <a href="AdReport.html" class="active">Reports</a>
-            <a href="AdUsers.html">Users</a>
-        </nav>
-        <div class="sidebar-footer">
-            <hr>
-            <a href="/logout">Logout</a>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="main-content">
-
-        <!-- TOP NAV -->
-        <header class="top-nav">
-            <div class="admin-controls">
-                <span>Admin</span>
-                <i class="fa-solid fa-bell"></i>
-
-              <a href="AdAccount.html" class="avatar-link">
-                <div class="user-avatar"></div>
-              </a>
+        <aside class="sidebar">
+            <div class="logo">ReFoundly- Admin</div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html" class="active">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="AdLogin.html">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
             </div>
-        </header>
+        </aside>
 
-        <!-- CONTENT -->
-        <section class="content-wrapper">
+        <main class="main-content">
 
-            <div class="page-header">
-                <h1>Reports</h1>
-                <button class="btn-archive">Archived Items</button>
-            </div>
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <i class="fa-solid fa-bell"></i>
+                    <a href="AdAccount.html" class="avatar-link">
+                        <div class="user-avatar"></div>
+                    </a>
+                </div>
+            </header>
 
-            <!-- SUMMARY CARDS -->
-            <div class="summary-cards">
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Total Reports</p>
-                        <h3>120</h3>
+            <section class="content-wrapper">
+
+                <div class="page-header">
+                    <h1>Reports</h1>
+                    <button class="btn-archive">Archived Items</button>
+                </div>
+
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="icon-box reports-bg">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        <div>
+                            <p>Total Reports</p>
+                            <h3>120</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="icon-box resolved-bg">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <p>Resolved Reports</p>
+                            <h3>70</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="icon-box pending-bg">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <p>Pending Reports</p>
+                            <h3>14</h3>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Resolved Reports</p>
-                        <h3>70</h3>
-                    </div>
+                <div class="filter-bar">
+                    <select>
+                        <option>Date Range</option>
+                    </select>
+                    <select>
+                        <option>All Categories</option>
+                    </select>
+                    <select>
+                        <option>All Status</option>
+                    </select>
+                    <button class="btn-generate">Generate Report</button>
                 </div>
 
-                <div class="card">
-                    <div class="icon"></div>
-                    <div>
-                        <p>Pending Reports</p>
-                        <h3>14</h3>
-                    </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Item Status</th>
+                                <th>Case Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wallet</td>
+                                <td>Found</td>
+                                <td><span class="badge resolved">Resolved</span></td>
+                                <td>Jan. 7, 2026</td>
+                                <td>
+                                    <button class="btn-view">View</button>
+                                    <button class="btn-archive-sm">Archive</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Phone</td>
+                                <td>Missing</td>
+                                <td><span class="badge pending">Pending</span></td>
+                                <td>Dec. 17, 2025</td>
+                                <td>
+                                    <button class="btn-view">View</button>
+                                    <button class="btn-archive-sm">Archive</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
 
-            <!-- FILTER BAR -->
-            <div class="filter-bar">
-                <select>
-                    <option>Date Range</option>
-                </select>
-                <select>
-                    <option>All Categories</option>
-                </select>
-                <select>
-                    <option>All Status</option>
-                </select>
-                <button class="btn-generate">Generate Report</button>
-            </div>
+            </section>
+        </main>
+    </div>
 
-            <!-- TABLE -->
-            <div class="table-container">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Item Status</th>
-                        <th>Case Status</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>Wallet</td>
-                        <td>Found</td>
-                        <td><span class="badge resolved">Resolved</span></td>
-                        <td>Jan. 7, 2026</td>
-                        <td>
-                            <button class="btn-view">View</button>
-                            <button class="btn-archive-sm">Archive</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Phone</td>
-                        <td>Missing</td>
-                        <td><span class="badge pending">Pending</span></td>
-                        <td>Dec. 17, 2025</td>
-                        <td>
-                            <button class="btn-view">View</button>
-                            <button class="btn-archive-sm">Archive</button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
+            
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100); 
+            }
 
-        </section>
-    </main>
-</div>
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+
+                        if (wrapper) wrapper.classList.remove("fade-in");
+
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 </html>

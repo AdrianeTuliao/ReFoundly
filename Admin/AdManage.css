@@ -1,0 +1,69 @@
+/* =========================
+   MANAGE ITEMS – AdManage.css
+   ========================= */
+
+/* Page title spacing */
+.content-wrapper h1 {
+    margin-bottom: 20px;
+}
+
+/* FILTER BAR */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.filter-bar select,
+.filter-bar .search-input {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.filter-bar .search-input {
+    flex: 1;
+}
+
+/* Clear button */
+.btn-generate {
+    background: #8cc152;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* TABLE WRAPPER */
+.table-container {
+    background: #fff;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* Table spacing consistency */
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+/* Row separator */
+tbody tr:not(:last-child) {
+    border-bottom: 1px solid #eee;
+}
+
+/* BADGES (scoped to this page) */
+.table-container .badge.resolved {
+    background: #8cc152;
+    color: #fff;
+}
+
+.table-container .badge.pending {
+    background: #facc15;
+    color: #000;
+}

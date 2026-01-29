@@ -1,0 +1,95 @@
+.content-wrapper h1 {
+    margin-bottom: 20px;
+}
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* Search box */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+/* Role dropdown */
+.filter-bar select {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Add User button */
+.btn-generate {
+    background: #8cc152;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* TABLE WRAPPER */
+.table-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* User cell (avatar + name) */
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* User avatar */
+.avatar {
+    width: 32px;
+    height: 32px;
+    background: #d1d5db;
+    border-radius: 50%;
+}
+
+/* Row separator */
+tbody tr:not(:last-child) {
+    border-bottom: 1px solid #eee;
+}
+
+/* BADGES (scoped to users table) */
+.table-container .badge.resolved {
+    background: #8cc152;
+    color: #fff;
+}
+
+.table-container .badge.pending {
+    background: #facc15;
+    color: #000;
+}
+
+/* Delete button */
+.btn-delete {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 6px;
+}

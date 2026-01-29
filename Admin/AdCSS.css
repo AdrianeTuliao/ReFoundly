@@ -69,6 +69,7 @@ form h1 {
     color: var(--green-dark);
     font-size: 36px;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 input {
@@ -196,7 +197,11 @@ button:hover {
 .shade-3 { background-color: var(--green-dark); }
 
 .text-content {
-    text-align: center;
+    text-align: left;
+}
+
+.text-content h1 {
+    font-size: 55px;
 }
 
 .welcome-title { 

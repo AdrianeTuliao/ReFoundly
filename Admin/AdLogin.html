@@ -11,19 +11,20 @@
 
     <div class="container" id="container">
         <div class="form-container sign-in">
-            <form>
-                <h1>Login</h1>
-                <input type="email" placeholder="Email">
+            <form id="login-form">
+                <h1>Admin Login</h1>
+                <input type="email" id="email" placeholder="Email">
                 <div class="password-input">
-                    <input type="password" placeholder="Password">
-                    <i class="fa-regular fa-eye"></i>
+                    <input type="password" id="password" placeholder="Password">
                 </div>
-                <button type="button">Login</button>
+                <div id="login-error" style="color: red; margin-top: 10px;"></div>
+
+                <button type="submit">Login</button>
         </div>
 
                 <div class="toggle-panel toggle-right">
     <div class="text-content">
-        <h1 class="welcome-title">Welcome to <span class="green-text">ReFoundly</span></h1>
+        <h1 class="welcome-title"> <span class="green-text"> Welcome to ReFoundly</span></h1>
         <p class="welcome-desc">A friendly digital platform where you can report, search, and recover lost items.</p>
     </div>
     
