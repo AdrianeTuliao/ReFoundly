@@ -18,8 +18,11 @@
             <a href="message.html" class="history-link active-link">
                 <i class="fas fa-comment-dots"></i>
             </a>
-            <i class="fas fa-bell"></i>
-            <i class="fas fa-user-circle"></i>
+                <i class="fas fa-bell"></i>
+
+            <a href="user_acc.html" class="icon-link">
+                <i class="fas fa-user-circle"></i>
+            </a>
         </div>
     </nav>
 
@@ -214,6 +217,40 @@
     // IAAPPLY SA PAREHONG DROPDOWN
     setupSearch('categoryInput', 'categoryList');
     setupSearch('locationInput', 'locationList');
+
+    // FADE IN EFFECT
+    document.addEventListener("DOMContentLoaded", () => {
+    const wrapper = document.querySelector(".content-wrapper");
+
+    // 1. Fade IN on Load
+    if (wrapper) {
+        // Short delay to ensure the browser has painted the initial state
+        requestAnimationFrame(() => {
+            wrapper.classList.add("fade-in");
+        });
+    }
+
+    // 2. Fade OUT on Link Click
+    const navLinks = document.querySelectorAll('.nav-icons a, .hero-actions a, .icon-link');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Only animate if it's an internal link
+            if (this.hostname === window.location.hostname && !this.hash) {
+                e.preventDefault();
+                const nextURL = this.href;
+
+                // Trigger fade out
+                wrapper.classList.remove("fade-in");
+
+                // Wait for CSS transition (0.6s) then redirect
+                setTimeout(() => {
+                    window.location.href = nextURL;
+                }, 500);
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>
