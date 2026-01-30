@@ -1,7 +1,3 @@
-/* =========================
-   DASHBOARD – AdHome.css
-   ========================= */
-
 /* PAGE TITLE */
 .content-wrapper h1 {
     margin-bottom: 20px;
@@ -10,13 +6,38 @@
 /* SUMMARY CARDS */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     margin: 20px 0;
 }
 
-/* 1. Add a transition to the base card so the movement is smooth */
-.card {
+.card1 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    cursor: pointer; 
+}
+
+.card2 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    cursor: pointer; 
+}
+
+.card3 {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -25,19 +46,43 @@
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    
-    /* ADD THIS LINE */
     transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    cursor: pointer; /* Makes the mouse look like a hand */
+    cursor: pointer; 
 }
 
-/* 2. Create the hover effect */
-.card:hover {
-    transform: translateY(-8px); /* Lifts the card up */
-    background: rgba(255, 255, 255, 0.7); /* Makes it slightly more solid */
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15); /* Deepens the shadow for a 3D look */
+.card4 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    cursor: pointer; 
 }
 
+.card1:hover{
+    transform: translateY(-8px); 
+    background: rgba(255, 255, 255, 0.7); 
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
+}
+.card2:hover:hover {
+    transform: translateY(-8px); 
+    background: rgba(255, 255, 255, 0.7); 
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
+}   
+.card3:hover:hover {
+    transform: translateY(-8px); 
+    background: rgba(255, 255, 255, 0.7); 
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
+}
+.card4:hover:hover {
+    transform: translateY(-8px); 
+    background: rgba(255, 255, 255, 0.7); 
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
+}
 .card p {
     margin: 0;
     font-size: 14px;
@@ -48,7 +93,6 @@
     margin: 5px 0 0;
 }
 
-/* ICON BOX */
 .icon-box {
     width: 50px;
     height: 50px;
@@ -59,13 +103,11 @@
     font-size: 1.5rem;
 }
 
-/* ICON COLORS */
-.lost-bg { background: rgba(255,77,77,0.15); color: #ff4d4d; }
-.found-bg { background: rgba(46,204,113,0.15); color: #2ecc71; }
-.pending-bg { background: rgba(241,196,15,0.15); color: #f1c40f; }
-.claimed-bg { background: rgba(52,152,219,0.15); color: #3498db; }
+.lost-bg { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; }
+.found-bg { background: rgba(111, 155, 59, 0.15); color: #2ecc71; }
+.pending-bg { background: rgba(52, 152, 219, 0.15); color: #3498db; }
+.claimed-bg { background: rgba(250, 204, 21, 0.15); color: #facc15; }
 
-/* ANALYTICS */
 .analytics-row {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -99,7 +141,7 @@
 }
 
 
-/* CIRCULAR GRAPH */
+
 .progress-circle {
     width: 100px;
     height: 100px;

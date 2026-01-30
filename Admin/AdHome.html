@@ -13,7 +13,10 @@
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <div class="logo">ReFoundly- Admin</div>
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                    <span>ReFoundly- Admin</span>
+            </div>
             <nav>
                 <a href="AdHome.html" class="active">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
@@ -53,7 +56,7 @@
                 <h1>Dashboard</h1>
 
                 <div class="summary-cards">
-                    <div class="card">
+                    <div class="card1">
                         <div class="icon-box lost-bg">
                             <i class="fa-solid fa-box-open"></i>
                         </div>
@@ -63,7 +66,7 @@
                         </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card2">
                         <div class="icon-box found-bg">
                             <i class="fa-solid fa-hand-holding-heart"></i>
                         </div>
@@ -73,7 +76,7 @@
                         </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card3">
                         <div class="icon-box pending-bg">
                             <i class="fa-solid fa-clock-rotate-left"></i>
                         </div>
@@ -83,7 +86,7 @@
                         </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card4">
                         <div class="icon-box claimed-bg">
                             <i class="fa-solid fa-check-double"></i>
                         </div>
@@ -175,14 +178,12 @@
         document.addEventListener("DOMContentLoaded", () => {
             const wrapper = document.querySelector(".content-wrapper");
 
-            // 1. Entrance Fade-in
             if (wrapper) {
                 setTimeout(() => {
                     wrapper.classList.add("fade-in");
                 }, 100);
             }
 
-            // 2. Smooth Navigation Transitions
             const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {

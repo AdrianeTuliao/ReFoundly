@@ -14,7 +14,6 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files (CSS, JS, images)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Example route for dashboard
 app.get('/dashboard', (req, res) => {
     const stats = {
         "Total Items": 120,

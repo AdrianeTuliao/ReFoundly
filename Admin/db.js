@@ -3,7 +3,6 @@ const mysql = require('mysql2');
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',       // change if needed
-    password: '',       // change if needed
     database: 'refoundly_db'
 });
 

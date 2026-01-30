@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Reports</title>
+    <link rel="stylesheet" href="Global.css">
     <link rel="stylesheet" href="AdReport.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -11,7 +12,10 @@
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <div class="logo">ReFoundly- Admin</div>
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                    <span>ReFoundly- Admin</span>
+            </div>
             <nav>
                 <a href="AdHome.html">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
@@ -86,17 +90,29 @@
                 </div>
 
                 <div class="filter-bar">
-                    <select>
-                        <option>Date Range</option>
-                    </select>
-                    <select>
-                        <option>All Categories</option>
-                    </select>
-                    <select>
-                        <option>All Status</option>
-                    </select>
-                    <button class="btn-generate">Generate Report</button>
-                </div>
+    <select id="dateFilter">
+        <option value="all">Date Range (All)</option>
+        <option value="today">Today</option>
+        <option value="month">This Month (Jan 2026)</option>
+        <option value="year">This Year (2026)</option>
+        <option value="2025">Last Year (2025)</option>
+    </select>
+
+    <select id="categoryFilter">
+        <option value="all">All Categories</option>
+        <option value="Personal">Personal</option>
+        <option value="Gadget">Gadget</option>
+        <option value="Bag">Bag</option>
+    </select>
+
+    <select id="statusFilter">
+        <option value="all">All Status</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Pending">Pending</option>
+    </select>
+
+    <button class="btn-generate" onclick="filterReports()">Generate Report</button>
+</div>
 
                 <div class="table-container">
                     <table>
@@ -165,6 +181,64 @@
                 });
             });
         });
+
+        // Function to handle the actual filtering
+function filterReports() {
+    const dateVal = document.getElementById('dateFilter').value;
+    const catVal = document.getElementById('categoryFilter').value.toLowerCase();
+    const statVal = document.getElementById('statusFilter').value.toLowerCase();
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    // Define constants for comparison
+    const currentYear = "2026"; 
+    const lastYear = "2025"; 
+    const currentMonth = "Jan";
+    const todayDate = "Jan. 30"; // Matches system date
+
+    tableRows.forEach(row => {
+        const itemText = row.cells[0].textContent.toLowerCase();
+        const itemStatusText = row.cells[1].textContent.toLowerCase();
+        const caseStatusText = row.cells[2].textContent.trim().toLowerCase();
+        const rowDate = row.cells[3].textContent;
+
+        // 1. Category Filter 
+        const matchesCat = catVal === "all" || itemText.includes(catVal) || itemStatusText.includes(catVal);
+
+        // 2. Case Status Filter
+        const matchesStat = statVal === "all" || caseStatusText.includes(statVal);
+
+        // 3. Date Filter logic (Fixed variable reference)
+        let matchesDate = false;
+        if (dateVal === "all") {
+            matchesDate = true;
+        } else if (dateVal === "today") {
+            matchesDate = rowDate.includes(todayDate);
+        } else if (dateVal === "month") {
+            matchesDate = rowDate.includes(currentMonth) && rowDate.includes(currentYear);
+        } else if (dateVal === "year") {
+            matchesDate = rowDate.includes(currentYear);
+        } else if (dateVal === "2025") {
+            // matchesDate now correctly uses the lastYear string "2025"
+            matchesDate = rowDate.includes(lastYear);
+        }
+
+        // Apply display logic
+        row.style.display = (matchesCat && matchesStat && matchesDate) ? "" : "none";
+    });
+}
+
+// 2. Add Event Listeners for "Choose and Filter" behavior
+document.addEventListener("DOMContentLoaded", () => {
+    const filters = ['dateFilter', 'categoryFilter', 'statusFilter'];
+    
+    filters.forEach(id => {
+        const element = document.getElementById(id);
+        if(element) {
+            // This triggers the filter every time you change a selection
+            element.addEventListener('change', filterReports);
+        }
+    });
+});
     </script>
 
 </body>

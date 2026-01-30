@@ -1,8 +1,20 @@
 /* =========================
-   MANAGE ITEMS – AdManage.css
+   ADMIN MANAGE ITEMS PAGE
    ========================= */
 
-/* Page title spacing */
+/* PAGE TRANSITION */
+.content-wrapper {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.content-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* PAGE TITLE */
 .content-wrapper h1 {
     margin-bottom: 20px;
 }
@@ -10,60 +22,89 @@
 /* FILTER BAR */
 .filter-bar {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 20px;
     align-items: center;
 }
 
 .filter-bar select,
-.filter-bar .search-input {
-    padding: 8px 10px;
-    border-radius: 6px;
+.search-input {
+    padding: 8px 12px;
+    border-radius: 8px;
     border: 1px solid #ccc;
-    font-size: 14px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
 }
 
-.filter-bar .search-input {
-    flex: 1;
-}
-
-/* Clear button */
+/* CLEAR BUTTON */
 .btn-generate {
-    background: #8cc152;
-    color: #fff;
+    background: #e5e7eb;
+    color: #333;
     border: none;
     padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
 }
 
-/* TABLE WRAPPER */
+/* TABLE */
 .table-container {
-    background: #fff;
-    border-radius: 10px;
-    margin-top: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* Table spacing consistency */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #e5e5e5;
+}
+
 th, td {
-    padding: 12px;
+    padding: 14px;
     text-align: left;
 }
 
-/* Row separator */
 tbody tr:not(:last-child) {
     border-bottom: 1px solid #eee;
 }
 
-/* BADGES (scoped to this page) */
-.table-container .badge.resolved {
+/* BADGES */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.badge.resolved {
     background: #8cc152;
     color: #fff;
 }
 
-.table-container .badge.pending {
+.badge.pending {
     background: #facc15;
     color: #000;
+}
+
+/* ACTION BUTTONS */
+.btn-view {
+    background: #8cc152;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-archive-sm {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
 }

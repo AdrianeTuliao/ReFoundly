@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Users</title>
-    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdUsers.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -12,7 +13,10 @@
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <div class="logo">ReFoundly- Admin</div>
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                    <span>ReFoundly- Admin</span>
+            </div>
             <nav>
                 <a href="AdHome.html">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
@@ -53,15 +57,15 @@
 
                 <div class="filter-bar">
                     <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" placeholder="Search Users">
-                    </div>
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="userSearch" placeholder="Search Users">
+    </div>
 
-                    <select>
-                        <option>Role</option>
-                        <option>Admin</option>
-                        <option>User</option>
-                    </select>
+    <select id="roleFilter">
+        <option value="all">Role (All)</option>
+        <option value="admin">Admin</option>
+        <option value="user">User</option>
+    </select>
 
                     <button class="btn-generate">+ Add User</button>
                 </div>
@@ -100,7 +104,7 @@
                                     Mar Adriane
                                 </td>
                                 <td>adriane.tuliao@gmail.com</td>
-                                <td><span class="badge pending">User</span></td>
+                                <td><span class="badge resolved">Admin</span></td>
                                 <td>Feb. 17, 2025</td>
                                 <td>
                                     <button class="btn-view">
@@ -175,6 +179,63 @@
                 });
             });
         });
+
+        // Search and Filter Functionality
+        document.addEventListener("DOMContentLoaded", () => {
+    const wrapper = document.querySelector(".content-wrapper");
+    const searchInput = document.getElementById('userSearch');
+    const roleFilter = document.getElementById('roleFilter');
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    // --- Page Transition Logic ---
+    if (wrapper) {
+        setTimeout(() => {
+            wrapper.classList.add("fade-in");
+        }, 100);
+    }
+
+    const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            if (link.hostname === window.location.hostname) {
+                e.preventDefault();
+                const nextURL = link.href;
+                if (wrapper) wrapper.classList.remove("fade-in");
+                setTimeout(() => {
+                    window.location.href = nextURL;
+                }, 500);
+            }
+        });
+    });
+
+    // --- Search and Filter Logic ---
+    function filterUsers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedRole = roleFilter.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const email = row.cells[1].textContent.toLowerCase();
+            const role = row.cells[2].textContent.toLowerCase();
+
+            // Check if name/email matches search AND role matches filter
+            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+            const matchesRole = selectedRole === "all" || role.includes(selectedRole);
+
+            if (matchesSearch && matchesRole) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    // Listen for typing in the search box
+    searchInput.addEventListener('input', filterUsers);
+
+    // Listen for changes in the Role dropdown
+    roleFilter.addEventListener('change', filterUsers);
+});
     </script>
 
 </body>

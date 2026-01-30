@@ -1,0 +1,103 @@
+/* =========================
+   ADMIN ACCOUNT PAGE
+   ========================= */
+
+/* PAGE TRANSITION */
+.content-wrapper {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.content-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* PAGE TITLE */
+.content-wrapper h1 {
+    margin-bottom: 25px;
+}
+
+/* ACCOUNT CARD */
+.account-card {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 30px;
+    display: flex;
+    gap: 40px;
+    max-width: 900px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* LEFT PROFILE */
+.profile-left {
+    text-align: center;
+    width: 220px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: #d1d5db;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+}
+
+.profile-left h3 {
+    margin: 10px 0 5px;
+}
+
+.profile-left p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* RIGHT PROFILE */
+.profile-right h2 {
+    margin-bottom: 20px;
+}
+
+/* INFO GRID */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.info-box {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.info-box label {
+    font-size: 13px;
+    color: #666;
+}
+
+.info-box p {
+    margin: 6px 0;
+}
+
+/* LINKS */
+.link {
+    font-size: 12px;
+    color: #84cc16;
+    text-decoration: none;
+}
+
+/* SIGN OUT */
+.signout-wrap {
+    margin-top: 25px;
+}
+
+.btn-signout {
+    background: #8cc152;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}

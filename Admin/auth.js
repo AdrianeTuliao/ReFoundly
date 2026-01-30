@@ -13,7 +13,6 @@ router.post('/login', (req, res) => {
         if (err) return res.status(500).json({ error: 'Server error' });
 
         if (results.length === 0) {
-            // Email not found
             return res.json({ success: false, message: 'Wrong username or password' });
         }
 
@@ -21,7 +20,6 @@ router.post('/login', (req, res) => {
         const match = await bcrypt.compare(password, admin.password);
 
         if (!match) {
-            // Password mismatch
             return res.json({ success: false, message: 'Wrong username or password' });
         }
 

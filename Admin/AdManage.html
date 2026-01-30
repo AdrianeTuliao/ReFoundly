@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Manage Items</title>
-    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdManage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -12,7 +13,10 @@
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <div class="logo">ReFoundly- Admin</div>
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                    <span>ReFoundly- Admin</span>
+            </div>
             <nav>
                 <a href="AdHome.html">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
@@ -53,21 +57,21 @@
                 <h1>Manage Items</h1>
 
                 <div class="filter-bar">
-                    <select>
-                        <option>Category</option>
-                        <option>Personal</option>
-                        <option>Gadget</option>
-                        <option>Bag</option>
+                    <select id="categoryFilter">
+                        <option value="all">Category</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Gadget">Gadget</option>
+                        <option value="Bag">Bag</option>
                     </select>
 
-                    <select>
-                        <option>Status</option>
-                        <option>Lost</option>
-                        <option>Found</option>
+                    <select id="statusFilter">
+                        <option value="all">Status</option>
+                        <option value="Lost">Lost</option>
+                        <option value="Found">Found</option>
                     </select>
 
-                    <input type="text" placeholder="Search Items" class="search-input">
-                    <button class="btn-generate">Clear</button>
+                    <input type="text" id="searchInput" placeholder="Search Items" class="search-input">
+    <button class="btn-generate" id="clearBtn">Clear</button>
                 </div>
 
                 <div class="table-container">
@@ -87,6 +91,17 @@
                                 <td>Personal</td>
                                 <td><span class="badge resolved">Found</span></td>
                                 <td>Jan. 7, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Phone</td>
+                                <td>Gadget</td>
+                                <td><span class="badge pending">Lost</span></td>
+                                <td>Jan. 2, 2026</td>
                                 <td>
                                     <button class="btn-view">Approve</button>
                                     <button class="btn-archive-sm">Deny</button>
@@ -127,6 +142,56 @@
                 });
             });
         });
+
+        // Filter and Search Functionality
+        document.addEventListener("DOMContentLoaded", () => {
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    function filterTable() {
+        const catValue = categoryFilter.value.toLowerCase();
+        const statValue = statusFilter.value.toLowerCase();
+        const searchValue = searchInput.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const itemText = row.cells[0].textContent.toLowerCase();
+            const catText = row.cells[1].textContent.toLowerCase();
+            const statText = row.cells[2].textContent.toLowerCase();
+            
+            // This combines all searchable text into one "haystack"
+            const allRowText = `${itemText} ${catText} ${statText}`;
+
+            // 1. Dropdown matches
+            const matchesCat = catValue === "all" || catText.includes(catValue);
+            const matchesStat = statValue === "all" || statText.includes(statValue);
+            
+            // 2. Search matches (Now checks the combined string)
+            const matchesSearch = allRowText.includes(searchValue);
+
+            if (matchesCat && matchesStat && matchesSearch) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    // Event Listeners
+    categoryFilter.addEventListener('change', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    searchInput.addEventListener('input', filterTable);
+
+    // Clear Button Logic
+    clearBtn.addEventListener('click', () => {
+        categoryFilter.value = "all";
+        statusFilter.value = "all";
+        searchInput.value = "";
+        filterTable();
+    });
+});
     </script>
 
 </body>

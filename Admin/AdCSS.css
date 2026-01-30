@@ -1,284 +1,598 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+
+
 :root {
+
     --green-main: #7aa340;
+
     --green-dark: #5f842f;
+
     --green-light: #b1d985;
+
     --green-mid: #9fd861;
+
     --glass-bg: rgba(255, 255, 255, 0.699);
+
 }
+
+
 
 * {
+
     margin: 0;
+
     padding: 0;
+
     box-sizing: border-box;
+
     font-family: 'Poppins', sans-serif;
+
 }
+
+
 
 body {
+
     background: url('Park.png') center/cover no-repeat fixed;
+
     height: 100vh;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
 }
+
+
 
 /* Main Card */
+
+/* 1. Update the Container to be height-aware */
+
 .container {
+
     background-color: var(--glass-bg);
+
     border-radius: 40px;
+
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+
     position: relative;
+
     overflow: hidden;
+
     width: 90%;        
-    max-width: 1000px; 
-    min-height: 600px; 
-    backdrop-filter: blur(10px);
-  
-    
+
+    max-width: 1000px;
+
+   
+
+    /* This makes it 85% of your laptop screen height, but stops at 650px */
+
+    height: 85vh;
+
+    max-height: 650px;
+
+    min-height: 500px;
+
+   
+
+    backdrop-filter: blur(10px);  
+
 }
+
+
 
 /* Form Container */
+
 .form-container {
+
     position: absolute;
+
     top: 0;
+
     height: 100%;
-    width: 50%;           
+
+    width: 50%;          
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     transition: all 0.6s ease-in-out;
+
 }
 
+
+
 /* Forms */
+
 form {
+
     background-color: #fff;
+
     display: flex;
+
     flex-direction: column;
+
     padding: 20px;            
-    height: 90%;               
+
+    height: 90%;              
+
     width: 90%;                
-    margin: 0;                 
+
+    margin: 0;                
+
     justify-content: center;
+
     border: 3px solid var(--green-main);
+
     border-radius: 30px;
+
 }
+
+
+
 
 
 form h1 {
+
     color: var(--green-dark);
+
     font-size: 36px;
+
     margin-bottom: 20px;
+
     text-align: center;
+
 }
+
+
 
 input {
+
     background-color: #fff;
+
     border: 1.5px solid #d1d1d1;
+
     margin: 8px 0;
+
     padding: 12px 15px;
+
     border-radius: 10px;
+
     width: 100%;
+
     outline: none;
+
 }
+
+
 
 input:focus {
+
     border-color: var(--green-main);
+
 }
+
+
 
 .password-input {
+
     position: relative;
+
     width: 100%;
+
 }
+
+
 
 .password-input i {
+
     position: absolute;
+
     right: 15px;
+
     top: 50%;
+
     transform: translateY(-50%);
+
     color: #888;
+
     cursor: pointer;
+
     font-size: 14px;
+
 }
+
+
 
 button {
+
     background-color: var(--green-main);
+
     color: white;
+
     padding: 12px;
+
     border-radius: 12px;
+
     border: none;
+
     font-weight: 600;
+
     cursor: pointer;
+
     margin-top: 20px;
+
     font-size: 16px;
+
     transition: background 0.3s;
+
 }
+
+
 
 button:hover {
+
     background-color: var(--green-dark);
+
 }
+
+
 
 /* Sliding Transitions */
+
 .sign-in { left: 0; z-index: 2; }
+
 .sign-up { left: 0; opacity: 0; z-index: 1; }
 
+
+
 .container.active .sign-in { transform: translateX(100%); opacity: 0; }
+
 .container.active .sign-up { transform: translateX(100%); opacity: 1; z-index: 5; }
 
+
+
 /* Toggle (Info Panel) Logic */
+
 .toggle-container {
+
     position: absolute;
+
     top: 0;
+
     left: 50%;
+
     width: 50%;
+
     height: 100%;
+
     overflow: hidden;
+
     transition: all 0.6s ease-in-out;
+
     z-index: 1000;
+
 }
+
+
 
 .container.active .toggle-container { transform: translateX(-100%); }
 
+
+
 .toggle {
+
     background-color: transparent;
+
     height: 100%;
+
     position: relative;
+
     left: -100%;
+
     width: 200%;
+
     transform: translateX(0);
+
     transition: all 0.6s ease-in-out;
+
 }
+
+
 
 .container.active .toggle { transform: translateX(50%); }
 
+
+
 .toggle-panel {
+
     position: absolute;
+
     width: 50%;
+
     height: 100%;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     flex-direction: column;
+
     padding: 0 40px;
+
     text-align: center;
+
     top: 0;
+
     transition: all 0.6s ease-in-out;
+
 }
+
+
 
 .toggle-left { transform: translateX(-200%); }
+
 .container.active .toggle-left { transform: translateX(0); }
 
+
+
 .toggle-right {
-    right: 0; 
-    transform: translateX(0); 
+
+    right: 0;
+
+    transform: translateX(0);
+
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
-    justify-content: space-between; 
-    padding: 50px 20px; 
+
+    justify-content: space-between;
+
+    padding: 50px 20px;
+
     height: 100%;
+
 }
+
+
+
 
 
 /* Feature Boxes (Signup Side) */
+
 .brand-title { color: var(--green-dark); font-size: 48px; margin-bottom: 20px; width: 100%; text-align: left;}
 
+
+
 .feature-box {
+
     color: white;
+
     padding: 15px 20px;
+
     border-radius: 20px;
+
     margin-bottom: 15px;
+
     width: 100%;
+
     text-align: left;
+
 }
+
+
 
 .shade-1 { background-color: var(--green-light); }
+
 .shade-2 { background-color: var(--green-mid); }
+
 .shade-3 { background-color: var(--green-dark); }
 
+
+
 .text-content {
+
     text-align: left;
+
 }
+
+
 
 .text-content h1 {
+
     font-size: 55px;
+
 }
 
-.welcome-title { 
-    color: var(--green-dark); 
-    font-size: 42px; 
-    line-height: 1.2; 
-}
-.green-text { 
-    color: var(--green-main); 
-}
-.welcome-desc { 
-    margin: 15px 0; 
-    color: #444; 
-    font-size: 14px; 
+
+
+.welcome-title {
+
+    color: var(--green-dark);
+
+    font-size: 42px;
+
+    line-height: 1.2;
+
 }
 
-.logo-area img { 
-  width: 900px;
+.green-text {
+
+    color: var(--green-main);
+
+}
+
+.welcome-desc {
+
+    margin: 15px 0;
+
+    color: #444;
+
+    font-size: 14px;
+
+}
+
+
+
+.logo-area img {
+
+  width: 700px;
+
   height: auto;
+
   max-width: none;
+
   opacity: 0.6;
+
   transform: translateY(-70px);
+
 }
+
+
 
 .link-btn {
+
     color: #2563eb;
+
     cursor: pointer;
+
     font-weight: 600;
+
     text-decoration: underline;
+
 }
+
+
 
 @media (max-width: 400px) {
+
     .container {
+
         width: 95%;
-        min-height: 200px; 
+
+        min-height: 200px;
+
     }
+
+
 
     form h1 {
-        font-size: 28px; 
+
+        font-size: 28px;
+
     }
+
+
 
     .welcome-title {
+
         font-size: 32px;
+
     }
+
+
 
     .logo-area img {
+
         width: 300px;
+
     }
+
 }
 
+
+
 @media (max-width: 480px) {
+
     .container {
+
         min-height: 550px;
-        border-radius: 20px; 
+
+        border-radius: 20px;
+
     }
+
+
 
     .toggle-container {
-        display: none; 
+
+        display: none;
+
     }
+
+
 
     .form-container {
+
         width: 100%; /
+
     }
+
+
 
     .container.active .sign-in {
-        transform: translateX(-100%); 
+
+        transform: translateX(-100%);
+
     }
 
+
+
     .container.active .sign-up {
-        transform: translateX(0); 
+
+        transform: translateX(0);
+
         opacity: 1;
+
     }
-    
+
+   
+
     form {
+
         padding: 0 20px;
+
         margin: 10px;
+
         height: calc(100% - 20px);
+
         width: calc(100% - 20px);
+
     }
+
+}
+
+
+
+
+#login-error:not(:empty) {
+    background-color: rgba(255, 0, 0, 0.1); /* Light red background */
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    margin-bottom: 10px;
+}
+
+/* A simple shake animation */
+.shake {
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+@keyframes shake {
+    0% { margin-left: 0; }
+    25% { margin-left: 5px; }
+    75% { margin-left: -5px; }
+    100% { margin-left: 0; }
 }

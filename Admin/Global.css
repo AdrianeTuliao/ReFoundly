@@ -53,9 +53,26 @@ body::before {
 }
 
 .logo {
-    padding: 20px;
+    padding: 25px 20px; 
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    justify-content: start; 
+    gap: 0px;           
     font-weight: 700;
-    font-size: 18px;
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+.sidebar-logo-img {
+    width: 50px;
+    height: auto;
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.644));
+    opacity: 50%;
+}
+
+.logo span {
+    letter-spacing: 0.2px; 
 }
 
 .sidebar nav a {
