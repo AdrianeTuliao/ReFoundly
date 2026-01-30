@@ -1,0 +1,250 @@
+/* Using your specific Color Variables */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+}
+
+/* Header & Nav */
+.navbar {
+    background-color: var(--primary-green);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover { color: var(--accent-green); }
+
+.history-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 2rem;     
+}
+
+.history-link:hover {
+    color: var(--accent-green);        
+}
+
+/* Container - Ultra Wide */
+.container {
+    width: 95%;
+    max-width: 1600px; 
+    margin: 40px auto;
+}
+
+/* Breadcrumb Styling */
+.breadcrumb {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+/* Base style para sa 'Home' link */
+.breadcrumb a {
+    color: var(--primary-green); /* Gamit ang iyong primary green variable */
+    text-decoration: none; /* Default na may underline */
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+/* Hover effect kapag tinapatan ng mouse */
+.breadcrumb a:hover {
+    color: var(--accent-green); /* Magbabago ang kulay sa accent green */
+    text-decoration: underline;      /* Pwede mong alisin ang underline sa hover para mas interactive */
+}
+
+/* Active/Pressed effect kapag pinindot (clicked) */
+.breadcrumb a:active {
+    color: var(--dark-green);
+}
+
+.profile-circle-small {
+    width: 35px;
+    height: 35px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+}
+
+/* Main Card */
+.account-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    padding: 40px;
+}
+
+/* Sidebar */
+.sidebar {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid #eee;
+    padding-right: 20px;
+}
+
+.avatar-large {
+    width: 250px;
+    height: 250px;
+    background-color: #d9d9d9;
+    border-radius: 70%;
+    margin: 90px auto 30px;
+    background-image: url('https://via.placeholder.com/150'); /* Replace with user icon */
+    background-size: cover;
+}
+
+.user-display-name { margin-bottom: 5px; font-family: sans-serif; font-size: 28px; }
+.user-display-email { color: #666; font-family: sans-serif; font-size: 16px; }
+
+/* Content Area */
+.content {
+    flex: 2;
+    padding-left: 40px;
+    font-family: sans-serif;
+    font-size: 18px;
+}
+
+.content h3 {
+    font-family: sans-serif;
+    font-size: 34px;
+    margin-bottom: 30px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.info-box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    position: relative;
+    min-height: 80px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.02);
+}
+
+.info-box label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.edit-link, .change-pw {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-family: sans-serif;
+    font-size: 14px;
+    color: #333;
+    text-decoration: underline;
+}
+
+/* Empty State Boxes */
+.empty {
+    display: flex;
+    flex-direction: column;
+}
+
+.plus-icon {
+    font-size: 1.5rem;
+    margin-top: 25px;
+    cursor: pointer;
+}
+
+/* Sign Out Button */
+.actions {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.sign-out-btn {
+    font-family: sans-serif;
+    font-size: 18px;
+    background-color: #a3d96a;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.sign-out-btn:hover {
+    background-color: #8cc355;
+}
+
+/* Footer */
+footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
+.footer-links { margin-bottom: 20px;}
+.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
+.footer-links a:hover {
+    color: var(--accent-green); 
+    text-decoration: underline; 
+}
+
+footer p {
+    font-size: 14px; /* Taasan mula sa dating 12px */
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+.socials {
+    margin-bottom: 20px;
+}
+
+.socials i {
+    font-size: 35px; 
+    margin: 0 10px; 
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.socials i:hover {
+    transform: scale(1.2); 
+    color: var(--accent-green);
+}
+
+footer p {
+    font-size: 14px; 
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+h3 {
+    color: var(--primary-green);
+    border-bottom: 2px solid var(--accent-green);
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+
+.separator { border: 0; border-top: 1px solid #eee; margin: 40px 0; }
