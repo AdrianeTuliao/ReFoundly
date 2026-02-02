@@ -14,11 +14,10 @@
         <aside class="sidebar">
             <div class="logo">
                 <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
-                <span>ReFoundly Admin</span>
+                <span>ReFoundly- Admin</span>
             </div>
             <nav>
                 <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                <a href="AdManage.html"><i class="fa-solid fa-boxes-stacked"></i> Manage Items</a>
                 <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Reports</a>
                 <a href="AdUsers.html" class="active"><i class="fa-solid fa-users"></i> Users</a>
             </nav>
@@ -100,14 +99,23 @@
 
             // Data Fetching and Rendering
             async function fetchUsers() {
-                try {
-                    const res = await fetch("/api/admin-users/all");
-                    allUsers = await res.json();
-                    renderTable(allUsers);
-                } catch (err) {
-                    console.error("Error fetching users:", err);
-                }
-            }
+    try {
+        const res = await fetch("/api/admin-users/all");
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+            allUsers = data;
+            renderTable(allUsers);
+        } else {
+       
+            console.error("Server returned an error object:", data);
+            tbody.innerHTML = `<tr><td colspan='5' style='text-align:center; color:red;'>Error: ${data.error || 'Unknown error'}</td></tr>`;
+        }
+    } catch (err) {
+        console.error("Connection Error:", err);
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Cannot connect to server.</td></tr>";
+    }
+}
 
             function renderTable(data) {
                 tbody.innerHTML = "";
@@ -125,7 +133,7 @@
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
                             <button class="btn-view"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-delete">Delete</button>
+                            <button class="btn-delete">Suspend</button>
                         </td>`;
                     tbody.appendChild(tr);
                 });

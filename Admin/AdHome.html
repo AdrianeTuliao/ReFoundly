@@ -21,9 +21,6 @@
                 <a href="AdHome.html" class="active">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
                 </a>
-                <a href="AdManage.html">
-                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
-                </a>
                 <a href="AdReport.html">
                     <i class="fa-solid fa-file-invoice"></i> Reports
                 </a>
@@ -200,6 +197,70 @@
                 });
             });
         });
+
+        async function loadDashboardData() {
+    try {
+        // 1. Fetch Stats
+        const statsRes = await fetch('/api/admin/stats');
+        const stats = await statsRes.json();
+
+        // Update Cards
+        document.querySelector(".card1 h3").innerText = stats.totalLost || 0;
+        document.querySelector(".card2 h3").innerText = stats.totalFound || 0;
+        document.querySelector(".card3 h3").innerText = stats.totalPending || 0;
+        document.querySelector(".card4 h3").innerText = stats.totalClaimed || 0;
+
+        // Update Bar Chart Heights & Labels
+        const max = Math.max(stats.totalLost, stats.totalFound, stats.totalPending, stats.totalClaimed, 1);
+        updateBar(".bar.lost", stats.totalLost, max);
+        updateBar(".bar.found", stats.totalFound, max);
+        updateBar(".bar.pending", stats.totalPending, max);
+        updateBar(".bar.claimed", stats.totalClaimed, max);
+
+        // Update Resolution Rate (Claimed / Total)
+        const rate = stats.totalItems > 0 ? Math.round((stats.totalClaimed / stats.totalItems) * 100) : 0;
+        document.querySelector(".percentage-text").innerText = rate + "%";
+        document.querySelector(".inner-number").innerText = rate + "%";
+
+        // 2. Fetch Recent Activity Table
+        const activityRes = await fetch('/api/admin/recent-activity');
+        const activity = await activityRes.json();
+        const tbody = document.querySelector("table tbody");
+        tbody.innerHTML = "";
+
+        activity.forEach(item => {
+            const statusClass = item.status === 'Pending Approval' ? 'pending' : 'resolved';
+            const row = `
+                <tr>
+                    <td>${item.item_name}</td>
+                    <td>${item.category}</td>
+                    <td><span class="badge ${statusClass}">${item.report_type}</span></td>
+                    <td>${item.formattedDate}</td>
+                    <td>
+                        <button class="btn-view" onclick="location.href='AdReport.html'">Manage</button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+    } catch (err) {
+        console.error("Dashboard Load Error:", err);
+    }
+}
+
+function updateBar(selector, value, max) {
+    const bar = document.querySelector(selector);
+    const heightPercentage = (value / max) * 100;
+    bar.style.height = heightPercentage + "%";
+    bar.querySelector("span").innerText = value;
+}
+
+// Update your existing DOMContentLoaded to include the loader
+document.addEventListener("DOMContentLoaded", () => {
+    loadDashboardData();
+    // ... your existing fade-in code
+});
     </script>
 </body>
 </html>

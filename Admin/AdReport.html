@@ -3,243 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Reports</title>
+    <title>Admin - Manage & Reports</title>
     <link rel="stylesheet" href="Global.css">
     <link rel="stylesheet" href="AdReport.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Extra styles for the dynamic buttons */
+        .btn-approve { background-color: #28a745; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-deny { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-resolve { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        
+        /* Status Badge Colors */
+        .badge.pending-approval { background-color: #ffc107; color: #333; } /* Yellow */
+        .badge.published { background-color: #007bff; color: white; }      /* Blue */
+        .badge.resolved { background-color: #28a745; color: white; }       /* Green */
+        .badge.denied { background-color: #6c757d; color: white; }         /* Grey */
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
-
         <aside class="sidebar">
             <div class="logo">
                 <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
-                    <span>ReFoundly- Admin</span>
+                <span>ReFoundly- Admin</span>
             </div>
             <nav>
-                <a href="AdHome.html">
-                    <i class="fa-solid fa-chart-line"></i> Dashboard
-                </a>
-                <a href="AdManage.html">
-                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
-                </a>
-                <a href="AdReport.html" class="active">
-                    <i class="fa-solid fa-file-invoice"></i> Reports
-                </a>
-                <a href="AdUsers.html">
-                    <i class="fa-solid fa-users"></i> Users
-                </a>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdReport.html" class="active"><i class="fa-solid fa-file-invoice"></i> Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
             </nav>
             <div class="sidebar-footer">
                 <hr>
-                <a href="AdLogin.html">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
+                <a href="AdLogin.html"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </aside>
 
         <main class="main-content">
-
             <header class="top-nav">
                 <div class="admin-controls">
                     <span>Admin</span>
                     <i class="fa-solid fa-bell"></i>
-                    <a href="AdAccount.html" class="avatar-link">
-                        <div class="user-avatar"></div>
-                    </a>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
                 </div>
             </header>
 
             <section class="content-wrapper">
-
                 <div class="page-header">
                     <h1>Reports</h1>
-                    <button class="btn-archive">Archived Items</button>
+                    <button class="btn-archive" onclick="alert('Go to Archive Page')">Archived Items</button>
                 </div>
 
                 <div class="summary-cards">
                     <div class="card">
-                        <div class="icon-box reports-bg">
-                            <i class="fa-solid fa-file-lines"></i>
-                        </div>
-                        <div>
-                            <p>Total Reports</p>
-                            <h3>120</h3>
-                        </div>
+                        <div class="icon-box reports-bg"><i class="fa-solid fa-file-lines"></i></div>
+                        <div><p>Total Active</p><h3>120</h3></div>
                     </div>
-
                     <div class="card">
-                        <div class="icon-box resolved-bg">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-                        <div>
-                            <p>Resolved Reports</p>
-                            <h3>70</h3>
-                        </div>
+                        <div class="icon-box pending-bg"><i class="fa-solid fa-clock"></i></div>
+                        <div><p>Pending Approval</p><h3 id="pending-count">0</h3></div>
                     </div>
-
                     <div class="card">
-                        <div class="icon-box pending-bg">
-                            <i class="fa-solid fa-hourglass-half"></i>
-                        </div>
-                        <div>
-                            <p>Pending Reports</p>
-                            <h3>14</h3>
-                        </div>
+                        <div class="icon-box resolved-bg"><i class="fa-solid fa-circle-check"></i></div>
+                        <div><p>Resolved</p><h3>70</h3></div>
                     </div>
                 </div>
 
                 <div class="filter-bar">
-    <select id="dateFilter">
-        <option value="all">Date Range (All)</option>
-        <option value="today">Today</option>
-        <option value="month">This Month (Jan 2026)</option>
-        <option value="year">This Year (2026)</option>
-        <option value="2025">Last Year (2025)</option>
-    </select>
-
-    <select id="categoryFilter">
-        <option value="all">All Categories</option>
-        <option value="Personal">Personal</option>
-        <option value="Gadget">Gadget</option>
-        <option value="Bag">Bag</option>
-    </select>
-
-    <select id="statusFilter">
-        <option value="all">All Status</option>
-        <option value="Resolved">Resolved</option>
-        <option value="Pending">Pending</option>
-    </select>
-
-    <button class="btn-generate" onclick="filterReports()">Generate Report</button>
-</div>
+                    <select id="statusFilter" onchange="filterTable()">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending Approval">Pending Approval (Needs Action)</option>
+                        <option value="Published">Published (Ongoing)</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Search..." oninput="filterTable()">
+                </div>
 
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>Item</th>
-                                <th>Item Status</th>
-                                <th>Case Status</th>
+                                <th>Category</th>
+                                <th>Status</th>
                                 <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Wallet</td>
-                                <td>Found</td>
-                                <td><span class="badge resolved">Resolved</span></td>
-                                <td>Jan. 7, 2026</td>
-                                <td>
-                                    <button class="btn-view">View</button>
-                                    <button class="btn-archive-sm">Archive</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Phone</td>
-                                <td>Missing</td>
-                                <td><span class="badge pending">Pending</span></td>
-                                <td>Dec. 17, 2025</td>
-                                <td>
-                                    <button class="btn-view">View</button>
-                                    <button class="btn-archive-sm">Archive</button>
-                                </td>
-                            </tr>
-                        </tbody>
+                        <tbody id="reportsTableBody">
+                            </tbody>
                     </table>
                 </div>
-
             </section>
         </main>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const wrapper = document.querySelector(".content-wrapper");
-            
-            if (wrapper) {
-                setTimeout(() => {
-                    wrapper.classList.add("fade-in");
-                }, 100); 
-            }
+    let itemsData = [];
 
-            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
-            
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (link.hostname === window.location.hostname) {
-                        e.preventDefault();
-                        const nextURL = link.href;
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchItems();
+    });
 
-                        if (wrapper) wrapper.classList.remove("fade-in");
+    // 1. FETCH DATA FROM DATABASE
+    // Inside AdReport.html <script>
+async function fetchItems() {
+    try {
+        const response = await fetch('/api/admin/items');
+        console.log("Response Status:", response.status); // CHECK THIS IN CONSOLE
 
-                        setTimeout(() => {
-                            window.location.href = nextURL;
-                        }, 500);
-                    }
-                });
-            });
-        });
-
-        // Function to handle the actual filtering
-function filterReports() {
-    const dateVal = document.getElementById('dateFilter').value;
-    const catVal = document.getElementById('categoryFilter').value.toLowerCase();
-    const statVal = document.getElementById('statusFilter').value.toLowerCase();
-    const tableRows = document.querySelectorAll("tbody tr");
-
-    // Define constants for comparison
-    const currentYear = "2026"; 
-    const lastYear = "2025"; 
-    const currentMonth = "Jan";
-    const todayDate = "Jan. 30"; // Matches system date
-
-    tableRows.forEach(row => {
-        const itemText = row.cells[0].textContent.toLowerCase();
-        const itemStatusText = row.cells[1].textContent.toLowerCase();
-        const caseStatusText = row.cells[2].textContent.trim().toLowerCase();
-        const rowDate = row.cells[3].textContent;
-
-        // 1. Category Filter 
-        const matchesCat = catVal === "all" || itemText.includes(catVal) || itemStatusText.includes(catVal);
-
-        // 2. Case Status Filter
-        const matchesStat = statVal === "all" || caseStatusText.includes(statVal);
-
-        // 3. Date Filter logic (Fixed variable reference)
-        let matchesDate = false;
-        if (dateVal === "all") {
-            matchesDate = true;
-        } else if (dateVal === "today") {
-            matchesDate = rowDate.includes(todayDate);
-        } else if (dateVal === "month") {
-            matchesDate = rowDate.includes(currentMonth) && rowDate.includes(currentYear);
-        } else if (dateVal === "year") {
-            matchesDate = rowDate.includes(currentYear);
-        } else if (dateVal === "2025") {
-            // matchesDate now correctly uses the lastYear string "2025"
-            matchesDate = rowDate.includes(lastYear);
+        if (response.status === 401 || response.redirected) {
+            window.location.href = "AdLogin.html";
+            return;
         }
 
-        // Apply display logic
-        row.style.display = (matchesCat && matchesStat && matchesDate) ? "" : "none";
+        itemsData = await response.json();
+        console.log("Items Data Received:", itemsData); // CHECK THIS IN CONSOLE
+        
+        renderTable(itemsData);
+        updateCounts();
+    } catch (error) {
+        console.error("Error loading items:", error);
+    }
+}
+
+    // 2. RENDER TABLE
+   function renderTable(data) {
+    const tbody = document.getElementById("reportsTableBody");
+    console.log("Rendering table with", data.length, "items"); // ADD THIS LINE
+    tbody.innerHTML = ""; 
+
+    if (data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No reports found.</td></tr>";
+        return;
+    }
+    
+    // ... rest of your existing forEach code ...
+
+
+    data.forEach(item => {
+        // 1. Fix Status Class: Handle potential nulls or undefined
+        const statusText = item.status || "Pending Approval";
+        const statusClass = statusText.toLowerCase().replace(/\s+/g, '-');
+
+        // 2. Fix Date: Use formattedDate from SQL, fallback to incident_date if missing
+        const displayDate = item.formattedDate || item.incident_date || "N/A";
+
+        let actionButtons = "";
+        if (statusText === "Pending Approval") {
+            actionButtons = `
+                <button class="btn-approve" onclick="changeStatus(${item.id}, 'Published')">Approve</button>
+                <button class="btn-deny" onclick="changeStatus(${item.id}, 'Denied')">Deny</button>
+            `;
+        } else if (statusText === "Published") {
+            actionButtons = `
+                <button class="btn-resolve" onclick="changeStatus(${item.id}, 'Resolved')">Mark Resolved</button>
+            `;
+        } else {
+            actionButtons = `<button class="btn-view" onclick="alert('Item ID: ${item.id}')">View Details</button>`;
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.item_name || "Unknown Item"}</td>
+            <td>${item.category || "General"}</td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
+            <td>${displayDate}</td>
+            <td>${actionButtons}</td>
+        `;
+        tbody.appendChild(tr);
     });
 }
 
-// 2. Add Event Listeners for "Choose and Filter" behavior
-document.addEventListener("DOMContentLoaded", () => {
-    const filters = ['dateFilter', 'categoryFilter', 'statusFilter'];
-    
-    filters.forEach(id => {
-        const element = document.getElementById(id);
-        if(element) {
-            // This triggers the filter every time you change a selection
-            element.addEventListener('change', filterReports);
-        }
-    });
-});
-    </script>
+    // 3. CHANGE STATUS (Communicates with server)
+    async function changeStatus(id, newStatus) {
+        if (newStatus === 'Denied' && !confirm("Are you sure you want to deny this item?")) return;
 
+        try {
+            const response = await fetch('/api/admin/update-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId: id, newStatus: newStatus })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                fetchItems(); // Refresh table after update
+            } else {
+                alert("Update failed!");
+            }
+        } catch (error) {
+            console.error("Status update error:", error);
+        }
+    }
+
+    // 4. FILTER FUNCTION
+    function filterTable() {
+        const statusFilter = document.getElementById("statusFilter").value;
+        const searchInput = document.getElementById("searchInput").value.toLowerCase();
+
+        const filtered = itemsData.filter(item => {
+            const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+            const matchesSearch = item.item_name.toLowerCase().includes(searchInput);
+            return matchesStatus && matchesSearch;
+        });
+        renderTable(filtered);
+    }
+
+    // 5. UPDATE DASHBOARD COUNTS
+   function updateCounts() {
+    const pending = itemsData.filter(i => i.status === "Pending Approval").length;
+    const resolved = itemsData.filter(i => i.status === "Resolved").length;
+    const active = itemsData.filter(i => i.status === "Published").length;
+
+    document.getElementById("pending-count").innerText = pending;
+    
+    const cards = document.querySelectorAll(".summary-cards h3");
+    if(cards.length >= 3) {
+        cards[0].innerText = active;
+        cards[2].innerText = resolved;
+    }
+    
+    // REMOVE any calls to filterTable() from here if they exist.
+}
+</script>
 </body>
 </html>
