@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
+const adminUsersRoute = require("./Routes/adminUsers.js");
 
 const app = express();
 
@@ -14,6 +15,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+
+// --- Routes ---
+app.use("/api/admin-users", adminUsersRoute);
 
 // --- Database Connection ---
 const db = mysql.createConnection({
@@ -154,3 +158,5 @@ app.post('/logout', (req, res) => {
 // --- Server Startup ---
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+
+
