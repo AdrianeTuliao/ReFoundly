@@ -116,7 +116,7 @@
         </div>
     </main>
 
-     <footer>
+    <footer>
         <div class="footer-links">
             <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
         </div>
@@ -128,5 +128,92 @@
         <p>© 2026 Digital Lost & Found Portal</p>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const grid = document.querySelector(".items-grid");
+            const wrapper = document.querySelector(".main-wrapper");
+
+            // Page Entrance Animations
+            if (wrapper) setTimeout(() => wrapper.classList.add("fade-in"), 100);
+            if (grid) setTimeout(() => grid.classList.add("rise-up"), 300);
+
+            // Dynamic Content Loading
+            loadLostItems();
+
+            // Page Transition Logic
+            const navLinks = document.querySelectorAll('.nav-icons a, .hero-actions a, .icon-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const targetHref = link.getAttribute('href');
+                    if (link.hostname === window.location.hostname && targetHref !== "#") {
+                        e.preventDefault();
+                        if (grid) grid.classList.remove("rise-up");
+                        if (wrapper) wrapper.classList.remove("fade-in");
+                        setTimeout(() => window.location.href = link.href, 500);
+                    }
+                });
+            });
+        });
+
+        // Fetch API Logic
+        async function loadLostItems() {
+            try {
+                const response = await fetch('/api/items/lost');
+                const items = await response.json();
+                const grid = document.querySelector(".items-grid");
+
+                grid.innerHTML = "";
+
+                if (items.length === 0) {
+                    grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 50px;'><h3>No lost items reported yet.</h3></div>";
+                    return;
+                }
+
+                items.forEach(item => {
+                    const card = document.createElement("div");
+                    card.className = "item-card";
+
+                    const imageContent = item.image_path 
+                        ? `<img src="${item.image_path}" alt="${item.item_name}" style="width:100%; height:200px; object-fit:cover; border-radius: 8px 8px 0 0;">`
+                        : `<div class="card-img-placeholder">No Image Provided</div>`;
+
+                    card.innerHTML = `
+                        ${imageContent}
+                        <div class="card-content">
+                            <h3>${item.item_name}</h3>
+                            <hr class="title-line">
+                            <span class="badge">${item.category}</span>
+                            <div class="item-details">
+                                <p><strong>Description:</strong> ${item.description || 'No description'}</p>
+                                <p><strong>Where Lost:</strong> ${item.location}</p>
+                                <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
+                                <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                                <p><strong>Phone Number:</strong> ${item.contact_phone}</p>
+                                <p><strong>Email:</strong> ${item.contact_email}</p>
+                                <div class="post-time">
+                                    <small>Date Lost: ${item.formattedDate}</small><br>
+                                    <small>Time Lost: ${item.formattedTime}</small>
+                                </div>
+                            </div>
+                            <input type="text" class="comment-input" placeholder="Type a lead or message..." onkeypress="handleComment(event, ${item.id})">
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                setTimeout(() => grid.classList.add("rise-up"), 100);
+            } catch (error) {
+                console.error("Error fetching lost items:", error);
+            }
+        }
+
+        // Comment Interaction
+        function handleComment(event, itemId) {
+            if (event.key === 'Enter') {
+                alert("Lead submitted for item ID: " + itemId + ". (Feature coming soon!)");
+                event.target.value = "";
+            }
+        }
+    </script>
 </body>
 </html>

@@ -26,6 +26,7 @@
         </div>
     </nav>
 
+    <div class="main-wrapper">
     <header class="hero">
         <h2>Lost Something? Found Something?</h2>
         <p>Browse lost items or report one to help reconnect owners with their belongings.</p>
@@ -165,6 +166,7 @@
             </div>
         </section>
     </div>
+    </div>
 
     <footer>
         <div class="footer-links">
@@ -218,32 +220,39 @@
     setupSearch('categoryInput', 'categoryList');
     setupSearch('locationInput', 'locationList');
 
-    // FADE IN EFFECT
     document.addEventListener("DOMContentLoaded", () => {
-    const wrapper = document.querySelector(".content-wrapper");
+    // We target the main-wrapper to ensure the navbar stays visible
+    const wrapper = document.querySelector(".main-wrapper");
 
-    // 1. Fade IN on Load
+    // 1. Fade IN logic
     if (wrapper) {
-        // Short delay to ensure the browser has painted the initial state
-        requestAnimationFrame(() => {
+        setTimeout(() => {
             wrapper.classList.add("fade-in");
-        });
+        }, 100);
     }
 
-    // 2. Fade OUT on Link Click
-    const navLinks = document.querySelectorAll('.nav-icons a, .hero-actions a, .icon-link');
+    // 2. Admin Profile Logic (from your snippet)
+    console.log("Attempting to fetch admin profile...");
+    if (typeof fetchAdminProfile === 'function') {
+        fetchAdminProfile();
+    }
+
+    // 3. Fade OUT logic for links
+    // Added .nav-icons a and .hero-actions a to match your HTML links
+    const navLinks = document.querySelectorAll('.nav-icons a, .hero-actions a, .icon-link, .sidebar nav a');
     
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Only animate if it's an internal link
-            if (this.hostname === window.location.hostname && !this.hash) {
+        link.addEventListener('click', (e) => {
+            // Check if it's an internal link and not just a placeholder "#"
+            const targetHref = link.getAttribute('href');
+            if (link.hostname === window.location.hostname && targetHref !== "#") {
                 e.preventDefault();
-                const nextURL = this.href;
-
-                // Trigger fade out
-                wrapper.classList.remove("fade-in");
-
-                // Wait for CSS transition (0.6s) then redirect
+                const nextURL = link.href;
+                
+                // Trigger Fade Out
+                if (wrapper) wrapper.classList.remove("fade-in");
+                
+                // Wait for transition before redirecting
                 setTimeout(() => {
                     window.location.href = nextURL;
                 }, 500);
@@ -251,6 +260,65 @@
         });
     });
 });
+
+// Handle browser "Back" button to ensure content reappears
+window.onpageshow = function(event) {
+    const wrapper = document.querySelector(".main-wrapper");
+    if (event.persisted && wrapper) {
+        wrapper.classList.add("fade-in");
+    }
+};
+
+async function loadPublishedItems() {
+    try {
+        const response = await fetch('/api/items/published');
+        const items = await response.json();
+        const grid = document.querySelector(".grid");
+
+        // Clear the static placeholders
+        grid.innerHTML = "";
+
+        if (items.length === 0) {
+            grid.innerHTML = "<p>No items found.</p>";
+            return;
+        }
+
+        items.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "card";
+            
+            // Use image_path if it exists, otherwise use a placeholder
+            const imageHtml = item.image_path 
+                ? `<img src="${item.image_path}" alt="${item.item_name}" style="width:100%; height:150px; object-fit:cover;">`
+                : `<div class="card-img" style="height:150px; display:flex; align-items:center; justify-content:center; background:#eee;">No Image</div>`;
+
+            card.innerHTML = `
+                ${imageHtml}
+                <div class="card-body">
+                    <h4>${item.item_name}</h4>
+                    <span class="badge">${item.category}</span>
+                    <p style="font-size: 12px; color: #999;">Posted: ${item.formattedDate}</p>
+                    <button class="btn-main" onclick="viewItem(${item.id})" style="width:100%; margin-top:15px;">View Details</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    } catch (error) {
+        console.error("Error loading items:", error);
+    }
+}
+
+// Add this placeholder function so the button doesn't error out
+function viewItem(id) {
+    window.location.href = `item-details.html?id=${id}`;
+}
+
+// Trigger the load inside your existing DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+    loadPublishedItems(); // <--- ADD THIS LINE
+    // ... rest of your existing code
+});
+
 </script>
 </body>
 </html>

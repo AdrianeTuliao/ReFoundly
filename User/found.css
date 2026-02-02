@@ -93,12 +93,19 @@ body {
     margin-bottom: 20px;
 }
 
+.search-bar-pill .rise-up {
+    opacity: 1;
+    transform: translateY(0); /* Returns to original position */
+}
+
+
 .search-bar-pill {
     background: white;
     display: flex;
     align-items: center;
     padding: 10px 25px;
     border-radius: 50px; /* Pill shape */
+     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
 .search-bar-pill i { color: #888; font-size: 18px; }
@@ -112,11 +119,19 @@ body {
     color: #555;
 }
 
-/* 3-Column Horizontal Layout */
 .items-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* Saktong tatlo horizontally */
     gap: 30px;
+    opacity: 0;
+    transform: translateY(30px); /* Moves it down */
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+/* The class we will add via JavaScript */
+.items-grid.rise-up {
+    opacity: 1;
+    transform: translateY(0); /* Returns to original position */
 }
 
 /* Card Styling */

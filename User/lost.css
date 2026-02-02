@@ -112,13 +112,20 @@ body {
     color: #555;
 }
 
-/* 3-Column Horizontal Layout */
 .items-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* Saktong tatlo horizontally */
     gap: 30px;
+    opacity: 0;
+    transform: translateY(30px); /* Moves it down */
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
+/* The class we will add via JavaScript */
+.items-grid.rise-up {
+    opacity: 1;
+    transform: translateY(0); /* Returns to original position */
+}
 /* Card Styling */
 .item-card {
     display: flex;

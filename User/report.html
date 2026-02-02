@@ -29,128 +29,118 @@
         </nav>
 
         <section class="form-card">
-            <form action="#" method="POST">
+            <form action="/submit-report" method="POST" enctype="multipart/form-data">
                 
                 <div class="form-row">
-                    <div class="form-column">
-                        <div class="input-group">
-                            <label>What was Lost<span>*</span></label>
-                            <small>(Wallet, Smartphone, T-shirt, etc.)</small>
-                            <input type="text" placeholder="Enter item name" required>
-                        </div>
+            <div class="form-column">
+                <div class="input-group">
+                    <label>What was Lost<span>*</span></label>
+                    <small>(Wallet, Smartphone, T-shirt, etc.)</small>
+                    <input type="text" name="itemName" placeholder="Enter item name" required>
+                </div>
 
-                        <div class="input-group">
-                            <label>Category<span>*</span></label>
-                            <small>(Wallet, Gadgets, Clothing, etc.)</small>
-                            <select required>
-                                <option value="" disabled selected>Select Category...</option>
-                                <option value="wallet">Wallet</option>
-                                <option value="cellphone">Cellphone</option>
-                                <option value="laptop">Laptop</option>
-                                <option value="gadgets">Gadgets</option>
-                                <option value="accessories">Accessories</option>
-                                <option value="clothing">Clothing</option>
-                                <option value="id">ID</option>
-                                <option value="documents">Documents</option>
-                                <option value="books">Books</option>
-                                <option value="school supplies">School supplies</option>
-                                <option value="tools">Tools</option>
-                                <option value="tools">Others</option>
-                            </select>
-                        </div>
+                <div class="input-group">
+                    <label>Category<span>*</span></label>
+                    <small>(Wallet, Gadgets, Clothing, etc.)</small>
+                    <select name="category" required>
+                        <option value="" disabled selected>Select Category...</option>
+                        <option value="wallet">Wallet</option>
+                        <option value="cellphone">Cellphone</option>
+                        </select>
+                </div>
 
-                        <div class="input-group">
-                            <label>Brand<span>*</span></label>
-                            <small>(Gucci, Samsung, Lacoste, etc.)</small>
-                            <input type="text" placeholder="Optional">
-                        </div>
+                <div class="input-group">
+                    <label>Brand<span>*</span></label>
+                    <small>(Gucci, Samsung, Lacoste, etc.)</small>
+                    <input type="text" name="brand" placeholder="Optional">
+                </div>
 
-                        <div class="input-group">
-                            <label>Date Lost<span>*</span></label>
-                            <small>Approximate date of when the item was lost.</small>
-                            <input type="date" required>
-                        </div>
+                <div class="input-group">
+                    <label>Date Lost<span>*</span></label>
+                    <small>Approximate date of when the item was lost.</small>
+                    <input type="date" name="dateLost" required>
+                </div>
 
-                        <div class="input-group">
-                            <label>Time Lost<span>*</span></label>
-                            <small>Approximate time of day the item was lost.</small>
-                            <input type="time" required>
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label>Time Lost<span>*</span></label>
+                    <small>Approximate time of day the item was lost.</small>
+                    <input type="time" name="timeLost" required>
+                </div>
+            </div>
 
-                    <div class="form-column">
-                        <div class="input-group">
-                            <label>Upload Image</label>
-                            <small>(This image will display on the Website.)</small>
-                            <div class="image-upload-box">
-                                <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
-                                <p>Insert Image</p>
-                                <input type="file" id="file-upload" hidden>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Additional Information</label>
-                            <small>Details or description of your lost items.</small>
-                            <textarea rows="6" style="resize: vertical;"></textarea>
-                        </div>
+            <div class="form-column">
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <small>(This image will display on the Website.)</small>
+                    <div class="image-upload-box" onclick="document.getElementById('file-upload').click()">
+                        <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                        <p>Insert Image</p>
+                        <input type="file" name="itemImage" id="file-upload" hidden>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-column">
-                        <h3>Location Information</h3>
-                        <div class="input-group">
-                            <label>Where Lost<span>*</span></label>
-                            <small>City, Barangay, or specific landmark.</small>
-                            <input type="text" required>
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label>Additional Information</label>
+                    <small>Details or description of your lost items.</small>
+                    <textarea name="description" rows="6" style="resize: vertical;"></textarea>
+                </div>
+            </div>
+        </div>
 
-                    <div class="form-column">
-                        <h3>What are you reporting?</h3>
-                        <div class="report-selection">
-                            <div class="checkbox-group">
-                                <input type="radio" name="reportType" id="lost">
-                                <label for="lost"><strong>I Lost an Item</strong><br><small>I am trying to find something I lost.</small></label>
-                            </div>
-                            <div class="checkbox-group">
-                                <input type="radio" name="reportType" id="found">
-                                <label for="found"><strong>I Found an Item</strong><br><small>I want to report an item I found.</small></label>
-                            </div>
-                        </div>
+        <div class="form-row">
+            <div class="form-column">
+                <h3>Location Information</h3>
+                <div class="input-group">
+                    <label>Where Lost<span>*</span></label>
+                    <small>City, Barangay, or specific landmark.</small>
+                    <input type="text" name="location" required>
+                </div>
+            </div>
+
+            <div class="form-column">
+                <h3>What are you reporting?</h3>
+                <div class="report-selection">
+                    <div class="checkbox-group">
+                        <input type="radio" name="reportType" value="Lost" id="lost" required>
+                        <label for="lost"><strong>I Lost an Item</strong><br><small>I am trying to find something I lost.</small></label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="radio" name="reportType" value="Found" id="found">
+                        <label for="found"><strong>I Found an Item</strong><br><small>I want to report an item I found.</small></label>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <hr class="separator">
+        <hr class="separator">
 
-                <h3>Contact Information</h3>
-                <div class="form-row">
-                    <div class="form-column">
-                        <div class="input-group">
-                            <label>First Name<span>*</span></label>
-                            <input type="text" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Phone Number<span>*</span></label>
-                            <input type="tel" required>
-                        </div>
-                    </div>
-                    <div class="form-column">
-                        <div class="input-group">
-                            <label>Last Name<span>*</span></label>
-                            <input type="text" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Email<span>*</span></label>
-                            <input type="email" required>
-                        </div>
-                    </div>
+        <h3>Contact Information</h3>
+        <div class="form-row">
+            <div class="form-column">
+                <div class="input-group">
+                    <label>First Name<span>*</span></label>
+                    <input type="text" name="firstName" required>
                 </div>
-                
-                <div class="submit-section">
-                    <button type="submit" class="btn-main">Submit Report</button>
+                <div class="input-group">
+                    <label>Phone Number<span>*</span></label>
+                    <input type="tel" name="phoneNumber" required>
                 </div>
+            </div>
+            <div class="form-column">
+                <div class="input-group">
+                    <label>Last Name<span>*</span></label>
+                    <input type="text" name="lastName" required>
+                </div>
+                <div class="input-group">
+                    <label>Email<span>*</span></label>
+                    <input type="email" name="email" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="submit-section">
+            <button type="submit" class="btn-main">Submit Report</button>
+        </div>
             </form>
         </section>
     </main>
@@ -166,6 +156,45 @@
         </div>
         <p>© 2026 Digital Lost & Found Portal</p>
     </footer>
+
+    <script>
+    // 1. Make the "Insert Image" box show a preview
+    const fileInput = document.getElementById('file-upload');
+    const uploadBox = document.querySelector('.image-upload-box');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadBox.style.backgroundImage = `url('${e.target.result}')`;
+                uploadBox.style.backgroundSize = 'cover';
+                uploadBox.style.backgroundPosition = 'center';
+                // Hide the icon and text so the image is visible
+                uploadBox.querySelector('i').style.display = 'none';
+                uploadBox.querySelector('p').style.display = 'none';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // 2. Auto-fill Contact Info from the logged-in user
+    window.onload = async () => {
+        try {
+            const response = await fetch('/user/me');
+            if (response.ok) {
+                const user = await response.json();
+                // Splitting full_name for First/Last name inputs
+                const names = user.full_name.split(' ');
+                document.getElementsByName('firstName')[0].value = names[0] || '';
+                document.getElementsByName('lastName')[0].value = names.slice(1).join(' ') || '';
+                document.getElementsByName('email')[0].value = user.email || '';
+                document.getElementsByName('phoneNumber')[0].value = user.contact_number || '';
+            }
+        } catch (error) {
+            console.log("Not logged in or server error");
+        }
+    };
+</script>
 
 </body>
 </html>

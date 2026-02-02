@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById('user-email');
 
     // Elements from the Personal Information Grid
-    const infoFullname = document.getElementById('info-fullname');
+    const infoFullname = document.getElementById('info-name');
     const infoEmail = document.getElementById('info-email');
     const infoContact = document.getElementById('info-contact');
     const infoDob = document.getElementById('info-dob');
@@ -24,11 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(user => {
         if (user) {
             // Populate Sidebar
-            fullname.textContent = user.full_name || 'User';
+            fullname.textContent = user.name || 'User';
             if (email) email.textContent = user.email || '';
 
             // Populate Info Grid
-            if (infoFullname) infoFullname.textContent = user.full_name || '';
+            if (infoFullname) infoFullname.textContent = user.name || '';
             if (infoEmail) infoEmail.textContent = user.email || '';
             
             // These will now work because you added the columns to MySQL
