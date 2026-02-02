@@ -11,36 +11,24 @@
 <body>
 
     <div class="dashboard-container">
-
         <aside class="sidebar">
             <div class="logo">
                 <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
-                    <span>ReFoundly- Admin</span>
+                <span>ReFoundly Admin</span>
             </div>
             <nav>
-                <a href="AdHome.html">
-                    <i class="fa-solid fa-chart-line"></i> Dashboard
-                </a>
-                <a href="AdManage.html">
-                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
-                </a>
-                <a href="AdReport.html">
-                    <i class="fa-solid fa-file-invoice"></i> Reports
-                </a>
-                <a href="AdUsers.html" class="active">
-                    <i class="fa-solid fa-users"></i> Users
-                </a>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdManage.html"><i class="fa-solid fa-boxes-stacked"></i> Manage Items</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Reports</a>
+                <a href="AdUsers.html" class="active"><i class="fa-solid fa-users"></i> Users</a>
             </nav>
             <div class="sidebar-footer">
                 <hr>
-                <a href="AdLogin.html">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
+                <a href="AdLogin.html"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </aside>
 
         <main class="main-content">
-
             <header class="top-nav">
                 <div class="admin-controls">
                     <span>Admin</span>
@@ -52,20 +40,19 @@
             </header>
 
             <section class="content-wrapper">
-
                 <h1>Users</h1>
 
                 <div class="filter-bar">
                     <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="userSearch" placeholder="Search Users">
-    </div>
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="userSearch" placeholder="Search Users">
+                    </div>
 
-    <select id="roleFilter">
-        <option value="all">Role (All)</option>
-        <option value="admin">Admin</option>
-        <option value="user">User</option>
-    </select>
+                    <select id="roleFilter">
+                        <option value="all">Role (All)</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User</option>
+                    </select>
 
                     <button class="btn-generate">+ Add User</button>
                 </div>
@@ -81,74 +68,9 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td class="user-cell">
-                                    <div class="avatar"></div>
-                                    Marvin
-                                </td>
-                                <td>marvin.mandapat@gmail.com</td>
-                                <td><span class="badge resolved">Admin</span></td>
-                                <td>Jan. 7, 2025</td>
-                                <td>
-                                    <button class="btn-view">
-                                        <i class="fa-solid fa-pen"></i> Edit
-                                    </button>
-                                    <button class="btn-delete">Delete</button>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="user-cell">
-                                    <div class="avatar"></div>
-                                    Mar Adriane
-                                </td>
-                                <td>adriane.tuliao@gmail.com</td>
-                                <td><span class="badge resolved">Admin</span></td>
-                                <td>Feb. 17, 2025</td>
-                                <td>
-                                    <button class="btn-view">
-                                        <i class="fa-solid fa-pen"></i> Edit
-                                    </button>
-                                    <button class="btn-delete">Delete</button>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="user-cell">
-                                    <div class="avatar"></div>
-                                    Hans
-                                </td>
-                                <td>hans.lambino@gmail.com</td>
-                                <td><span class="badge pending">User</span></td>
-                                <td>Mar. 11, 2025</td>
-                                <td>
-                                    <button class="btn-view">
-                                        <i class="fa-solid fa-pen"></i> Edit
-                                    </button>
-                                    <button class="btn-delete">Delete</button>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="user-cell">
-                                    <div class="avatar"></div>
-                                    Mark
-                                </td>
-                                <td>mark.lazaro@gmail.com</td>
-                                <td><span class="badge pending">User</span></td>
-                                <td>Apr. 12, 2025</td>
-                                <td>
-                                    <button class="btn-view">
-                                        <i class="fa-solid fa-pen"></i> Edit
-                                    </button>
-                                    <button class="btn-delete">Delete</button>
-                                </td>
-                            </tr>
-                        </tbody>
+                        <tbody id="usersTableBody"></tbody>
                     </table>
                 </div>
-
             </section>
         </main>
     </div>
@@ -156,87 +78,75 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const wrapper = document.querySelector(".content-wrapper");
+            const tbody = document.getElementById("usersTableBody");
+            const searchInput = document.getElementById("userSearch");
+            const roleFilter = document.getElementById("roleFilter");
+            let allUsers = [];
 
+            // Page Transitions
             if (wrapper) {
-                setTimeout(() => {
-                    wrapper.classList.add("fade-in");
-                }, 100);
+                setTimeout(() => wrapper.classList.add("fade-in"), 100);
             }
 
-            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
-            navLinks.forEach(link => {
+            document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     if (link.hostname === window.location.hostname) {
                         e.preventDefault();
-                        const nextURL = link.href;
-
                         if (wrapper) wrapper.classList.remove("fade-in");
-
-                        setTimeout(() => {
-                            window.location.href = nextURL;
-                        }, 500);
+                        setTimeout(() => window.location.href = link.href, 500);
                     }
                 });
             });
-        });
 
-        // Search and Filter Functionality
-        document.addEventListener("DOMContentLoaded", () => {
-    const wrapper = document.querySelector(".content-wrapper");
-    const searchInput = document.getElementById('userSearch');
-    const roleFilter = document.getElementById('roleFilter');
-    const tableRows = document.querySelectorAll("tbody tr");
-
-    // --- Page Transition Logic ---
-    if (wrapper) {
-        setTimeout(() => {
-            wrapper.classList.add("fade-in");
-        }, 100);
-    }
-
-    const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            if (link.hostname === window.location.hostname) {
-                e.preventDefault();
-                const nextURL = link.href;
-                if (wrapper) wrapper.classList.remove("fade-in");
-                setTimeout(() => {
-                    window.location.href = nextURL;
-                }, 500);
+            // Data Fetching and Rendering
+            async function fetchUsers() {
+                try {
+                    const res = await fetch("/api/admin-users/all");
+                    allUsers = await res.json();
+                    renderTable(allUsers);
+                } catch (err) {
+                    console.error("Error fetching users:", err);
+                }
             }
-        });
-    });
 
-    // --- Search and Filter Logic ---
-    function filterUsers() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedRole = roleFilter.value.toLowerCase();
-
-        tableRows.forEach(row => {
-            const name = row.cells[0].textContent.toLowerCase();
-            const email = row.cells[1].textContent.toLowerCase();
-            const role = row.cells[2].textContent.toLowerCase();
-
-            // Check if name/email matches search AND role matches filter
-            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
-            const matchesRole = selectedRole === "all" || role.includes(selectedRole);
-
-            if (matchesSearch && matchesRole) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
+            function renderTable(data) {
+                tbody.innerHTML = "";
+                data.forEach(user => {
+                    const badgeClass = user.role === "admin" ? "resolved" : "pending";
+                    const roleLabel = user.role === "admin" ? "Admin" : "User";
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td class="user-cell">
+                            <div class="avatar"></div>
+                            ${user.name}
+                        </td>
+                        <td>${user.email}</td>
+                        <td><span class="badge ${badgeClass}">${roleLabel}</span></td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn-view"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn-delete">Delete</button>
+                        </td>`;
+                    tbody.appendChild(tr);
+                });
             }
+
+            function filterUsers() {
+                const search = searchInput.value.toLowerCase();
+                const role = roleFilter.value;
+                const filtered = allUsers.filter(u => {
+                    const matchSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+                    const matchRole = role === "all" || u.role === role;
+                    return matchSearch && matchRole;
+                });
+                renderTable(filtered);
+            }
+
+            searchInput.addEventListener("input", filterUsers);
+            roleFilter.addEventListener("change", filterUsers);
+
+            fetchUsers();
         });
-    }
-
-    // Listen for typing in the search box
-    searchInput.addEventListener('input', filterUsers);
-
-    // Listen for changes in the Role dropdown
-    roleFilter.addEventListener('change', filterUsers);
-});
     </script>
-
 </body>
 </html>
