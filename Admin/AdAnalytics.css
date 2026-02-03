@@ -1,0 +1,98 @@
+/* Color Palette Variables */
+:root {
+    --chart-primary: #6a994e;
+    --chart-secondary: #facc15;
+    --chart-bg-light: rgba(106, 153, 78, 0.1);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* PAGE HEADER */
+.page-header {
+    margin-bottom: 5px;
+}
+
+.page-header h1 {
+    margin-bottom: 10px; /* Small gap for breathing room */
+    color: #333;
+}
+
+/* Updated Layout Logic */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px;
+    padding: 10px 0;
+}
+
+/* Frosted Glass Chart Containers */
+.chart-container {
+    background: rgba(255, 255, 255, 0.6); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    /* Crucial: Ensure the container doesn't squash the chart */
+    display: flex;
+    flex-direction: column;
+    min-height: 300px; 
+}
+
+.chart-container:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.chart-container h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.1rem;
+    border-bottom: 2px solid var(--chart-primary);
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+/* Chart Box heights - FORCING VISIBILITY */
+.bar-chart-card {
+    grid-column: 1 / span 2; 
+    min-height: 400px; /* Increased to fit labels */
+}
+
+/* This is the box the Top Chart lives in */
+.chart-box {
+    position: relative;
+    flex-grow: 1; /* Fills the rest of the card */
+    min-height: 280px; 
+    width: 100%;
+}
+
+/* This is for the bottom two charts */
+.canvas-wrapper {
+    position: relative;
+    flex-grow: 1;
+    min-height: 250px; 
+    width: 100%;
+}
+
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* PAGE TRANSITION */
+.content-wrapper {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.content-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}

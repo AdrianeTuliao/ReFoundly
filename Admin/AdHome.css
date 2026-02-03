@@ -278,14 +278,18 @@ tbody tr:not(:last-child) {
 }
 
 
-.table-container .badge.resolved {
-    background: #8cc152;
-    color: #fff;
+/* Custom Badge Colors for Dashboard */
+.badge.lost-badge { 
+    background-color: #ff4d4d !important; /* Red */
+    color: white; 
 }
-
-.table-container .badge.pending {
-    background: #facc15;
-    color: #000;
+.badge.found-badge { 
+    background-color: #2ecc71 !important; /* Green */
+    color: white; 
+}
+.badge.claimed-badge { 
+    background-color: #3498db !important; /* Teal/Blue */
+    color: white; 
 }
 
 
@@ -301,3 +305,14 @@ tbody tr:not(:last-child) {
     opacity: 1 !important;
     transform: translateY(0) !important;
 }
+
+.notif-item { 
+    padding: 12px; 
+    border-bottom: 1px solid #eee; 
+    font-size: 0.85rem; 
+    color: #444; 
+    cursor: pointer; 
+    transition: background 0.2s;
+}
+.notif-item:hover { background-color: #f8f9fa; }
+.notif-item.unread { background-color: #f0f7ef; border-left: 3px solid #5d9e52; }

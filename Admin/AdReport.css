@@ -1,14 +1,35 @@
 /* PAGE TRANSITION */
 /* Update this in your CSS file */
 .content-wrapper {
-    opacity: 1; /* Change from 0 to 1 */
-    transform: translateY(0); /* Change from 12px to 0 */
+    opacity: 0;
+    transform: translateY(10px);
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .content-wrapper.fade-in {
     opacity: 1;
     transform: translateY(0);
+}
+
+.content-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    margin-left: 8px;
 }
 
 /* PAGE HEADER */
@@ -150,13 +171,7 @@ tbody tr:not(:last-child) {
 }
 
 /* ACTION BUTTONS */
-.btn-view {
-    background: #e5e7eb;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-}
+
 
 .btn-archive-sm {
     background: #d1d5db;
@@ -165,3 +180,117 @@ tbody tr:not(:last-child) {
     border-radius: 6px;
     cursor: pointer;
 }
+
+/* Modal Animation */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%; 
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px); /* Optional: blurs the background slightly */
+}
+
+.modal-content {
+    background-color: white; 
+    margin: 5% auto; 
+    width: 50%; 
+    border-radius: 12px; 
+    overflow: hidden; /* Ensures the green header follows border-radius */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    
+    /* Animation Trigger */
+    animation: fadeInSlide 0.4s ease-out;
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Green Header Styling */
+.modal-header {
+    background-color: #6a994e; /* Matches your sidebar green */
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-btn {
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    color: #f2e8cf;
+}
+
+/* Modal Padding for body */
+#modalBody {
+    padding: 25px;
+}
+
+/* Modern Transparent Arrow Pagination */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Slightly tighter gap for a cleaner look */
+    margin-top: 30px;
+}
+
+.page-arrow { 
+    background: transparent; /* Removes background color */
+    border: none;             /* Removes outlines/borders */
+    color: #555;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;            /* Ensures no focus ring shows */
+}
+
+.page-arrow:hover:not(:disabled) {
+    /* Subtle background highlight on hover so the user knows it's clickable */
+    background-color: rgba(93, 158, 82, 0.1); 
+    color: #5d9e52; /* Changes arrow color to green on hover */
+}
+
+.page-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.page-num {
+    font-size: 0.9rem;
+    color: #4444446e;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+    background: transparent; /* Blends with background */
+}
+
+.notif-item { 
+    padding: 12px; 
+    border-bottom: 1px solid #eee; 
+    font-size: 0.85rem; 
+    color: #444; 
+    cursor: pointer; 
+    transition: background 0.2s;
+}
+.notif-item:hover { background-color: #f8f9fa; }
+.notif-item.unread { background-color: #f0f7ef; border-left: 3px solid #5d9e52; }

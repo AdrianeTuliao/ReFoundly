@@ -11,86 +11,63 @@
 <body>
 
     <div class="dashboard-container">
-
         <aside class="sidebar">
             <div class="logo">
                 <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
-                    <span>ReFoundly- Admin</span>
+                <span>ReFoundly - Admin</span>
             </div>
             <nav>
-                <a href="AdHome.html" class="active">
-                    <i class="fa-solid fa-chart-line"></i> Dashboard
-                </a>
-                <a href="AdReport.html">
-                    <i class="fa-solid fa-file-invoice"></i> Reports
-                </a>
-                <a href="AdUsers.html">
-                    <i class="fa-solid fa-users"></i> Users
-                </a>
+                <a href="AdHome.html" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
             </nav>
             <div class="sidebar-footer">
                 <hr>
-                <a href="AdLogin.html">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
+                <a href="AdLogin.html"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </aside>
 
         <main class="main-content">
-
-            <header class="top-nav">
+           <header class="top-nav">
                 <div class="admin-controls">
                     <span>Admin</span>
-                    <i class="fa-solid fa-bell"></i>
-                    <a href="AdAccount.html" class="avatar-link">
-                        <div class="user-avatar"></div>
-                    </a>
+                    <div class="notif-wrapper">
+                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
                 </div>
             </header>
 
             <section class="content-wrapper">
-
                 <h1>Dashboard</h1>
 
                 <div class="summary-cards">
                     <div class="card1">
-                        <div class="icon-box lost-bg">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <div>
-                            <p>Total Lost Items</p>
-                            <h3>12</h3>
-                        </div>
+                        <div class="icon-box lost-bg"><i class="fa-solid fa-box-open"></i></div>
+                        <div><p>Total Lost Items</p><h3 id="stat-lost">0</h3></div>
                     </div>
-
                     <div class="card2">
-                        <div class="icon-box found-bg">
-                            <i class="fa-solid fa-hand-holding-heart"></i>
-                        </div>
-                        <div>
-                            <p>Total Found Items</p>
-                            <h3>22</h3>
-                        </div>
+                        <div class="icon-box found-bg"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        <div><p>Total Found Items</p><h3 id="stat-found">0</h3></div>
                     </div>
-
                     <div class="card3">
-                        <div class="icon-box pending-bg">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </div>
-                        <div>
-                            <p>Pending Items</p>
-                            <h3>14</h3>
-                        </div>
+                        <div class="icon-box pending-bg"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div><p>Pending Items</p><h3 id="stat-pending">0</h3></div>
                     </div>
-
                     <div class="card4">
-                        <div class="icon-box claimed-bg">
-                            <i class="fa-solid fa-check-double"></i>
-                        </div>
-                        <div>
-                            <p>Claimed Items</p>
-                            <h3>17</h3>
-                        </div>
+                        <div class="icon-box claimed-bg"><i class="fa-solid fa-check-double"></i></div>
+                        <div><p>Claimed Items</p><h3 id="stat-claimed">0</h3></div>
                     </div>
                 </div>
 
@@ -98,12 +75,12 @@
                     <div class="graph-card">
                         <div class="graph-info">
                             <h3>Monthly Resolution Rate</h3>
-                            <p>Percentage of items successfully returned this month.</p>
-                            <h2 class="percentage-text">15%</h2>
+                            <p>Percentage of items successfully returned.</p>
+                            <h2 class="percentage-text" id="res-text-main">0%</h2>
                         </div>
                         <div class="visual-graph">
-                            <div class="progress-circle">
-                                <span class="inner-number">15%</span>
+                            <div class="progress-circle" id="res-circle" style="background: conic-gradient(#27ae60 0%, #e0e0e0 0%);">
+                                <span class="inner-number" id="res-text-inner">0%</span>
                             </div>
                         </div>
                     </div>
@@ -111,7 +88,7 @@
                     <div class="graph-card">
                         <div class="graph-info">
                             <h3>Item Status Overview</h3>
-                            <p>Visualizing the distribution of all reported items.</p>
+                            <p>Distribution of all reported items.</p>
                             <div class="legend">
                                 <div class="legend-item"><span class="dot lost"></span> Lost</div>
                                 <div class="legend-item"><span class="dot found"></span> Found</div>
@@ -121,10 +98,10 @@
                         </div>
                         <div class="visual-bar-chart">
                             <div class="bar-group">
-                                <div class="bar lost" style="height: 54%;"><span>12</span></div>
-                                <div class="bar found" style="height: 100%;"><span>22</span></div>
-                                <div class="bar pending" style="height: 63%;"><span>14</span></div>
-                                <div class="bar claimed" style="height: 77%;"><span>17</span></div>
+                                <div class="bar lost" id="bar-lost" style="height: 0%;"><span>0</span></div>
+                                <div class="bar found" id="bar-found" style="height: 0%;"><span>0</span></div>
+                                <div class="bar pending" id="bar-pending" style="height: 0%;"><span>0</span></div>
+                                <div class="bar claimed" id="bar-claimed" style="height: 0%;"><span>0</span></div>
                             </div>
                         </div>
                     </div>
@@ -142,31 +119,10 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Wallet</td>
-                                <td>Personal</td>
-                                <td><span class="badge resolved">Found</span></td>
-                                <td>Jan. 7, 2026</td>
-                                <td>
-                                    <button class="btn-view">Approve</button>
-                                    <button class="btn-archive-sm">Deny</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Phone</td>
-                                <td>Gadget</td>
-                                <td><span class="badge pending">Lost</span></td>
-                                <td>Dec. 17, 2025</td>
-                                <td>
-                                    <button class="btn-view">Approve</button>
-                                    <button class="btn-archive-sm">Deny</button>
-                                </td>
-                            </tr>
-                        </tbody>
+                        <tbody id="activity-table-body">
+                            </tbody>
                     </table>
                 </div>
-
             </section>
         </main>
     </div>
@@ -174,93 +130,191 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const wrapper = document.querySelector(".content-wrapper");
-
+            
+            // Fade-in animation
             if (wrapper) {
-                setTimeout(() => {
-                    wrapper.classList.add("fade-in");
-                }, 100);
+                setTimeout(() => wrapper.classList.add("fade-in"), 100);
             }
 
+            // Load all data
+            loadDashboardData();
+
+            // Page Transition logic
             const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     if (link.hostname === window.location.hostname && !link.hash) {
                         e.preventDefault();
                         const nextURL = link.href;
-
                         wrapper.classList.remove("fade-in");
-
-                        setTimeout(() => {
-                            window.location.href = nextURL;
-                        }, 500);
+                        setTimeout(() => { window.location.href = nextURL; }, 500);
                     }
                 });
             });
         });
 
         async function loadDashboardData() {
+            try {
+                // 1. Fetch Stats (Cards & Charts)
+                const statsRes = await fetch('/api/admin/stats');
+                const stats = await statsRes.json();
+
+                // Update Cards
+                document.getElementById("stat-lost").innerText = stats.totalLost || 0;
+                document.getElementById("stat-found").innerText = stats.totalFound || 0;
+                document.getElementById("stat-pending").innerText = stats.totalPending || 0;
+                document.getElementById("stat-claimed").innerText = stats.totalClaimed || 0;
+
+                // Update Bar Chart
+                const counts = [stats.totalLost, stats.totalFound, stats.totalPending, stats.totalClaimed];
+                const maxVal = Math.max(...counts, 1); // Avoid division by zero
+                
+                updateBar("#bar-lost", stats.totalLost || 0, maxVal);
+                updateBar("#bar-found", stats.totalFound || 0, maxVal);
+                updateBar("#bar-pending", stats.totalPending || 0, maxVal);
+                updateBar("#bar-claimed", stats.totalClaimed || 0, maxVal);
+
+                // Update Resolution Rate Circle
+                const totalItems = (stats.totalLost || 0) + (stats.totalFound || 0);
+                const rate = totalItems > 0 ? Math.round((stats.totalClaimed / totalItems) * 100) : 0;
+                
+                document.getElementById("res-text-main").innerText = rate + "%";
+                document.getElementById("res-text-inner").innerText = rate + "%";
+                document.getElementById("res-circle").style.background = `conic-gradient(#27ae60 ${rate}%, #e0e0e0 ${rate}%)`;
+
+                // 2. Fetch Recent Activity
+                const activityRes = await fetch('/api/admin/recent-activity');
+                const activity = await activityRes.json();
+                
+                const tbody = document.getElementById("activity-table-body");
+                tbody.innerHTML = "";
+
+                activity.forEach(item => {
+                    let statusClass = "pending"; 
+                    const type = item.report_type.toLowerCase();
+                    
+                    if (type === 'lost') statusClass = "lost-badge"; 
+                    else if (type === 'found') statusClass = "found-badge";
+
+                    const row = `
+                        <tr>
+                            <td><strong>${item.item_name}</strong></td>
+                            <td>${item.category}</td>
+                            <td><span class="badge ${statusClass}">${item.report_type}</span></td>
+                            <td>${item.formattedDate || "N/A"}</td> 
+                            <td>
+                                <button class="btn-view" onclick="location.href='AdReport.html'">Manage</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+            } catch (err) {
+                console.error("Dashboard Load Error:", err);
+            }
+        }
+
+        function updateBar(selector, value, max) {
+            const bar = document.querySelector(selector);
+            if (bar) {
+                const heightPercentage = (value / max) * 100;
+                bar.style.height = heightPercentage + "%";
+                bar.querySelector("span").innerText = value;
+            }
+        }
+
+        // --- Notification Variables ---
+let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
+let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
+let isInitialLoad = true;
+
+document.addEventListener("DOMContentLoaded", () => {
+    // ... your existing fade-in and nav logic ...
+    
+    // Initialize Notifications
+    updateNotifBadge();
+    // Check for notifications immediately and then every 20 seconds
+    checkNotifications(); 
+    setInterval(checkNotifications, 20000);
+});
+
+async function checkNotifications() {
     try {
-        // 1. Fetch Stats
-        const statsRes = await fetch('/api/admin/stats');
-        const stats = await statsRes.json();
+        const response = await fetch('/api/admin/items'); // Using the same endpoint as AdReport
+        const freshData = await response.json();
 
-        // Update Cards
-        document.querySelector(".card1 h3").innerText = stats.totalLost || 0;
-        document.querySelector(".card2 h3").innerText = stats.totalFound || 0;
-        document.querySelector(".card3 h3").innerText = stats.totalPending || 0;
-        document.querySelector(".card4 h3").innerText = stats.totalClaimed || 0;
-
-        // Update Bar Chart Heights & Labels
-        const max = Math.max(stats.totalLost, stats.totalFound, stats.totalPending, stats.totalClaimed, 1);
-        updateBar(".bar.lost", stats.totalLost, max);
-        updateBar(".bar.found", stats.totalFound, max);
-        updateBar(".bar.pending", stats.totalPending, max);
-        updateBar(".bar.claimed", stats.totalClaimed, max);
-
-        // Update Resolution Rate (Claimed / Total)
-        const rate = stats.totalItems > 0 ? Math.round((stats.totalClaimed / stats.totalItems) * 100) : 0;
-        document.querySelector(".percentage-text").innerText = rate + "%";
-        document.querySelector(".inner-number").innerText = rate + "%";
-
-        // 2. Fetch Recent Activity Table
-        const activityRes = await fetch('/api/admin/recent-activity');
-        const activity = await activityRes.json();
-        const tbody = document.querySelector("table tbody");
-        tbody.innerHTML = "";
-
-        activity.forEach(item => {
-            const statusClass = item.status === 'Pending Approval' ? 'pending' : 'resolved';
-            const row = `
-                <tr>
-                    <td>${item.item_name}</td>
-                    <td>${item.category}</td>
-                    <td><span class="badge ${statusClass}">${item.report_type}</span></td>
-                    <td>${item.formattedDate}</td>
-                    <td>
-                        <button class="btn-view" onclick="location.href='AdReport.html'">Manage</button>
-                    </td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
+        freshData.forEach(item => {
+            if (!knownItemIds.has(item.id)) {
+                // Trigger notification if it's a new item or if it's the first load but pending
+                if (!isInitialLoad || item.status === "Pending Approval") {
+                    addNotif(`New Report: ${item.item_name}`, item.id);
+                }
+                knownItemIds.add(item.id);
+            }
         });
 
-    } catch (err) {
-        console.error("Dashboard Load Error:", err);
+        localStorage.setItem('refoundly_known_ids', JSON.stringify([...knownItemIds]));
+        isInitialLoad = false;
+    } catch (error) {
+        console.error("Notification Fetch Error:", error);
     }
 }
 
-function updateBar(selector, value, max) {
-    const bar = document.querySelector(selector);
-    const heightPercentage = (value / max) * 100;
-    bar.style.height = heightPercentage + "%";
-    bar.querySelector("span").innerText = value;
+function addNotif(text, itemId) {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    notifications.unshift({ text, time, itemId, read: false });
+    if (notifications.length > 20) notifications.pop();
+    
+    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+    updateNotifBadge();
 }
 
-// Update your existing DOMContentLoaded to include the loader
-document.addEventListener("DOMContentLoaded", () => {
-    loadDashboardData();
-    // ... your existing fade-in code
-});
+function updateNotifBadge() {
+    const badge = document.getElementById("notifBadge");
+    const unreadCount = notifications.filter(n => !n.read).length;
+    if(unreadCount > 0) {
+        badge.innerText = unreadCount;
+        badge.style.display = "block";
+    } else {
+        badge.style.display = "none";
+    }
+}
+
+function toggleNotifs() {
+    const drop = document.getElementById("notifDropdown");
+    const list = document.getElementById("notifList");
+    const isOpening = drop.style.display === "none" || drop.style.display === "";
+    
+    drop.style.display = isOpening ? "block" : "none";
+    
+    if(isOpening) {
+        if (notifications.length === 0) {
+            list.innerHTML = `<div style="padding: 20px; text-align: center; color: #999; font-size: 0.85rem;">No notifications</div>`;
+        } else {
+            list.innerHTML = notifications.map((n, index) => `
+                <div style="padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.85rem; color: #444; cursor: pointer; background: ${n.read ? 'white' : '#f0f7ef'}" 
+                     onclick="handleNotifClick(${index})">
+                    <strong>${n.time}</strong>: ${n.text}
+                </div>
+            `).join('');
+        }
+    }
+}
+
+function handleNotifClick(index) {
+    notifications[index].read = true;
+    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+    updateNotifBadge();
+    window.location.href = 'AdReport.html'; // Redirect to management page
+}
+
+function clearAllNotifs() {
+    notifications = [];
+    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+    updateNotifBadge();
+    toggleNotifs();
+}
     </script>
 </body>
 </html>

@@ -7,18 +7,6 @@
     <link rel="stylesheet" href="Global.css">
     <link rel="stylesheet" href="AdReport.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* Extra styles for the dynamic buttons */
-        .btn-approve { background-color: #28a745; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-deny { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-resolve { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
-        
-        /* Status Badge Colors */
-        .badge.pending-approval { background-color: #ffc107; color: #333; } /* Yellow */
-        .badge.published { background-color: #007bff; color: white; }      /* Blue */
-        .badge.resolved { background-color: #28a745; color: white; }       /* Green */
-        .badge.denied { background-color: #6c757d; color: white; }         /* Grey */
-    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -29,7 +17,8 @@
             </div>
             <nav>
                 <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                <a href="AdReport.html" class="active"><i class="fa-solid fa-file-invoice"></i> Reports</a>
+                <a href="AdAnalytics.html" id="nav-analytics"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html" class="active"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
                 <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
             </nav>
             <div class="sidebar-footer">
@@ -42,7 +31,19 @@
             <header class="top-nav">
                 <div class="admin-controls">
                     <span>Admin</span>
-                    <i class="fa-solid fa-bell"></i>
+                    <div class="notif-wrapper">
+                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
                     <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
                 </div>
             </header>
@@ -50,13 +51,13 @@
             <section class="content-wrapper">
                 <div class="page-header">
                     <h1>Reports</h1>
-                    <button class="btn-archive" onclick="alert('Go to Archive Page')">Archived Items</button>
+                    <button class="btn-archive" onclick="window.location.href='AdArchive.html'">Archived Items</button>
                 </div>
 
                 <div class="summary-cards">
                     <div class="card">
                         <div class="icon-box reports-bg"><i class="fa-solid fa-file-lines"></i></div>
-                        <div><p>Total Active</p><h3>120</h3></div>
+                        <div><p>Total Active</p><h3>0</h3></div>
                     </div>
                     <div class="card">
                         <div class="icon-box pending-bg"><i class="fa-solid fa-clock"></i></div>
@@ -64,18 +65,20 @@
                     </div>
                     <div class="card">
                         <div class="icon-box resolved-bg"><i class="fa-solid fa-circle-check"></i></div>
-                        <div><p>Resolved</p><h3>70</h3></div>
+                        <div><p>Resolved</p><h3>0</h3></div>
                     </div>
                 </div>
 
                 <div class="filter-bar">
                     <select id="statusFilter" onchange="filterTable()">
                         <option value="all">All Statuses</option>
-                        <option value="Pending Approval">Pending Approval (Needs Action)</option>
-                        <option value="Published">Published (Ongoing)</option>
+                        <option value="Pending Approval">Pending Approval</option>
+                        <option value="Published">Published</option>
                         <option value="Resolved">Resolved</option>
                     </select>
-                    <input type="text" id="searchInput" placeholder="Search..." oninput="filterTable()">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search everything..." oninput="filterTable()">
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -83,148 +86,309 @@
                         <thead>
                             <tr>
                                 <th>Item</th>
+                                <th>Posted By</th> 
                                 <th>Category</th>
                                 <th>Status</th>
                                 <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="reportsTableBody">
-                            </tbody>
+                        <tbody id="reportsTableBody"></tbody>
                     </table>
+
+                    <div class="pagination-controls">
+                        <button class="page-arrow" id="prevBtn" onclick="changePage(-1)">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span class="page-num" id="pageDisplay">Page 1 of 1</span>
+                        <button class="page-arrow" id="nextBtn" onclick="changePage(1)">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="width: 350px; text-align: center; padding: 0; border-radius: 12px; overflow: hidden;">
+            <div id="confirmHeader" style="padding: 15px; color: white; font-weight: bold;">
+                <span id="confirmTitle">Confirm Action</span>
+            </div>
+            <div style="padding: 20px;">
+                <p id="confirmMessage" style="margin-bottom: 20px; color: #444;"></p>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button id="confirmYes" style="padding: 8px 20px; border-radius: 5px; border: none; color: white; cursor: pointer;">Yes, Proceed</button>
+                    <button onclick="closeConfirmModal()" style="padding: 8px 20px; border-radius: 5px; border: 1px solid #ddd; background: white; cursor: pointer;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalItemName">Item Details</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
     <script>
-    let itemsData = [];
+        let itemsData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
 
-    document.addEventListener("DOMContentLoaded", () => {
-        fetchItems();
-    });
+        let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
+        let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
+        let isInitialLoad = true;
 
-    // 1. FETCH DATA FROM DATABASE
-    // Inside AdReport.html <script>
-async function fetchItems() {
-    try {
-        const response = await fetch('/api/admin/items');
-        console.log("Response Status:", response.status); // CHECK THIS IN CONSOLE
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
+            if (wrapper) setTimeout(() => wrapper.classList.add("fade-in"), 100);
+            fetchItems();
+            updateNotifBadge();
+        });
 
-        if (response.status === 401 || response.redirected) {
-            window.location.href = "AdLogin.html";
-            return;
+        async function fetchItems() {
+            try {
+                const response = await fetch('/api/admin/items');
+                if (response.status === 401 || response.redirected) {
+                    window.location.href = "AdLogin.html";
+                    return;
+                }
+                const freshData = await response.json();
+
+                freshData.forEach(item => {
+                    const isNewId = !knownItemIds.has(item.id);
+                    if (isNewId) {
+                        if (!isInitialLoad || item.status === "Pending Approval") {
+                            addNotif(`New Report: ${item.item_name}`, item.id);
+                        }
+                        knownItemIds.add(item.id);
+                    }
+                });
+
+                localStorage.setItem('refoundly_known_ids', JSON.stringify([...knownItemIds]));
+                isInitialLoad = false;
+                itemsData = freshData;
+                filteredData = [...itemsData]; 
+                renderTable();
+                updateCounts();
+            } catch (error) {
+                console.error("Error loading items:", error);
+            }
         }
 
-        itemsData = await response.json();
-        console.log("Items Data Received:", itemsData); // CHECK THIS IN CONSOLE
-        
-        renderTable(itemsData);
-        updateCounts();
-    } catch (error) {
-        console.error("Error loading items:", error);
-    }
-}
+        setInterval(fetchItems, 20000);
 
-    // 2. RENDER TABLE
-   function renderTable(data) {
-    const tbody = document.getElementById("reportsTableBody");
-    console.log("Rendering table with", data.length, "items"); // ADD THIS LINE
-    tbody.innerHTML = ""; 
+        function renderTable() {
+            const tbody = document.getElementById("reportsTableBody");
+            tbody.innerHTML = ""; 
 
-    if (data.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No reports found.</td></tr>";
-        return;
-    }
-    
-    // ... rest of your existing forEach code ...
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = filteredData.slice(start, end);
 
+            if (pageItems.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No reports found.</td></tr>";
+            } else {
+                pageItems.forEach(item => {
+                    const statusText = item.status || "Pending Approval";
+                    const statusClass = statusText.toLowerCase().replace(/\s+/g, '-');
+                    const displayDate = item.formattedDate || item.incident_date || "N/A";
+                    const reporterName = `${item.contact_firstname} ${item.contact_lastname}`;
 
-    data.forEach(item => {
-        // 1. Fix Status Class: Handle potential nulls or undefined
-        const statusText = item.status || "Pending Approval";
-        const statusClass = statusText.toLowerCase().replace(/\s+/g, '-');
+                    let actionButtons = `<button class="btn-view" onclick="showDetails(${item.id})">Details</button>`;
+                    
+                    if (statusText === "Pending Approval") {
+                        actionButtons += `
+                            <button class="btn-approve" onclick="confirmStatusChange(${item.id}, 'Published')">Approve</button>
+                            <button class="btn-deny" onclick="confirmStatusChange(${item.id}, 'Denied')">Deny</button>`;
+                    } else if (statusText === "Published") {
+                        actionButtons += `<button class="btn-resolve" onclick="confirmStatusChange(${item.id}, 'Resolved')">Mark Resolved</button>`;
+                    }
 
-        // 2. Fix Date: Use formattedDate from SQL, fallback to incident_date if missing
-        const displayDate = item.formattedDate || item.incident_date || "N/A";
-
-        let actionButtons = "";
-        if (statusText === "Pending Approval") {
-            actionButtons = `
-                <button class="btn-approve" onclick="changeStatus(${item.id}, 'Published')">Approve</button>
-                <button class="btn-deny" onclick="changeStatus(${item.id}, 'Denied')">Deny</button>
-            `;
-        } else if (statusText === "Published") {
-            actionButtons = `
-                <button class="btn-resolve" onclick="changeStatus(${item.id}, 'Resolved')">Mark Resolved</button>
-            `;
-        } else {
-            actionButtons = `<button class="btn-view" onclick="alert('Item ID: ${item.id}')">View Details</button>`;
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${item.item_name || "Unknown"}</td>
+                        <td><strong>${reporterName}</strong></td>
+                        <td>${item.category || "General"}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>${displayDate}</td>
+                        <td>${actionButtons}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
+            updatePaginationUI();
         }
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${item.item_name || "Unknown Item"}</td>
-            <td>${item.category || "General"}</td>
-            <td><span class="badge ${statusClass}">${statusText}</span></td>
-            <td>${displayDate}</td>
-            <td>${actionButtons}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
+        function updatePaginationUI() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+            document.getElementById("pageDisplay").innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage === totalPages;
+        }
 
-    // 3. CHANGE STATUS (Communicates with server)
-    async function changeStatus(id, newStatus) {
-        if (newStatus === 'Denied' && !confirm("Are you sure you want to deny this item?")) return;
+        function changePage(step) {
+            currentPage += step;
+            renderTable();
+        }
 
-        try {
-            const response = await fetch('/api/admin/update-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId: id, newStatus: newStatus })
+        function filterTable() {
+            const statusFilter = document.getElementById("statusFilter").value;
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            
+            filteredData = itemsData.filter(item => {
+                const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+                const reporterName = `${item.contact_firstname} ${item.contact_lastname}`.toLowerCase();
+                const searchPool = [item.item_name, item.category, item.status, reporterName, item.location].join(' ').toLowerCase();
+                return matchesStatus && searchPool.includes(searchInput);
             });
 
-            const result = await response.json();
-            if (result.success) {
-                fetchItems(); // Refresh table after update
-            } else {
-                alert("Update failed!");
-            }
-        } catch (error) {
-            console.error("Status update error:", error);
+            currentPage = 1; 
+            renderTable();
         }
-    }
 
-    // 4. FILTER FUNCTION
-    function filterTable() {
-        const statusFilter = document.getElementById("statusFilter").value;
-        const searchInput = document.getElementById("searchInput").value.toLowerCase();
+        function addNotif(text, itemId) {
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            notifications.unshift({ text, time, itemId, read: false });
+            if (notifications.length > 20) notifications.pop();
+            localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+            updateNotifBadge();
+        }
 
-        const filtered = itemsData.filter(item => {
-            const matchesStatus = statusFilter === "all" || item.status === statusFilter;
-            const matchesSearch = item.item_name.toLowerCase().includes(searchInput);
-            return matchesStatus && matchesSearch;
-        });
-        renderTable(filtered);
-    }
+        function updateNotifBadge() {
+            const badge = document.getElementById("notifBadge");
+            const unreadCount = notifications.filter(n => !n.read).length;
+            if(unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.style.display = "block";
+            } else {
+                badge.style.display = "none";
+            }
+        }
 
-    // 5. UPDATE DASHBOARD COUNTS
-   function updateCounts() {
-    const pending = itemsData.filter(i => i.status === "Pending Approval").length;
-    const resolved = itemsData.filter(i => i.status === "Resolved").length;
-    const active = itemsData.filter(i => i.status === "Published").length;
+        function toggleNotifs() {
+            const drop = document.getElementById("notifDropdown");
+            const list = document.getElementById("notifList");
+            const isOpening = drop.style.display === "none" || drop.style.display === "";
+            drop.style.display = isOpening ? "block" : "none";
+            
+            if(isOpening) {
+                if (notifications.length === 0) {
+                    list.innerHTML = `<div style="padding: 20px; text-align: center; color: #999;">No notifications</div>`;
+                } else {
+                    list.innerHTML = notifications.map((n, index) => `
+                        <div class="notif-item ${n.read ? '' : 'unread'}" onclick="handleNotifClick(${index}, ${n.itemId})">
+                            <strong>${n.time}</strong>: ${n.text}
+                        </div>`).join('');
+                }
+            }
+        }
 
-    document.getElementById("pending-count").innerText = pending;
-    
-    const cards = document.querySelectorAll(".summary-cards h3");
-    if(cards.length >= 3) {
-        cards[0].innerText = active;
-        cards[2].innerText = resolved;
-    }
-    
-    // REMOVE any calls to filterTable() from here if they exist.
-}
-</script>
+        function handleNotifClick(index, itemId) {
+            notifications[index].read = true;
+            localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+            updateNotifBadge();
+            document.getElementById("notifDropdown").style.display = "none";
+            showDetails(itemId);
+        }
+
+        function clearAllNotifs() {
+            notifications = [];
+            localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+            updateNotifBadge();
+            toggleNotifs();
+        }
+
+        async function changeStatus(id, newStatus) {
+            try {
+                const response = await fetch('/api/admin/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ itemId: id, newStatus: newStatus })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addNotif(`Item #${id} updated to ${newStatus}`, id);
+                    fetchItems();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function confirmStatusChange(id, newStatus) {
+            const modal = document.getElementById("confirmModal");
+            const header = document.getElementById("confirmHeader");
+            const title = document.getElementById("confirmTitle");
+            const msg = document.getElementById("confirmMessage");
+            const yesBtn = document.getElementById("confirmYes");
+            const item = itemsData.find(i => i.id === id);
+
+            if(newStatus === 'Published') {
+                header.style.backgroundColor = "#28a745"; title.innerText = "Approve Item";
+                msg.innerText = `Approve "${item.item_name}"?`; yesBtn.style.backgroundColor = "#28a745";
+            } else if(newStatus === 'Denied') {
+                header.style.backgroundColor = "#dc3545"; title.innerText = "Deny Item";
+                msg.innerText = `Deny "${item.item_name}"?`; yesBtn.style.backgroundColor = "#dc3545";
+            } else {
+                header.style.backgroundColor = "#17a2b8"; title.innerText = "Mark Resolved";
+                msg.innerText = `Mark "${item.item_name}" as resolved?`; yesBtn.style.backgroundColor = "#17a2b8";
+            }
+
+            modal.style.display = "block";
+            yesBtn.onclick = () => { changeStatus(id, newStatus); closeConfirmModal(); };
+        }
+
+        function closeConfirmModal() { document.getElementById("confirmModal").style.display = "none"; }
+
+        function showDetails(id) {
+            const item = itemsData.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById("modalItemName").innerText = item.item_name;
+            const imageSource = item.image_path ? item.image_path : 'placeholder.jpg';
+
+            document.getElementById("modalBody").innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="${imageSource}" alt="Item Image" 
+                         style="max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"
+                         onerror="this.src='placeholder.jpg'">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; color: #444;">
+                    <div><strong>Type:</strong> ${item.report_type || 'N/A'}</div>
+                    <div><strong>Posted By:</strong> ${item.contact_firstname} ${item.contact_lastname}</div>
+                    <div><strong>Category:</strong> ${item.category}</div>
+                    <div><strong>Phone:</strong> ${item.contact_phone || 'N/A'}</div>
+                    <div><strong>Brand:</strong> ${item.brand || 'N/A'}</div>
+                    <div><strong>Location:</strong> ${item.location || 'N/A'}</div>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-left: 4px solid #5d9e52; border-radius: 4px;">
+                    <strong>Description:</strong>
+                    <p style="margin-top: 5px; font-size: 0.85rem;">${item.description || 'No description provided.'}</p>
+                </div>`;
+            document.getElementById("itemModal").style.display = "block";
+        }
+
+        function closeModal() { document.getElementById("itemModal").style.display = "none"; }
+
+        function updateCounts() {
+            const pending = itemsData.filter(i => i.status === "Pending Approval").length;
+            const resolved = itemsData.filter(i => i.status === "Resolved").length;
+            const active = itemsData.filter(i => i.status === "Published").length;
+            document.getElementById("pending-count").innerText = pending;
+            const cards = document.querySelectorAll(".summary-cards h3");
+            if(cards.length >= 3) { cards[0].innerText = active; cards[2].innerText = resolved; }
+        }
+
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                closeModal();
+                closeConfirmModal();
+            }
+        }
+    </script>
 </body>
 </html>

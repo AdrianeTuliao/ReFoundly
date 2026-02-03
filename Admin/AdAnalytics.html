@@ -3,42 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Account</title>
+    <title>Admin - Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="Global.css">
-    <link rel="stylesheet" href="AdAccount.css">
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="AdAnalytics.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
     <div class="dashboard-container">
-
         <aside class="sidebar">
             <div class="logo">
                 <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
                 <span>ReFoundly- Admin</span>
             </div>
             <nav>
-                <a href="AdHome.html">
-                    <i class="fa-solid fa-chart-line"></i> Dashboard
-                </a>
-                <a href="AdAnalytics.html" id="nav-analytics"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
-                <a href="AdReport.html">
-                    <i class="fa-solid fa-file-invoice"></i> Manage Reports
-                </a>
-                <a href="AdUsers.html">
-                    <i class="fa-solid fa-users"></i> Users
-                </a>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html" class="active"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
             </nav>
             <div class="sidebar-footer">
                 <hr>
-                <a href="AdLogin.html">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
+                <a href="AdLogin.html"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </aside>
 
         <main class="main-content">
-
             <header class="top-nav">
                 <div class="admin-controls">
                     <span>Admin</span>
@@ -60,75 +51,108 @@
             </header>
 
             <section class="content-wrapper">
-                <h1>Account</h1>
+                <div class="page-header">
+                    <h1>Data Insights</h1>
+                </div>
 
-                <div class="account-card">
-                    <div class="profile-left">
-                        <div class="profile-avatar"></div>
-                        <h3>Admin</h3>
-                        <p id="admin-subtext"></p>
-                    </div>
-
-                    <div class="profile-right">
-                        <h2>Admin Information</h2>
-
-                        <div class="info-grid">
-                            <div class="info-box">
-                                <label>Email</label>
-                                <p id="admin-email">Loading...</p>
-                                <a href="#" class="link">Edit</a>
-                            </div>
-
-                            <div class="info-box">
-                                <label>Contact Number</label>
-                                <p id="admin-contact">Loading...</p>
-                                <a href="javascript:void(0)" class="link" onclick="editContact()">Edit</a>
-                            </div>
-
-                            <div class="info-box">
-                                <label>Password</label>
-                                <p>••••••••</p>
-                                <a href="#" class="link">Change Password</a>
-                            </div>
+                <div class="charts-grid">
+                    <div class="chart-container bar-chart-card">
+                        <h3>Top Reported Categories</h3>
+                        <div class="chart-box" style="height: 280px;">
+                            <canvas id="barChart"></canvas>
                         </div>
                     </div>
-                </div> 
+
+                    <div class="chart-container">
+                        <h3>Monthly Activity Trends</h3>
+                        <div class="canvas-wrapper" style="height: 250px;">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container resolution-card">
+                        <h3>Resolution Success Rate</h3>
+                        <div class="canvas-wrapper" style="height: 250px;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </section>
         </main>
     </div>
 
-    <script src="Adminscript.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const wrapper = document.querySelector(".content-wrapper");
-
             if (wrapper) {
-                setTimeout(() => {
-                    wrapper.classList.add("fade-in");
-                }, 100);
+                setTimeout(() => { wrapper.classList.add("fade-in"); }, 100);
             }
+            loadCharts();
+        });
 
-            console.log("Attempting to fetch admin profile...");
-            if (typeof fetchAdminProfile === 'function') {
-                fetchAdminProfile();
-            }
+        async function loadCharts() {
+            try {
+                const res = await fetch('/api/admin/analytics');
+                const payload = await res.json();
+                const style = getComputedStyle(document.documentElement);
+                const colorPrimary = style.getPropertyValue('--chart-primary').trim() || '#6a994e';
+                const colorSecondary = style.getPropertyValue('--chart-secondary').trim() || '#facc15';
 
-            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (link.hostname === window.location.hostname) {
-                        e.preventDefault();
-                        const nextURL = link.href;
-                        
-                        if (wrapper) wrapper.classList.remove("fade-in");
-                        
-                        setTimeout(() => {
-                            window.location.href = nextURL;
-                        }, 500);
+                // 1. Line Chart
+                new Chart(document.getElementById('lineChart'), {
+                    type: 'line',
+                    data: {
+                        labels: payload.monthly.map(row => row.month),
+                        datasets: [{
+                            label: 'Reports',
+                            data: payload.monthly.map(row => row.total),
+                            borderColor: colorPrimary,
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(106, 153, 78, 0.1)'
+                        }]
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+
+                // 2. Bar Chart
+                new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: payload.categories.map(row => row.category),
+                        datasets: [{
+                            data: payload.categories.map(row => row.count),
+                            backgroundColor: colorPrimary
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { 
+                            x: { ticks: { autoSkip: false } },
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        },
+                        plugins: { legend: { display: false } }
                     }
                 });
-            });
-        });
+
+                // 3. Pie Chart
+                const totalResolved = payload.monthly.reduce((sum, row) => sum + (row.resolved || 0), 0);
+                const grandTotal = payload.monthly.reduce((sum, row) => sum + row.total, 0);
+                new Chart(document.getElementById('pieChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Resolved', 'Pending'],
+                        datasets: [{
+                            data: [totalResolved, grandTotal - totalResolved],
+                            backgroundColor: [colorPrimary, colorSecondary]
+                        }]
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+            } catch (e) { console.error(e); }
+        }
+
         // --- Notification Variables ---
 let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
 let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
@@ -221,6 +245,5 @@ function clearAllNotifs() {
     toggleNotifs();
 }
     </script>
-
 </body>
 </html>
