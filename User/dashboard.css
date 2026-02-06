@@ -10,21 +10,19 @@
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
+    
+    /* 'to top' para magsimula ang dark green sa baba paakyat sa light green/white */
     background: linear-gradient(to top, #94D85D 0%, #f0f7eb 30%);
+    
+    /* Ito ang pipigil sa background na gumalaw habang nag-sscroll */
     background-attachment: fixed;
+    
+    /* Sinisiguro nito na laging sakop ang buong viewport */
     background-size: cover;
     background-repeat: no-repeat;
+    
     color: var(--text-dark);
     min-height: 100vh;
-}
-
-.main-wrapper {
-    opacity: 0;
-    transition: opacity 0.3s ease-in;
-}
-
-.main-wrapper.fade-in {
-    opacity: 1;
 }
 
 /* Header & Nav */
@@ -410,66 +408,108 @@ body {
 .step-card { text-align: center; border: 1px solid #eee; padding: 20px; border-radius: 8px; font-family: sans-serif; font-size: 16px;}
 .step-line { height: 10px; background: var(--accent-green); width: 70%; margin: 15px auto; border-radius: 4px; }
 
-/* Footer */
-footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
-.footer-links { margin-bottom: 20px;}
-.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
-.footer-links a:hover {
-    color: var(--accent-green); 
-    text-decoration: underline; 
+/* --- Footer & Popup CSS --- */
+
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+    font-family: sans-serif;
 }
 
+.footer-links { 
+    margin-bottom: 20px;
+    display: flex; /* Ginawang flex para sa pantay na spacing ng popup */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Container para sa popup logic */
+.popup-item {
+    position: relative; /* Anchor para sa popup box */
+    display: inline-block;
+}
+
+.footer-links a { 
+    color: white; 
+    text-decoration: none; 
+    font-size: 18px; 
+    transition: 0.3s;
+}
+
+/* Ang Pop-up Box (Nakalutang sa itaas ng link) */
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 150%; /* Nilagay sa itaas ng link */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Initial position para sa animation */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Hindi istorbo sa mouse movement */
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+/* Little triangle pointer */
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Popup Box Header/Title style */
+.popup-box strong {
+    display: block;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Hover Effect - Dito lalabas ang popup */
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Smooth slide up */
+}
+
+.popup-item:hover a {
+    color: var(--accent-green);
+    text-decoration: underline;
+}
+
+/* --- Socials & P --- */
+
 footer p {
-    font-size: 14px; /* Taasan mula sa dating 12px */
+    font-size: 14px;
     opacity: 0.8;
     margin-top: 20px;
 }
 
-.nav-buttons button {
-    padding: 0.5rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
 .socials i {
-    font-size: 35px; /* Palitan mo ito (e.g., 40px) kung gusto mo pang mas malaki */
-    margin: 0 10px; /* Spacing sa pagitan ng mga icons */
+    font-size: 35px;
+    margin: 0 10px;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .socials i:hover {
-    transform: scale(1.2); /* Lalaki nang kaunti kapag hino-hover */
+    transform: scale(1.2);
     color: var(--accent-green);
 }
 
-.btn-login { background: transparent; border: 1px solid white; color: white; margin-right: 10px; }
-.btn-register { background: white; border: none; color: var(--primary-green); }
-
-.icon-link {
-    text-decoration: none;
-    color: inherit; /* Takes the color of the surrounding text */
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: 0.3s;
-}
-
-.icon-link:hover {
-    color: #82b440; /* The green accent color from your theme */
-}
-
-/* Initial state of the content */
-.body {
-    opacity: 0;
-    transform: translateY(20px); /* Slight slide up effect */
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-/* State when the page loads (triggered by your JS) */
-.body.fade-in {
-    opacity: 1;
-    transform: translateY(0);
-
-}
