@@ -9,22 +9,28 @@
 </head>
 <body>
 
-    <nav class="navbar">
-        <h1>ReFoundly</h1>
-        <div class="nav-icons">
-            <a href="history.html" class="history-link">
-                <i class="fas fa-history"></i>
-            </a>
-            <a href="message.html" class="history-link active-link">
-                <i class="fas fa-comment-dots"></i>
-            </a>
-                <i class="fas fa-bell"></i>
+   <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+        <i class="fas fa-bell"></i>
 
-            <a href="user_acc.html" class="icon-link">
-                <i class="fas fa-user-circle"></i>
-            </a>
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger">
+                <i class="fas fa-bars"></i>
+            </label>
+
+            <div class="nav-menu">
+                <a href="account.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="main-wrapper">
     <header class="hero">
@@ -169,14 +175,47 @@
     </div>
 
     <footer>
-        <div class="footer-links">
-            <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
+    <div class="footer-links">
+        <div class="popup-item">
+            <a href="#">About</a>
+            <span class="popup-box">
+                <strong>About ReFoundly</strong><br>
+                ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners within our community. Our mission is to foster a culture of honesty and cooperation by providing a streamlined, transparent, and reliable platform for reporting and recovering items.
+            </span>
         </div>
-        <div class="socials" style="font-size: 20px; margin-bottom: 20px;">
-            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        | 
+        <div class="popup-item">
+            <a href="#">Contact</a>
+            <span class="popup-box">
+                <strong>Contact Us</strong><br>
+                Do you have questions, suggestions, or need assistance with your account? You can reach our dedicated support team through our official channels:<br>
+                <i class="fas fa-envelope"></i> Email: refoundly@gmail.com<br>
+                <i class="fas fa-phone"></i> Phone: +63 912 345 6789<br>
+            </span>
         </div>
-        <p>© 2026 Digital Lost & Found Portal</p>
-    </footer>
+        | 
+        <div class="popup-item">
+            <a href="#">Privacy Policy</a>
+            <span class="popup-box">
+                <strong>Privacy Policy</strong><br>
+                We take your security seriously. All personal information provided—such as names and contact details—is used strictly for verification purposes and to facilitate the safe return of items. We do not sell, trade, or share your data with third parties without your explicit consent.
+            </span>
+        </div>
+        | 
+        <div class="popup-item">
+            <a href="#">Terms</a>
+            <span class="popup-box">
+                <strong>Terms of Use</strong><br>
+                By using this portal, you agree to provide only truthful and accurate information. Any form of deception, including fraudulent claims to items that do not belong to you, is strictly prohibited. Misuse of the platform will result in a permanent account ban and potential legal action.
+            </span>
+        </div>
+    </div>
+
+    <div class="socials">
+        <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+    </div>
+    <p>© 2026 Digital Lost & Found Portal</p>
+</footer>
 
 <script>
     function setupSearch(inputId, listId) {
@@ -322,4 +361,5 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
