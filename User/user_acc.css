@@ -39,7 +39,7 @@ body {
 .nav-icons i { cursor: pointer; transition: 0.3s; }
 .nav-icons i:hover { color: var(--accent-green); }
 
-.history-link {
+.icons-link {
     text-decoration: none; 
     color: inherit;        
     cursor: pointer;  
@@ -49,8 +49,87 @@ body {
     font-size: 2rem;     
 }
 
-.history-link:hover {
+.icons-link:hover {
     color: var(--accent-green);        
+}
+
+/* --- Burger Menu beside Notifications --- */
+
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 2rem; /* Kapantay ng ibang icons mo */
+    color: white;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.hamburger:hover {
+    color: var(--accent-green);
+}
+
+/* The Dropdown Menu */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px; /* Adjust base sa kapal ng navbar */
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Show menu on click */
+#menu-toggle:checked ~ .nav-menu {
+    display: flex;
+}
+
+/* Menu Links */
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    padding: 22px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: 0.2s;
+}
+
+.nav-menu a i {
+    font-size: 2rem;
+    color: var(--primary-green);
+    width: 40px;
+}
+
+.nav-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-green);
+}
+
+/* Logout Button Style */
+.nav-menu a.logout-btn {
+    color: #e74c3c;
+    border-bottom: none;
+}
+
+.nav-menu a.logout-btn i {
+    color: #e74c3c;
 }
 
 /* Container - Ultra Wide */
@@ -157,7 +236,7 @@ body {
     margin-bottom: 5px;
 }
 
-.edit-link, .change-pw {
+.change-pw {
     position: absolute;
     bottom: 10px;
     right: 15px;
@@ -180,27 +259,26 @@ body {
 }
 
 /* Sign Out Button */
-/* Fix the container from stretching vertically */
 .actions {
+    margin-top: 40px;
     display: flex;
-    justify-content: flex-start; /* Aligns button to the left */
-    align-items: center;
-    padding: 20px;
-    height: auto; /* Ensures it doesn't take 100% height */
+    justify-content: flex-end;
 }
 
-/* Give the button a fixed or max width so it doesn't look like a giant bar */
-.sign-out-btn {
-    padding: 10px 25px;
-    width: fit-content; /* Only as wide as the text */
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    background-color: #7ab55c; /* Your green theme */
+.edit-btn {
+    font-family: sans-serif;
+    font-size: 18px;
+    background-color: #a3d96a;
     color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.sign-out-btn:hover {
+.edit-btn:hover {
     background-color: #8cc355;
 }
 
