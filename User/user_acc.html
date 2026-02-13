@@ -9,18 +9,27 @@
 </head>
 <body>
 
-     <header class="navbar">
-        <h1>ReFoundly</h1>
-        <div class="nav-icons">
-            <a href="history.html" class="history-link">
-                <i class="fas fa-history"></i>
-            </a>
-            <a href="message.html" class="history-link active-link">
-                <i class="fas fa-comment-dots"></i>
-            </a>
-            <i class="fas fa-bell"></i>
-            <i class="fas fa-user-circle"></i>
+      <header class="navbar">
+         <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+        <i class="fas fa-bell"></i>
+
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger">
+                <i class="fas fa-bars"></i>
+            </label>
+
+            <div class="nav-menu">
+                <a href="account.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
         </div>
+    </div>
     </header>
 
      <main class="container">
@@ -29,47 +38,44 @@
         </nav>
 
         <section class="account-card">
-    <div class="sidebar">
-        <div class="avatar-large"></div>
-        <h2 class="user-display-name" id="user-fullname">John Doe</h2>
-        <p class="user-display-email" id="user-email"></p>
-    </div>
+            <div class="sidebar">
+                <div class="avatar-large"></div>
+                <h2 class="user-display-name">John Doe</h2>
+                <p class="user-display-email">JohnDoe00_gmail.com</p>
+            </div>
 
     <div class="content">
         <h3>Personal Information</h3>
         
         <div class="info-grid">
-            <div class="info-box">
-                <label>Full name</label>
-                <p id="info-name"></p>
-                <a href="#" class="edit-link">Edit</a>
-            </div>
+                    <div class="info-box">
+                        <label>Full name</label>
+                        <p>John Doe Macalapapac</p>
+                    </div>
 
-            <div class="info-box">
-                <label>Email</label>
-                <p id="info-email"></p>
-                <a href="#" class="edit-link">Edit</a>
-            </div>
+                    <div class="info-box">
+                        <label>Email</label>
+                        <p>JohnDoe00_gmail.com</p>
+                    </div>
 
-            <div class="info-box empty">
-                <label>Contact Number</label>
-                <p id="info-contact">Not Set</p>
-            </div>
+                    <div class="info-box empty">
+                        <label>Contact Number</label>
+                        <div class="plus-icon">+</div>
+                    </div>
 
-            <div class="info-box empty">
-                <label>Date of Birth</label>
-                <p id="info-dob">Not Set</p>
-            </div>
+                    <div class="info-box empty">
+                        <label>Date of Birth</label>
+                        <div class="plus-icon">+</div>
+                    </div>
 
-            <div class="info-box">
-                <label>Password</label>
-                <a href="#" class="change-pw">Change Password</a>
-            </div>
-        </div>
-    </div>
+                    <div class="info-box">
+                        <label>Password</label>
+                        <a href="#" class="change-pw">Change Password</a>
+                    </div>
+                </div>
 
                 <div class="actions">
-                    <button class="sign-out-btn">Sign Out</button>
+                    <button class="edit-btn">Edit</button>
                 </div>
             </div>
         </section>
@@ -91,4 +97,5 @@
 
 
 </body>
+
 </html>
