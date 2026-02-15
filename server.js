@@ -167,7 +167,8 @@ app.get('/api/user-history', requireUser, (req, res) => {
  * PUBLIC & DASHBOARD API
  */
 app.get('/api/items/published', (req, res) => {
-    const sql = `SELECT id, item_name, category, image_path, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate 
+    // I added 'report_type' to the SELECT statement below
+    const sql = `SELECT id, item_name, category, report_type, image_path, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate 
                  FROM items WHERE status = 'Published' ORDER BY created_at DESC LIMIT 12`;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -285,6 +286,33 @@ app.get('/api/admin/analytics', (req, res) => {
                 categories: categoryResults
             });
         });
+    });
+});
+
+// --- FETCH SINGLE ITEM DETAILS ---
+app.get('/api/items/:id', (req, res) => {
+    const itemId = req.params.id;
+
+    // We use the same formatting as your other routes for consistency
+    const sql = `
+        SELECT *, 
+        DATE_FORMAT(incident_date, '%b %d, %Y') as incident_date, 
+        TIME_FORMAT(incident_time, '%h:%i %p') as incident_time 
+        FROM items 
+        WHERE id = ?`;
+
+    db.query(sql, [itemId], (err, results) => {
+        if (err) {
+            console.error("Database Error:", err);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Item not found" });
+        }
+
+        // Return the specific item object
+        res.json(results[0]);
     });
 });
 /**
