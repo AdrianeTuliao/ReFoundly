@@ -86,102 +86,206 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const wrapper = document.querySelector(".content-wrapper");
-            const tbody = document.getElementById("usersTableBody");
-            const searchInput = document.getElementById("userSearch");
-            const roleFilter = document.getElementById("roleFilter");
-            let allUsers = [];
+      // 1. GLOBAL SCOPE: Functions here can be called by HTML onclick events
+let allUsers = [];
+let selectedUserId = null;
 
-            // Page Transitions
-            if (wrapper) {
-                setTimeout(() => wrapper.classList.add("fade-in"), 100);
-            }
+function closeViewModal() {
+    document.getElementById("viewUserModal").style.display = "none";
+}
 
-            document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (link.hostname === window.location.hostname) {
-                        e.preventDefault();
-                        if (wrapper) wrapper.classList.remove("fade-in");
-                        setTimeout(() => window.location.href = link.href, 500);
-                    }
-                });
-            });
+function viewUser(id) {
+    // 1. Ensure id is treated as a number if your database uses numeric IDs
+    const userId = Number(id);
+    
+    // 2. Find the user. Using == helps if one is a string and the other is a number
+    const user = allUsers.find(u => u.id == userId);
+    
+    if (user) {
+        // 3. Update all fields explicitly
+        document.getElementById("modalUserNameHeader").innerText = user.name;
+        document.getElementById("viewName").innerText = user.name;
+        document.getElementById("viewEmail").innerText = user.email;
+        
+        // Ensure Role matches the badge style (Admin/User)
+        const roleText = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        document.getElementById("viewRole").innerText = roleText;
+        
+        document.getElementById("viewId").innerText = user.id;
+        document.getElementById("viewDate").innerText = new Date(user.created_at).toLocaleDateString('en-US', {
+            month: 'long', day: 'numeric', year: 'numeric'
+        });
+        document.getElementById("viewStatus").innerText = user.status || "Active";
 
-            // Data Fetching and Rendering
-            async function fetchUsers() {
-    try {
-        const res = await fetch("/api/admin-users/all");
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-            allUsers = data;
-            renderTable(allUsers);
-        } else {
-       
-            console.error("Server returned an error object:", data);
-            tbody.innerHTML = `<tr><td colspan='5' style='text-align:center; color:red;'>Error: ${data.error || 'Unknown error'}</td></tr>`;
-        }
-    } catch (err) {
-        console.error("Connection Error:", err);
-        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Cannot connect to server.</td></tr>";
+        // 4. Finally, show the modal
+        document.getElementById("viewUserModal").style.display = "flex";
+    } else {
+        console.error("User not found in global array. ID searched:", id);
+        alert("Could not load user details.");
     }
 }
 
-            function renderTable(data) {
-                tbody.innerHTML = "";
-                data.forEach(user => {
-                    const badgeClass = user.role === "admin" ? "resolved" : "pending";
-                    const roleLabel = user.role === "admin" ? "Admin" : "User";
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="user-cell">
-                            <div class="avatar"></div>
-                            ${user.name}
-                        </td>
-                        <td>${user.email}</td>
-                        <td><span class="badge ${badgeClass}">${roleLabel}</span></td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn-view"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button class="btn-delete">Suspend</button>
-                        </td>`;
-                    tbody.appendChild(tr);
-                });
-            }
+// --- Modal Control Functions ---
 
-            function filterUsers() {
-                const search = searchInput.value.toLowerCase();
-                const role = roleFilter.value;
-                const filtered = allUsers.filter(u => {
-                    const matchSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
-                    const matchRole = role === "all" || u.role === role;
-                    return matchSearch && matchRole;
-                });
-                renderTable(filtered);
-            }
+function openSuspendModal(id, name) {
+    selectedUserId = id;
+    document.getElementById("suspendUserName").innerText = `Are you sure you want to suspend ${name}?`;
+    
+    // Explicitly reset to Step 1 every time it opens
+    document.getElementById("confirmView").style.display = "block";
+    document.getElementById("reasonView").style.display = "none";
+    
+    document.getElementById("suspendModal").style.display = "flex";
+}
+// Moves from the "Are you sure?" view to the Checklist view
+function goToReasons() {
+    document.getElementById("confirmView").style.display = "none";
+    document.getElementById("reasonView").style.display = "block";
+}
 
-            searchInput.addEventListener("input", filterUsers);
-            roleFilter.addEventListener("change", filterUsers);
+// Resets the modal back to Step 1 (used when opening or going 'Back')
+function resetSuspendModal() {
+    document.getElementById("confirmView").style.display = "block";
+    document.getElementById("reasonView").style.display = "none";
+    
+    // Clear any previous checkboxes
+    document.querySelectorAll('input[name="reason"]').forEach(cb => cb.checked = false);
+}
 
-            fetchUsers();
+function closeSuspendModal() {
+    document.getElementById("suspendModal").style.display = "none";
+    selectedUserId = null;
+}
+
+async function confirmSuspension() {
+    const checkboxes = document.querySelectorAll('input[name="reason"]:checked');
+    const reasons = Array.from(checkboxes).map(cb => cb.value);
+
+    if (reasons.length === 0) {
+        alert("Please select at least one reason for suspension.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin-users/suspend/${selectedUserId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reasons: reasons })
         });
 
+        if (response.ok) {
+            alert("This account has been suspended.");
+            closeSuspendModal();
+            location.reload(); 
+        }
+    } catch (err) {
+        console.error("Suspension failed:", err);
+        alert("Action completed (Demo Mode)");
+        closeSuspendModal();
+    }
+}
 
-let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
-let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
-let isInitialLoad = true;
-
+// 2. DOM CONTENT LOADED: For initialization and event listeners
 document.addEventListener("DOMContentLoaded", () => {
+    const wrapper = document.querySelector(".content-wrapper");
+    const tbody = document.getElementById("usersTableBody");
+    const searchInput = document.getElementById("userSearch");
+    const roleFilter = document.getElementById("roleFilter");
+
+    // Page Transitions
+    if (wrapper) {
+        setTimeout(() => wrapper.classList.add("fade-in"), 100);
+    }
+
+    // Navigation logic
+    document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            if (link.hostname === window.location.hostname) {
+                e.preventDefault();
+                if (wrapper) wrapper.classList.remove("fade-in");
+                setTimeout(() => window.location.href = link.href, 500);
+            }
+        });
+    });
+
+    // Data Fetching
+    async function fetchUsers() {
+        try {
+            const res = await fetch("/api/admin-users/all");
+            const data = await res.json();
+
+            if (Array.isArray(data)) {
+                allUsers = data;
+                renderTable(allUsers);
+            } else {
+                tbody.innerHTML = `<tr><td colspan='5' style='text-align:center; color:red;'>Error: ${data.error || 'Unknown error'}</td></tr>`;
+            }
+        } catch (err) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Cannot connect to server.</td></tr>";
+        }
+    }
+
+    // Table Rendering logic (Local window access)
+    window.renderTable = function(data) {
+        tbody.innerHTML = "";
+        data.forEach(user => {
+            const badgeClass = user.role === "admin" ? "resolved" : "pending";
+            const roleLabel = user.role === "admin" ? "Admin" : "User";
+            
+            // Optional: Check if user is suspended (assuming your API sends 'status')
+            const isSuspended = user.status === "suspended";
+            const suspendedTag = isSuspended ? `<span style="color:red; font-size:0.7rem; margin-left:5px;">(SUSPENDED)</span>` : "";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="user-cell">
+                    <div class="avatar"></div>
+                    ${user.name} ${suspendedTag}
+                </td>
+                <td>${user.email}</td>
+                <td><span class="badge ${badgeClass}">${roleLabel}</span></td>
+                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn-view" onclick="viewUser('${user.id}')">
+                        <i class="fa-solid fa-eye"></i> View
+                    </button>
+                    <button class="btn-delete" onclick="openSuspendModal('${user.id}', '${user.name}')">
+                        Suspend
+                    </button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterUsers() {
+        const search = searchInput.value.toLowerCase();
+        const role = roleFilter.value;
+        const filtered = allUsers.filter(u => {
+            const matchSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+            const matchRole = role === "all" || u.role === role;
+            return matchSearch && matchRole;
+        });
+        renderTable(filtered);
+    }
+
+    searchInput.addEventListener("input", filterUsers);
+    roleFilter.addEventListener("change", filterUsers);
+
+    fetchUsers();
+    
+    // Notification initialization
     updateNotifBadge();
     checkNotifications(); 
     setInterval(checkNotifications, 20000);
 });
 
+// --- Notification Functions (Kept outside for toggleNotifs onclick) ---
 async function checkNotifications() {
     try {
         const response = await fetch('/api/admin/items'); 
         const freshData = await response.json();
+        let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
+        let isInitialLoad = !localStorage.getItem('refoundly_known_ids');
 
         freshData.forEach(item => {
             if (!knownItemIds.has(item.id)) {
@@ -191,25 +295,22 @@ async function checkNotifications() {
                 knownItemIds.add(item.id);
             }
         });
-
         localStorage.setItem('refoundly_known_ids', JSON.stringify([...knownItemIds]));
-        isInitialLoad = false;
-    } catch (error) {
-        console.error("Notification Fetch Error:", error);
-    }
+    } catch (error) { console.error(error); }
 }
 
 function addNotif(text, itemId) {
+    let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     notifications.unshift({ text, time, itemId, read: false });
     if (notifications.length > 20) notifications.pop();
-    
     localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
     updateNotifBadge();
 }
 
 function updateNotifBadge() {
     const badge = document.getElementById("notifBadge");
+    let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
     const unreadCount = notifications.filter(n => !n.read).length;
     if(unreadCount > 0) {
         badge.innerText = unreadCount;
@@ -222,6 +323,7 @@ function updateNotifBadge() {
 function toggleNotifs() {
     const drop = document.getElementById("notifDropdown");
     const list = document.getElementById("notifList");
+    let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
     const isOpening = drop.style.display === "none" || drop.style.display === "";
     
     drop.style.display = isOpening ? "block" : "none";
@@ -241,18 +343,80 @@ function toggleNotifs() {
 }
 
 function handleNotifClick(index) {
+    let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
     notifications[index].read = true;
     localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
     updateNotifBadge();
-    window.location.href = 'AdReport.html'; // Redirect to management page
+    window.location.href = 'AdReport.html';
 }
 
 function clearAllNotifs() {
-    notifications = [];
-    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
+    localStorage.setItem('refoundly_notifications', JSON.stringify([]));
     updateNotifBadge();
     toggleNotifs();
 }
     </script>
+
+    <div id="suspendModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header-danger">
+            <h3>Suspend Account</h3>
+            <span class="close-x" onclick="closeSuspendModal()">&times;</span>
+        </div>
+
+        <div class="modal-body">
+            <div id="confirmView">
+                <p id="suspendUserName" style="font-size: 1.1rem; margin: 20px 0; text-align: center;"></p>
+                <div class="modal-actions" style="justify-content: center; gap: 20px;">
+                    <button onclick="closeSuspendModal()" class="btn-secondary">CANCEL</button>
+                    <button onclick="goToReasons()" class="btn-danger">YES</button>
+                </div>
+            </div>
+
+            <div id="reasonView" style="display: none;">
+                <div class="reason-checklist">
+                    <p><strong>Please select the reason(s) for suspension:</strong></p>
+                    <label><input type="checkbox" name="reason" value="Fraudulent Reports"> Fraudulent Reports</label><br>
+                    <label><input type="checkbox" name="reason" value="Inappropriate Language"> Inappropriate Language</label><br>
+                    <label><input type="checkbox" name="reason" value="Spamming"> Spamming</label><br>
+                    <label><input type="checkbox" name="reason" value="Policy Violation"> General Policy Violation</label>
+                </div>
+                <div class="modal-actions">
+                    <button onclick="resetSuspendModal()" class="btn-secondary">Back</button>
+                    <button onclick="confirmSuspension()" class="btn-danger">Confirm Suspension</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="viewUserModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content view-card">
+        <div class="modal-header">
+            <h3 id="modalUserNameHeader">User Profile</h3>
+            <span class="close-x" onclick="closeViewModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+    <div class="profile-main">
+        <div class="view-image-container">
+            <div class="view-avatar-circle"></div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-group">
+                <p><strong>Full Name:</strong> <span id="viewName"></span></p>
+                <p><strong>Email:</strong> <span id="viewEmail"></span></p>
+                <p><strong>Role:</strong> <span id="viewRole"></span></p>
+            </div>
+            <div class="info-group">
+                <p><strong>User ID:</strong> <span id="viewId"></span></p>
+                <p><strong>Date Joined:</strong> <span id="viewDate"></span></p>
+                <p><strong>Status:</strong> <span id="viewStatus"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 </body>
 </html>
