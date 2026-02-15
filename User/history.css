@@ -1,10 +1,11 @@
-/* Using your specific Color Variables */
+/* --- Variables & Reset --- */
 :root {
     --primary-green: #6B9E45;
     --accent-green: #94D85D;
     --dark-green: #5a853a;
     --bg-gray: #f9f9f9;
     --text-dark: #333;
+    --danger-red: #e74c3c;
 }
 
 body {
@@ -14,7 +15,7 @@ body {
     color: var(--text-dark);
 }
 
-/* Header & Nav */
+/* --- Header & Navbar --- */
 .navbar {
     background-color: var(--primary-green);
     padding: 1rem 3rem;
@@ -36,56 +37,100 @@ body {
     font-size: 2rem;
 }
 
-.nav-icons i { cursor: pointer; transition: 0.3s; }
-.nav-icons i:hover { color: var(--accent-green); }
-
-.history-link {
+.icons-link {
     text-decoration: none; 
-    color: inherit;        
-    cursor: pointer;  
     color: white;
     display: flex;
-    gap: 20px;
-    font-size: 2rem;     
+    font-size: 2rem; 
+    transition: 0.3s;
 }
 
-.history-link:hover {
-    color: var(--accent-green);        
+.icons-link:hover, .nav-icons i:hover {
+    color: var(--accent-green);
 }
 
-/* Container - Ultra Wide */
+/* --- Burger Menu --- */
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle { display: none; }
+
+.hamburger {
+    cursor: pointer;
+    font-size: 2rem;
+    color: white;
+    transition: 0.3s;
+}
+
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px;
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+#menu-toggle:checked ~ .nav-menu { display: flex; }
+
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    padding: 22px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: 0.2s;
+}
+
+.nav-menu a i {
+    font-size: 2rem;
+    color: var(--primary-green);
+    width: 40px;
+}
+
+.nav-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-green);
+}
+
+.nav-menu a.logout-btn { color: var(--danger-red); border-bottom: none; }
+.nav-menu a.logout-btn i { color: var(--danger-red); }
+
+/* --- Layout & Search --- */
 .container {
     width: 95%;
     max-width: 1600px; 
     margin: 40px auto;
 }
 
-/* Breadcrumb Styling */
 .breadcrumb {
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 25px;
 }
 
-/* Base style para sa 'Home' link */
 .breadcrumb a {
-    color: var(--primary-green); /* Gamit ang iyong primary green variable */
-    text-decoration: none; /* Default na may underline */
-    transition: color 0.3s ease, text-decoration 0.3s ease;
+    color: var(--primary-green);
+    text-decoration: none;
+    transition: 0.3s;
 }
 
-/* Hover effect kapag tinapatan ng mouse */
 .breadcrumb a:hover {
-    color: var(--accent-green); /* Magbabago ang kulay sa accent green */
-    text-decoration: underline;      /* Pwede mong alisin ang underline sa hover para mas interactive */
+    color: var(--accent-green);
+    text-decoration: underline;
 }
 
-/* Active/Pressed effect kapag pinindot (clicked) */
-.breadcrumb a:active {
-    color: var(--dark-green);
-}
-
-/* Search Bar - Sinunod yung nasa screenshot */
 .search-section {
     background-color: var(--primary-green);
     padding: 15px 40px;
@@ -98,10 +143,8 @@ body {
     display: flex;
     align-items: center;
     padding: 10px 25px;
-    border-radius: 50px; /* Pill shape */
+    border-radius: 50px;
 }
-
-.search-bar-pill i { color: #888; font-size: 18px; }
 
 .search-bar-pill input {
     border: none;
@@ -109,53 +152,59 @@ body {
     width: 100%;
     margin-left: 15px;
     font-size: 16px;
-    color: #555;
 }
 
-/* 3-Column Horizontal Layout */
+/* --- History Grid & Big Cards --- */
 .items-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Saktong tatlo horizontally */
+    /* This creates as many 300px columns as will fit, 
+       but won't let cards grow larger than 350px */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
     gap: 30px;
-    opacity: 0;
-    transform: translateY(30px); /* Moves it down */
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    justify-content: center; /* Centers the cards if there are only 1 or 2 */
+    margin: 0 auto;
+    width: 100%;
 }
 
-/* The class we will add via JavaScript */
+
 .items-grid.rise-up {
     opacity: 1;
-    transform: translateY(0); /* Returns to original position */
+    transform: translateY(0);
 }
 
-/* Card Styling */  
 .item-card {
     display: flex;
     flex-direction: column;
+    background: white; /* Give it a base color */
+    border-radius: 12px; /* Smoother corners */
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Soft shadow for depth */
+    transition: transform 0.2s;
 }
 
-.card-img-placeholder {
-    background-color: #d1d1d1;
+.item-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.card-img-container {
     height: 300px;
+    background-color: #f0f0f0;
+    background-size: cover;
+    background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #999;
     font-weight: bold;
-    color: #888;
-    border-radius: 4px;
 }
 
-.card-content h3 { 
-    font-family: sans-serif;
-    margin: 15px 0 5px 0; 
-    color: black; 
-    font-size: 20px;
-}
+.card-content { padding: 20px; }
+.card-content h3 { margin: 0 0 5px 0; font-size: 20px; color: black; }
 
 .title-line { border: 0; border-top: 1px solid var(--primary-green); margin-bottom: 10px; }
 
 .badge {
-    font-family: sans-serif;
     background-color: var(--accent-green);
     color: white;
     padding: 3px 15px;
@@ -166,76 +215,124 @@ body {
     margin-bottom: 10px;
 }
 
-.item-details p { margin: 4px 0; font-size: 16px; font-family: sans-serif; line-height: 1.4; }
-.status-found { color: #E6DC1D; font-weight: bold; font-family: sans-serif; }
-.status-lost { color: red; font-weight: bold; font-family: sans-serif; }
-.post-time { margin-top: 8px; color: #636363; font-family: sans-serif; font-size: 14px; }
+/* Optional: Keep text heights consistent to prevent jitter */
+.item-details p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limits descriptions to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.0em; /* Reserves space even if text is short */
+}
+
+
+/* Status Colors */
+.status-found { color: var(--primary-green); font-weight: bold; }
+.status-lost { color: var(--danger-red); font-weight: bold; }
+
+.post-time { margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; color: #777; font-size: 13px; }
 
 .comment-input {
     width: 100%;
     margin-top: 15px;
     border: 1px solid #ddd;
-    padding: 6px;
+    padding: 8px;
     border-radius: 4px;
     font-size: 14px;
 }
 
-/* Pagination Bar */
+/* --- Pagination --- */
 .pagination {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     margin-top: 25px;
     padding-top: 20px;
     border-top: 1px solid #eee;
 }
 
-.pag-btn { border: 1px solid #ccc; background: white; padding: 5px 12px; cursor: pointer; }
-.pag-btn.active { background-color: #ddd; font-weight: bold; }
-
-/* Footer */
-footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
-.footer-links { margin-bottom: 20px;}
-.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
-.footer-links a:hover {
-    color: var(--accent-green); 
-    text-decoration: underline; 
+.pag-btn { 
+    border: 1px solid #ccc; 
+    background: white; 
+    padding: 8px 15px; 
+    cursor: pointer; 
+    transition: 0.3s;
 }
 
-footer p {
-    font-size: 14px; /* Taasan mula sa dating 12px */
-    opacity: 0.8;
-    margin-top: 20px;
+.pag-btn.active { 
+    background-color: var(--primary-green) !important; 
+    color: white !important; 
+    font-weight: bold; 
+    border-color: var(--primary-green);
 }
 
-.socials {
+/* --- Footer & Popups --- */
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+}
+
+.footer-links { 
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
+
+.popup-item { position: relative; display: inline-block; }
+.footer-links a { color: white; text-decoration: none; font-size: 18px; transition: 0.3s; }
+
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    bottom: 150%; 
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%; left: 50%;
+    margin-left: -8px;
+    border: 8px solid transparent;
+    border-top-color: white;
+}
+
+.popup-box strong { display: block; color: var(--primary-green); margin-bottom: 5px; }
+
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.popup-item:hover a { color: var(--accent-green); text-decoration: underline; }
 
 .socials i {
-    font-size: 35px; 
-    margin: 0 10px; 
+    font-size: 35px;
+    margin: 0 10px;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: 0.2s;
 }
 
-.socials i:hover {
-    transform: scale(1.2); 
-    color: var(--accent-green);
-}
+.socials i:hover { transform: scale(1.2); color: var(--accent-green); }
 
-footer p {
-    font-size: 14px; 
-    opacity: 0.8;
-    margin-top: 20px;
-}
-
-h3 {
-    color: var(--primary-green);
-    border-bottom: 2px solid var(--accent-green);
-    padding-bottom: 5px;
-    margin-bottom: 20px;
-}
-
-.separator { border: 0; border-top: 1px solid #eee; margin: 40px 0; }
+/* Main Wrapper Animation */
+.main-wrapper { opacity: 0; transition: opacity 0.5s ease-in-out; }
+.main-wrapper.fade-in { opacity: 1; }

@@ -39,7 +39,7 @@ body {
 .nav-icons i { cursor: pointer; transition: 0.3s; }
 .nav-icons i:hover { color: var(--accent-green); }
 
-.history-link {
+.icons-link {
     text-decoration: none; 
     color: inherit;        
     cursor: pointer;  
@@ -49,8 +49,87 @@ body {
     font-size: 2rem;     
 }
 
-.history-link:hover {
+.icons-link:hover {
     color: var(--accent-green);        
+}
+
+/* --- Burger Menu beside Notifications --- */
+
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 2rem; /* Kapantay ng ibang icons mo */
+    color: white;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.hamburger:hover {
+    color: var(--accent-green);
+}
+
+/* The Dropdown Menu */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px; /* Adjust base sa kapal ng navbar */
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Show menu on click */
+#menu-toggle:checked ~ .nav-menu {
+    display: flex;
+}
+
+/* Menu Links */
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    padding: 22px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: 0.2s;
+}
+
+.nav-menu a i {
+    font-size: 2rem;
+    color: var(--primary-green);
+    width: 40px;
+}
+
+.nav-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-green);
+}
+
+/* Logout Button Style */
+.nav-menu a.logout-btn {
+    color: #e74c3c;
+    border-bottom: none;
+}
+
+.nav-menu a.logout-btn i {
+    color: #e74c3c;
 }
 
 /* Container - Ultra Wide */
@@ -213,48 +292,107 @@ input, select, textarea {
 
 .submit-section { text-align: right; margin-top: 30px; }
 
-/* Footer */
-footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
-.footer-links { margin-bottom: 20px;}
-.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
-.footer-links a:hover {
-    color: var(--accent-green); 
-    text-decoration: underline; 
+/* --- Footer & Popup CSS --- */
+
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+    font-family: sans-serif;
 }
+
+.footer-links { 
+    margin-bottom: 20px;
+    display: flex; /* Ginawang flex para sa pantay na spacing ng popup */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Container para sa popup logic */
+.popup-item {
+    position: relative; /* Anchor para sa popup box */
+    display: inline-block;
+}
+
+.footer-links a { 
+    color: white; 
+    text-decoration: none; 
+    font-size: 18px; 
+    transition: 0.3s;
+}
+
+/* Ang Pop-up Box (Nakalutang sa itaas ng link) */
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 150%; /* Nilagay sa itaas ng link */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Initial position para sa animation */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Hindi istorbo sa mouse movement */
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+/* Little triangle pointer */
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Popup Box Header/Title style */
+.popup-box strong {
+    display: block;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Hover Effect - Dito lalabas ang popup */
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Smooth slide up */
+}
+
+.popup-item:hover a {
+    color: var(--accent-green);
+    text-decoration: underline;
+}
+
+/* --- Socials & P --- */
 
 footer p {
-    font-size: 14px; /* Taasan mula sa dating 12px */
+    font-size: 14px;
     opacity: 0.8;
     margin-top: 20px;
-}
-
-.socials {
-    margin-bottom: 20px;
 }
 
 .socials i {
-    font-size: 35px; 
-    margin: 0 10px; 
+    font-size: 35px;
+    margin: 0 10px;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .socials i:hover {
-    transform: scale(1.2); 
+    transform: scale(1.2);
     color: var(--accent-green);
 }
-
-footer p {
-    font-size: 14px; 
-    opacity: 0.8;
-    margin-top: 20px;
-}
-
-h3 {
-    color: var(--primary-green);
-    border-bottom: 2px solid var(--accent-green);
-    padding-bottom: 5px;
-    margin-bottom: 20px;
-}
-
-.separator { border: 0; border-top: 1px solid #eee; margin: 40px 0; }

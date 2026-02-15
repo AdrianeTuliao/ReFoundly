@@ -9,30 +9,24 @@
 </head>
 <body>
 
-      <header class="navbar">
-         <h1>ReFoundly</h1>
-    <div class="nav-icons">
-        <a href="message.html" class="icons-link active-link">
-            <i class="fas fa-comment-dots"></i>
-        </a>
-        <i class="fas fa-bell"></i>
-
-        <div class="burger-container">
-            <input type="checkbox" id="menu-toggle">
-            <label for="menu-toggle" class="hamburger">
-                <i class="fas fa-bars"></i>
-            </label>
-
-            <div class="nav-menu">
-                <a href="account.html"><i class="fas fa-user-circle"></i> Account</a>
-                <a href="history.html"><i class="fas fa-history"></i> History</a>
-                <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <header class="navbar">
+        <h1>ReFoundly</h1>
+        <div class="nav-icons">
+            <a href="message.html" class="icons-link"><i class="fas fa-comment-dots"></i></a>
+            <i class="fas fa-bell"></i>
+            <div class="burger-container">
+                <input type="checkbox" id="menu-toggle">
+                <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+                <div class="nav-menu">
+                    <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                    <a href="history.html"><i class="fas fa-history"></i> History</a>
+                    <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
             </div>
         </div>
-    </div>
     </header>
 
-     <main class="container">
+    <main class="container">
         <nav class="breadcrumb">
             <a href="dashboard.html">Home</a> &gt; <span>Account</span>
         </nav>
@@ -40,32 +34,32 @@
         <section class="account-card">
             <div class="sidebar">
                 <div class="avatar-large"></div>
-                <h2 class="user-display-name">John Doe</h2>
-                <p class="user-display-email">JohnDoe00_gmail.com</p>
+                <h2 id="user-fullname">John Doe</h2>
+                <p id="user-email">johndoe@gmail.com</p>
             </div>
 
-    <div class="content">
-        <h3>Personal Information</h3>
-        
-        <div class="info-grid">
+            <div class="content">
+                <h3 class="section-header">Personal Information</h3>
+                
+                <div class="info-grid">
                     <div class="info-box">
                         <label>Full name</label>
-                        <p>John Doe Macalapapac</p>
+                        <p id="info-name">John Doe Macalapapac</p>
                     </div>
 
                     <div class="info-box">
                         <label>Email</label>
-                        <p>JohnDoe00_gmail.com</p>
+                        <p id="info-email">JohnDoe00_gmail.com</p>
                     </div>
 
                     <div class="info-box empty">
                         <label>Contact Number</label>
-                        <div class="plus-icon">+</div>
+                        <p id="info-contact">+</p>
                     </div>
 
                     <div class="info-box empty">
                         <label>Date of Birth</label>
-                        <div class="plus-icon">+</div>
+                        <p id="info-dob">+</p>
                     </div>
 
                     <div class="info-box">
@@ -75,27 +69,52 @@
                 </div>
 
                 <div class="actions">
-                    <button class="edit-btn">Edit</button>
+                    <button class="primary-edit-btn">Edit</button>
                 </div>
             </div>
         </section>
     </main>
 
-     <footer>
+    <footer>
         <div class="footer-links">
-            <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
         </div>
         <div class="socials">
-            <i class="fab fa-facebook"></i>
-            <i class="fab fa-instagram"></i>
-            <i class="fab fa-linkedin"></i>
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
         </div>
         <p>© 2026 Digital Lost & Found Portal</p>
     </footer>
-
     <script src="user_acc.js"></script>
-
-
 </body>
-
 </html>

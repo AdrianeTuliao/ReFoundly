@@ -6,21 +6,31 @@
     <title>ReFoundly - Report Item</title>
     <link rel="stylesheet" href="report.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 </head>
 <body>
 
     <header class="navbar">
         <h1>ReFoundly</h1>
-        <div class="nav-icons">
-            <a href="history.html" class="history-link">
-                <i class="fas fa-history"></i>
-            </a>
-            <a href="message.html" class="history-link active-link">
-                <i class="fas fa-comment-dots"></i>
-            </a>
-            <i class="fas fa-bell"></i>
-            <i class="fas fa-user-circle"></i>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+        <i class="fas fa-bell"></i>
+
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger">
+                <i class="fas fa-bars"></i>
+            </label>
+
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
         </div>
+    </div>
     </header>
 
     <main class="container">
@@ -29,136 +39,342 @@
         </nav>
 
         <section class="form-card">
-            <form action="/submit-report" method="POST" enctype="multipart/form-data">
+            <form id="mainForm" action="/submit-report" method="POST" enctype="multipart/form-data">
                 
                 <div class="form-row">
-            <div class="form-column">
-                <div class="input-group">
-                    <label>What was Lost<span>*</span></label>
-                    <small>(Wallet, Smartphone, T-shirt, etc.)</small>
-                    <input type="text" name="itemName" placeholder="Enter item name" required>
-                </div>
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>What was Lost<span>*</span></label>
+                            <small>(Wallet, Smartphone, T-shirt, etc.)</small>
+                            <input type="text" id="itemName" name="itemName" placeholder="Enter item name" required>
+                        </div>
 
-                <div class="input-group">
-                    <label>Category<span>*</span></label>
-                    <small>(Wallet, Gadgets, Clothing, etc.)</small>
-                    <select name="category" required>
-                        <option value="" disabled selected>Select Category...</option>
-                        <option value="wallet">Wallet</option>
-                        <option value="cellphone">Cellphone</option>
-                        </select>
-                </div>
+                        <div class="input-group">
+                            <label>Category<span>*</span></label>
+                            <small>(Wallet, Gadgets, Clothing, etc.)</small>
+                            <select name="category" required>
+                                <option value="" disabled selected>Select Category...</option>
+                                <option value="wallet">Wallet</option>
+                                <option value="cellphone">Cellphone</option>
+                            </select>
+                        </div>
 
-                <div class="input-group">
-                    <label>Brand<span>*</span></label>
-                    <small>(Gucci, Samsung, Lacoste, etc.)</small>
-                    <input type="text" name="brand" placeholder="Optional">
-                </div>
+                        <div class="input-group">
+                            <label>Brand<span>*</span></label>
+                            <small>(Gucci, Samsung, Lacoste, etc.)</small>
+                            <input type="text" name="brand" placeholder="Optional">
+                        </div>
 
-                <div class="input-group">
-                    <label>Date Lost<span>*</span></label>
-                    <small>Approximate date of when the item was lost.</small>
-                    <input type="date" name="dateLost" required>
-                </div>
+                        <div class="input-group">
+                            <label>Date Lost<span>*</span></label>
+                            <small>Approximate date of when the item was lost.</small>
+                            <input type="date" name="dateLost" required>
+                        </div>
 
-                <div class="input-group">
-                    <label>Time Lost<span>*</span></label>
-                    <small>Approximate time of day the item was lost.</small>
-                    <input type="time" name="timeLost" required>
-                </div>
-            </div>
+                        <div class="input-group">
+                            <label>Time Lost<span>*</span></label>
+                            <small>Approximate time of day the item was lost.</small>
+                            <input type="time" name="timeLost" required>
+                        </div>
+                    </div>
 
-            <div class="form-column">
-                <div class="input-group">
-                    <label>Upload Image</label>
-                    <small>(This image will display on the Website.)</small>
-                    <div class="image-upload-box" onclick="document.getElementById('file-upload').click()">
-                        <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
-                        <p>Insert Image</p>
-                        <input type="file" name="itemImage" id="file-upload" hidden>
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>Upload Image</label>
+                            <small>(This image will display on the Website.)</small>
+                            <div class="image-upload-box" onclick="document.getElementById('file-upload').click()">
+                                <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                                <p>Insert Image</p>
+                                <input type="file" name="itemImage" id="file-upload" hidden>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Additional Information</label>
+                            <small>Details or description of your lost items.</small>
+                            <textarea name="description" rows="6" style="resize: vertical;"></textarea>
+                        </div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Additional Information</label>
-                    <small>Details or description of your lost items.</small>
-                    <textarea name="description" rows="6" style="resize: vertical;"></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-column">
-                <h3>Location Information</h3>
-                <div class="input-group">
-                    <label>Where Lost<span>*</span></label>
-                    <small>City, Barangay, or specific landmark.</small>
-                    <input type="text" name="location" required>
-                </div>
-            </div>
-
-            <div class="form-column">
-                <h3>What are you reporting?</h3>
-                <div class="report-selection">
-                    <div class="checkbox-group">
-                        <input type="radio" name="reportType" value="Lost" id="lost" required>
-                        <label for="lost"><strong>I Lost an Item</strong><br><small>I am trying to find something I lost.</small></label>
+                <div class="form-row">
+                    <div class="form-column">
+                        <h3>Location Information</h3>
+                        <div class="input-group">
+                            <label>Where Lost<span>*</span></label>
+                            <small>City, Barangay, or specific landmark.</small>
+                            <input type="text" name="location" required>
+                        </div>
                     </div>
-                    <div class="checkbox-group">
-                        <input type="radio" name="reportType" value="Found" id="found">
-                        <label for="found"><strong>I Found an Item</strong><br><small>I want to report an item I found.</small></label>
+
+                    <div class="form-column">
+                        <h3>What are you reporting?</h3>
+                        <div class="report-selection">
+                            <div class="checkbox-group">
+                                <input type="radio" name="reportType" value="Lost" id="lost" required>
+                                <label for="lost"><strong>I Lost an Item</strong><br><small>I am trying to find something I lost.</small></label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="radio" name="reportType" value="Found" id="found">
+                                <label for="found"><strong>I Found an Item</strong><br><small>I want to report an item I found.</small></label>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <hr class="separator">
+                <hr class="separator">
 
-        <h3>Contact Information</h3>
-        <div class="form-row">
-            <div class="form-column">
-                <div class="input-group">
-                    <label>First Name<span>*</span></label>
-                    <input type="text" name="firstName" required>
+                <h3>Contact Information</h3>
+                <div class="form-row">
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>First Name<span>*</span></label>
+                            <input type="text" name="firstName" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Phone Number<span>*</span></label>
+                            <input type="tel" name="phoneNumber" required>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>Last Name<span>*</span></label>
+                            <input type="text" name="lastName" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Email<span>*</span></label>
+                            <input type="email" name="email" required>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Phone Number<span>*</span></label>
-                    <input type="tel" name="phoneNumber" required>
+                
+                <div class="submit-section">
+                    <button type="submit" id="btnSubmit" class="btn-main">Submit Report</button>
+                    <p id="chainStatus" style="margin-top: 10px; font-weight: bold; display: none;"></p>
                 </div>
-            </div>
-            <div class="form-column">
-                <div class="input-group">
-                    <label>Last Name<span>*</span></label>
-                    <input type="text" name="lastName" required>
-                </div>
-                <div class="input-group">
-                    <label>Email<span>*</span></label>
-                    <input type="email" name="email" required>
-                </div>
-            </div>
-        </div>
-        
-        <div class="submit-section">
-            <button type="submit" class="btn-main">Submit Report</button>
-        </div>
             </form>
         </section>
     </main>
 
-    <footer>
-        <div class="footer-links">
-            <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
+     <footer>
+    <div class="footer-links">
+        <div class="popup-item">
+            <a href="#">About</a>
+            <span class="popup-box">
+                <strong>About ReFoundly</strong><br>
+                ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners within our community. Our mission is to foster a culture of honesty and cooperation by providing a streamlined, transparent, and reliable platform for reporting and recovering items.
+            </span>
         </div>
-        <div class="socials">
-            <i class="fab fa-facebook"></i>
-            <i class="fab fa-instagram"></i>
-            <i class="fab fa-linkedin"></i>
+        | 
+        <div class="popup-item">
+            <a href="#">Contact</a>
+            <span class="popup-box">
+                <strong>Contact Us</strong><br>
+                Do you have questions, suggestions, or need assistance with your account? You can reach our dedicated support team through our official channels:<br>
+                <i class="fas fa-envelope"></i> Email: refoundly@gmail.com<br>
+                <i class="fas fa-phone"></i> Phone: +63 912 345 6789<br>
+            </span>
         </div>
-        <p>© 2026 Digital Lost & Found Portal</p>
-    </footer>
+        | 
+        <div class="popup-item">
+            <a href="#">Privacy Policy</a>
+            <span class="popup-box">
+                <strong>Privacy Policy</strong><br>
+                We take your security seriously. All personal information provided—such as names and contact details—is used strictly for verification purposes and to facilitate the safe return of items. We do not sell, trade, or share your data with third parties without your explicit consent.
+            </span>
+        </div>
+        | 
+        <div class="popup-item">
+            <a href="#">Terms</a>
+            <span class="popup-box">
+                <strong>Terms of Use</strong><br>
+                By using this portal, you agree to provide only truthful and accurate information. Any form of deception, including fraudulent claims to items that do not belong to you, is strictly prohibited. Misuse of the platform will result in a permanent account ban and potential legal action.
+            </span>
+        </div>
+    </div>
+
+    <div class="socials">
+        <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+    </div>
+    <p>© 2026 Digital Lost & Found Portal</p>
+</footer>
 
     <script>
-    // 1. Make the "Insert Image" box show a preview
+    // Blockchain
+    // Connections
+    const web3 = new Web3("http://127.0.0.1:7545");
+    const contractAddress = "0x0E3b6eF04aC8C9E4268820dF0f9BD381fdba2F9b";
+    const contractABI =[
+	[
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "reporter",
+				"type": "address"
+			}
+		],
+		"name": "ReportLogged",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_category",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_location",
+				"type": "string"
+			}
+		],
+		"name": "createReport",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "markAsResolved",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "reports",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "itemTitle",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "category",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "reporter",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isResolved",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalReports",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+];
+
+    const myContract = new web3.eth.Contract(contractABI, contractAddress);
+
+    // Submission form
+    document.getElementById('mainForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); 
+        
+        const itemName = document.getElementById('itemName').value;
+        const submitBtn = document.getElementById('btnSubmit');
+
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳Submitting...";
+
+            const accounts = await web3.eth.getAccounts();
+            await myContract.methods.createReport(itemName).send({ 
+                from: accounts[0], 
+                gas: 300000 
+            });
+
+            console.log("Blockchain Success!");
+            this.submit(); 
+
+        } catch (error) {
+            console.error("Blockchain Error:", error);
+            alert("Transaction failed! Check Ganache.");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Submit Report";
+        }
+    });
+
     const fileInput = document.getElementById('file-upload');
     const uploadBox = document.querySelector('.image-upload-box');
 
@@ -169,7 +385,6 @@
                 uploadBox.style.backgroundImage = `url('${e.target.result}')`;
                 uploadBox.style.backgroundSize = 'cover';
                 uploadBox.style.backgroundPosition = 'center';
-                // Hide the icon and text so the image is visible
                 uploadBox.querySelector('i').style.display = 'none';
                 uploadBox.querySelector('p').style.display = 'none';
             }
@@ -177,13 +392,11 @@
         }
     });
 
-    // 2. Auto-fill Contact Info from the logged-in user
     window.onload = async () => {
         try {
             const response = await fetch('/user/me');
             if (response.ok) {
                 const user = await response.json();
-                // Splitting full_name for First/Last name inputs
                 const names = user.full_name.split(' ');
                 document.getElementsByName('firstName')[0].value = names[0] || '';
                 document.getElementsByName('lastName')[0].value = names.slice(1).join(' ') || '';
@@ -194,7 +407,7 @@
             console.log("Not logged in or server error");
         }
     };
-</script>
+    </script>
 
 </body>
 </html>

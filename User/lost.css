@@ -39,7 +39,7 @@ body {
 .nav-icons i { cursor: pointer; transition: 0.3s; }
 .nav-icons i:hover { color: var(--accent-green); }
 
-.history-link {
+.icons-link {
     text-decoration: none; 
     color: inherit;        
     cursor: pointer;  
@@ -49,8 +49,87 @@ body {
     font-size: 2rem;     
 }
 
-.history-link:hover {
+.icons-link:hover {
     color: var(--accent-green);        
+}
+
+/* --- Burger Menu beside Notifications --- */
+
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 2rem; /* Kapantay ng ibang icons mo */
+    color: white;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.hamburger:hover {
+    color: var(--accent-green);
+}
+
+/* The Dropdown Menu */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px; /* Adjust base sa kapal ng navbar */
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Show menu on click */
+#menu-toggle:checked ~ .nav-menu {
+    display: flex;
+}
+
+/* Menu Links */
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    padding: 22px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: 0.2s;
+}
+
+.nav-menu a i {
+    font-size: 2rem;
+    color: var(--primary-green);
+    width: 40px;
+}
+
+.nav-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-green);
+}
+
+/* Logout Button Style */
+.nav-menu a.logout-btn {
+    color: #e74c3c;
+    border-bottom: none;
+}
+
+.nav-menu a.logout-btn i {
+    color: #e74c3c;
 }
 
 /* Container - Ultra Wide */
@@ -112,13 +191,16 @@ body {
     color: #555;
 }
 
+/* Update .items-grid to prevent stretching */
 .items-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Saktong tatlo horizontally */
+    /* This creates as many 300px columns as will fit, 
+       but won't let cards grow larger than 350px */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
     gap: 30px;
-    opacity: 0;
-    transform: translateY(30px); /* Moves it down */
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    justify-content: center; /* Centers the cards if there are only 1 or 2 */
+    margin: 0 auto;
+    width: 100%;
 }
 
 /* The class we will add via JavaScript */
@@ -126,10 +208,91 @@ body {
     opacity: 1;
     transform: translateY(0); /* Returns to original position */
 }
-/* Card Styling */
+/* Update .item-card and .card-content */
 .item-card {
     display: flex;
     flex-direction: column;
+    background: white; /* Give it a base color */
+    border-radius: 12px; /* Smoother corners */
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Soft shadow for depth */
+    transition: transform 0.2s;
+}
+
+.item-card:hover {
+    transform: translateY(-5px); /* Subtle lift on hover */
+}
+
+/* Ensure the card content fills the remaining space */
+.card-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Important: makes content take up full card height */
+    padding: 15px;
+}
+
+/* Force the input to the bottom of the card */
+.comment-input {
+    width: 100%;
+    margin-top: auto; /* This pushes the input to the bottom regardless of text length */
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box; /* Prevents width issues */
+}
+
+/* Optional: Keep text heights consistent to prevent jitter */
+.item-details p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limits descriptions to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.8em; /* Reserves space even if text is short */
+}
+
+/* 1. Force the image and placeholder to be identical sizes */
+.item-card img, 
+.card-img-placeholder {
+    width: 100%;
+    height: 200px !important; /* Explicitly lock the height */
+    min-height: 200px !important;
+    max-height: 200px !important;
+    object-fit: cover; /* Prevents stretching */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 12px 12px 0 0;
+}
+
+/* 2. Ensure the card body handles long text without growing the card */
+.item-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    overflow: hidden; /* Clips anything that tries to pop out */
+    height: 100%; 
+}
+
+/* 3. Give the content area a fixed structure */
+.card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* 4. Truncate long descriptions to keep rows even */
+.item-details p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Limits description to 1 line */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .card-img-placeholder {
@@ -168,15 +331,6 @@ body {
 .status-lost { color: red; font-weight: bold; font-family: sans-serif; }
 .post-time { margin-top: 8px; color: #636363; font-family: sans-serif; font-size: 14px; }
 
-.comment-input {
-    width: 100%;
-    margin-top: 15px;
-    border: 1px solid #ddd;
-    padding: 6px;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
 /* Pagination Bar */
 .pagination {
     display: flex;
@@ -191,48 +345,147 @@ body {
 .pag-btn { border: 1px solid #ccc; background: white; padding: 5px 12px; cursor: pointer; }
 .pag-btn.active { background-color: #ddd; font-weight: bold; }
 
-/* Footer */
-footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
-.footer-links { margin-bottom: 20px;}
-.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
-.footer-links a:hover {
-    color: var(--accent-green); 
-    text-decoration: underline; 
+/* --- Footer & Popup CSS --- */
+
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+    font-family: sans-serif;
 }
+    
+
+.footer-links { 
+    margin-bottom: 20px;
+    display: flex; /* Ginawang flex para sa pantay na spacing ng popup */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Container para sa popup logic */
+.popup-item {
+    position: relative; /* Anchor para sa popup box */
+    display: inline-block;
+}
+
+.footer-links a { 
+    color: white; 
+    text-decoration: none; 
+    font-size: 18px; 
+    transition: 0.3s;
+}
+
+/* Ang Pop-up Box (Nakalutang sa itaas ng link) */
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 150%; /* Nilagay sa itaas ng link */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Initial position para sa animation */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Hindi istorbo sa mouse movement */
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+/* Little triangle pointer */
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Popup Box Header/Title style */
+.popup-box strong {
+    display: block;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Hover Effect - Dito lalabas ang popup */
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Smooth slide up */
+}
+
+.popup-item:hover a {
+    color: var(--accent-green);
+    text-decoration: underline;
+}
+
+/* --- Socials & P --- */
 
 footer p {
-    font-size: 14px; /* Taasan mula sa dating 12px */
+    font-size: 14px;
     opacity: 0.8;
     margin-top: 20px;
-}
-
-.socials {
-    margin-bottom: 20px;
 }
 
 .socials i {
-    font-size: 35px; 
-    margin: 0 10px; 
+    font-size: 35px;
+    margin: 0 10px;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .socials i:hover {
-    transform: scale(1.2); 
+    transform: scale(1.2);
     color: var(--accent-green);
 }
 
-footer p {
-    font-size: 14px; 
-    opacity: 0.8;
-    margin-top: 20px;
+/* Makes the linked item pop when it opens from the dashboard */
+.highlight-card {
+    border: 2px solid #78A454 !important;
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(120, 164, 84, 0.3);
+    transition: all 0.5s ease;
 }
 
-h3 {
-    color: var(--primary-green);
-    border-bottom: 2px solid var(--accent-green);
-    padding-bottom: 5px;
-    margin-bottom: 20px;
+/* Modal Background */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
 }
 
-.separator { border: 0; border-top: 1px solid #eee; margin: 40px 0; }
+/* Modal Box - Matching your detail photo */
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 70%;
+    max-width: 800px;
+    position: relative;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.close-button {
+    position: absolute;
+    right: 20px; top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #888;
+}

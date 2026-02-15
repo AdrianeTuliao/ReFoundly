@@ -7,6 +7,25 @@
     --text-dark: #333;
 }
 
+/* Apply this to the outer-most tags */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main.container {
+    flex: 1 0 auto; /* This pushes the footer down */
+}
+
+footer {
+    flex-shrink: 0; /* Prevents footer from squishing */
+}
+
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -236,7 +255,7 @@ body {
     margin-bottom: 5px;
 }
 
-.change-pw {
+.edit-link, .change-pw {
     position: absolute;
     bottom: 10px;
     right: 15px;
@@ -259,71 +278,216 @@ body {
 }
 
 /* Sign Out Button */
+/* Fix the container from stretching vertically */
 .actions {
-    margin-top: 40px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start; /* Aligns button to the left */
+    align-items: center;
+    padding: 20px;
+    height: auto; /* Ensures it doesn't take 100% height */
 }
 
-.edit-btn {
+/* Give the button a fixed or max width so it doesn't look like a giant bar */
+.sign-out-btn {
+    padding: 10px 25px;
+    width: fit-content; /* Only as wide as the text */
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #7ab55c; /* Your green theme */
+    color: white;
+}
+
+.sign-out-btn:hover {
+    background-color: #8cc355;
+}
+
+/* --- Footer & Popup CSS --- */
+
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
     font-family: sans-serif;
-    font-size: 18px;
-    background-color: #a3d96a;
+}
+
+.footer-links { 
+    margin-bottom: 20px;
+    display: flex; /* Ginawang flex para sa pantay na spacing ng popup */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Container para sa popup logic */
+.popup-item {
+    position: relative; /* Anchor para sa popup box */
+    display: inline-block;
+}
+
+.footer-links a { 
+    color: white; 
+    text-decoration: none; 
+    font-size: 18px; 
+    transition: 0.3s;
+}
+
+/* Ang Pop-up Box (Nakalutang sa itaas ng link) */
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 150%; /* Nilagay sa itaas ng link */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Initial position para sa animation */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Hindi istorbo sa mouse movement */
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+/* Little triangle pointer */
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Popup Box Header/Title style */
+.popup-box strong {
+    display: block;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Hover Effect - Dito lalabas ang popup */
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Smooth slide up */
+}
+
+.popup-item:hover a {
+    color: var(--accent-green);
+    text-decoration: underline;
+}
+
+/* --- Socials & P --- */
+
+footer p {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+.socials i {
+    font-size: 35px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.socials i:hover {
+    transform: scale(1.2);
+    color: var(--accent-green);
+}
+
+
+/* Add the Green Underline to the header */
+.section-title {
+    font-family: sans-serif;
+    font-size: 34px;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent-green); /* The green line from the pic */
+    color: var(--primary-green);
+}
+
+/* Adjust the Sidebar for better centering */
+.sidebar {
+    flex: 0 0 300px; /* Fixed width for the sidebar */
+    text-align: center;
+    border-right: 1px solid #eee;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.avatar-large {
+    width: 200px;
+    height: 200px;
+    background-color: #d9d9d9;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    background-size: cover;
+}
+
+/* Fix the Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 100px;
+    background: #fff;
+}
+
+/* Style for the "+" empty state */
+.info-box.empty p {
+    font-size: 24px;
+    color: #999;
+    margin-top: 10px;
+}
+
+/* Fix the Edit Button positioning */
+.actions {
+    display: flex;
+    justify-content: flex-end; /* Pushes button to the right like in the pic */
+    margin-top: 20px;
+}
+
+.sign-out-btn:hover {
+    background-color: var(--primary-green);
+}
+
+/* Remove the individual edit links inside boxes if you want it to look exactly like the screenshot */
+.edit-link {
+    display: none; 
+}
+
+.primary-edit-btn {
+    background-color: var(--accent-green);
     color: white;
     border: none;
-    padding: 10px 30px;
-    border-radius: 5px;
+    padding: 10px 35px;
+    border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
 }
 
-.edit-btn:hover {
-    background-color: #8cc355;
+.primary-edit-btn:hover {
+    background-color: var(--primary-green);
 }
-
-/* Footer */
-footer { background: var(--primary-green); color: white; padding: 40px 0 20px; text-align: center; font-family: sans-serif}
-.footer-links { margin-bottom: 20px;}
-.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-family: sans-serif; font-size: 18px; transition: 0.3s;}
-.footer-links a:hover {
-    color: var(--accent-green); 
-    text-decoration: underline; 
-}
-
-footer p {
-    font-size: 14px; /* Taasan mula sa dating 12px */
-    opacity: 0.8;
-    margin-top: 20px;
-}
-
-.socials {
-    margin-bottom: 20px;
-}
-
-.socials i {
-    font-size: 35px; 
-    margin: 0 10px; 
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.socials i:hover {
-    transform: scale(1.2); 
-    color: var(--accent-green);
-}
-
-footer p {
-    font-size: 14px; 
-    opacity: 0.8;
-    margin-top: 20px;
-}
-
-h3 {
-    color: var(--primary-green);
-    border-bottom: 2px solid var(--accent-green);
-    padding-bottom: 5px;
-    margin-bottom: 20px;
-}
-
-.separator { border: 0; border-top: 1px solid #eee; margin: 40px 0; }

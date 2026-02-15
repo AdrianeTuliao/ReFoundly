@@ -6,20 +6,87 @@
     <title>ReFoundly | Lost Items</title>
     <link rel="stylesheet" href="lost.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* The "Green Light" Highlight effect */
+        .highlight-card {
+            border: 2px solid #6B9E45 !important;
+            box-shadow: 0 0 20px rgba(107, 158, 69, 0.6) !important;
+            transform: scale(1.02);
+            transition: all 0.5s ease;
+        }
+
+        /* Modal specific styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 900px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideUp 0.4s ease-out;
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-button {
+            position: absolute;
+            right: 25px; top: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+        }
+        .status-badge-published {
+            background-color: #8dbb69;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            float: right;
+        }
+        .contact-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid #6B9E45;
+            margin-top: 20px;
+        }
+        .info-header {
+            border-bottom: 2px solid #6B9E45;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
 
     <header class="navbar">
         <h1>ReFoundly</h1>
         <div class="nav-icons">
-            <a href="history.html" class="history-link">
-                <i class="fas fa-history"></i>
-            </a>
-            <a href="message.html" class="history-link active-link">
-                <i class="fas fa-comment-dots"></i>
-            </a>
+            <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
             <i class="fas fa-bell"></i>
-            <i class="fas fa-user-circle"></i>
+            <div class="burger-container">
+                <input type="checkbox" id="menu-toggle">
+                <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+                <div class="nav-menu">
+                    <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                    <a href="history.html"><i class="fas fa-history"></i> History</a>
+                    <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -35,75 +102,7 @@
             </div>
         </section>
 
-        <div class="items-grid">
-            
-            <div class="item-card">
-                <div class="card-img-placeholder">Image</div>
-                <div class="card-content">
-                    <h3>Jonard 1</h3>
-                    <hr class="title-line">
-                    <span class="badge">Clothing</span>
-                    <div class="item-details">
-                        <p><strong>Description:</strong> Black and red</p>
-                        <p><strong>Where Lost:</strong> Bonuan Gueset, near Jollibee</p>
-                        <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
-                        <p><strong>Owner:</strong> Hansalino Matalino</p>
-                        <p><strong>Phone Number:</strong> 0912 345 6789</p>
-                        <p><strong>Email:</strong> Hansalinasalino00_gmail.com</p>
-                        <div class="post-time">
-                            <small>Dated Posted: Jan 14, 2026</small><br>
-                            <small>Time Posted: 4:39 PM</small>
-                        </div>
-                    </div>
-                    <input type="text" class="comment-input" placeholder="Comment">
-                </div>
-            </div>
-
-            <div class="item-card">
-                <div class="card-img-placeholder">Image</div>
-                <div class="card-content">
-                    <h3>Rolex Watch</h3>
-                    <hr class="title-line">
-                    <span class="badge">Accessories</span>
-                    <div class="item-details">
-                        <p><strong>Description:</strong> Silver and gold</p>
-                        <p><strong>Where Lost:</strong> Bonuan Gueset, near Mcdo</p>
-                        <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
-                        <p><strong>Owner:</strong> Mark Macaroro</p>
-                        <p><strong>Phone Number:</strong> 0912 345 6789</p>
-                        <p><strong>Email:</strong> Markyboy07_gmail.com</p>
-                        <div class="post-time">
-                            <small>Dated Posted: Dec 5, 2025</small><br>
-                            <small>Time Posted: 8:43 PM</small>
-                        </div>
-                    </div>
-                    <input type="text" class="comment-input" placeholder="Comment">
-                </div>
-            </div>
-
-            <div class="item-card">
-                <div class="card-img-placeholder">Image</div>
-                <div class="card-content">
-                    <h3>Black Wallet</h3>
-                    <hr class="title-line">
-                    <span class="badge">Wallet</span>
-                    <div class="item-details">
-                        <p><strong>Description:</strong> Leather, with IDs</p>
-                        <p><strong>Where Lost:</strong> Barangay 1, Star Plaza</p>
-                        <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
-                        <p><strong>Owner:</strong> Juan Dela Cruz</p>
-                        <p><strong>Phone Number:</strong> 0917 123 4567</p>
-                        <p><strong>Email:</strong> juan_dc88@gmail.com</p>
-                        <div class="post-time">
-                            <small>Dated Posted: Dec 2, 2025</small><br>
-                            <small>Time Posted: 10:15 AM</small>
-                        </div>
-                    </div>
-                    <input type="text" class="comment-input" placeholder="Comment">
-                </div>
-            </div>
-
-        </div>
+        <div class="items-grid"></div>
 
         <div class="pagination">
             <button class="pag-btn">&lt;</button>
@@ -116,104 +115,274 @@
         </div>
     </main>
 
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
     <footer>
         <div class="footer-links">
-            <a href="#">About</a> | <a href="#">Contact</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms</a>
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
         </div>
         <div class="socials">
-            <i class="fab fa-facebook"></i>
-            <i class="fab fa-instagram"></i>
-            <i class="fab fa-linkedin"></i>
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
         </div>
         <p>© 2026 Digital Lost & Found Portal</p>
     </footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const grid = document.querySelector(".items-grid");
-            const wrapper = document.querySelector(".main-wrapper");
+   <script>
+    let allItems = [];
+    let filteredItems = [];
+    let currentPage = 1;
+    const itemsPerPage = 4; // Number of items per page
 
-            // Page Entrance Animations
-            if (wrapper) setTimeout(() => wrapper.classList.add("fade-in"), 100);
-            if (grid) setTimeout(() => grid.classList.add("rise-up"), 300);
+    document.addEventListener("DOMContentLoaded", () => {
+        loadLostItems();
+        
+        // --- SEARCH LOGIC ---
+        const searchInput = document.querySelector('.search-bar-pill input');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            // Filter by Name, Category, or Location
+            filteredItems = allItems.filter(item => 
+                (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
+                (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                (item.location && item.location.toLowerCase().includes(searchTerm))
+            );
 
-            // Dynamic Content Loading
-            loadLostItems();
-
-            // Page Transition Logic
-            const navLinks = document.querySelectorAll('.nav-icons a, .hero-actions a, .icon-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    const targetHref = link.getAttribute('href');
-                    if (link.hostname === window.location.hostname && targetHref !== "#") {
-                        e.preventDefault();
-                        if (grid) grid.classList.remove("rise-up");
-                        if (wrapper) wrapper.classList.remove("fade-in");
-                        setTimeout(() => window.location.href = link.href, 500);
-                    }
-                });
-            });
+            currentPage = 1; // Reset to page 1 on new search
+            renderItems();
+            renderPagination();
         });
 
-        // Fetch API Logic
-        async function loadLostItems() {
-            try {
-                const response = await fetch('/api/items/lost');
-                const items = await response.json();
-                const grid = document.querySelector(".items-grid");
+        window.onclick = (event) => {
+            const modal = document.getElementById("itemModal");
+            if (event.target == modal) closeModal();
+        }
+    });
 
-                grid.innerHTML = "";
+    async function loadLostItems() {
+        try {
+            const response = await fetch('/api/items/lost');
+            allItems = await response.json();
+            filteredItems = [...allItems]; // Initialize filteredItems with all data
+            
+            // Initial render
+            renderItems();
+            renderPagination();
 
-                if (items.length === 0) {
-                    grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 50px;'><h3>No lost items reported yet.</h3></div>";
-                    return;
+            // RESTORED: Check URL for item to highlight (Green Light effect)
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemIdToOpen = urlParams.get('open');
+            if (itemIdToOpen) {
+                // Find which page the item belongs to
+                const itemIndex = allItems.findIndex(i => i.id == itemIdToOpen);
+                if (itemIndex !== -1) {
+                    currentPage = Math.ceil((itemIndex + 1) / itemsPerPage);
+                    updateView(); // Refresh to correct page
+                    
+                    setTimeout(() => {
+                        const targetCard = document.querySelector(`[data-id="${itemIdToOpen}"]`);
+                        if (targetCard) {
+                            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetCard.classList.add('highlight-card');
+                        }
+                    }, 500);
                 }
+            }
 
-                items.forEach(item => {
-                    const card = document.createElement("div");
-                    card.className = "item-card";
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+    }
 
-                    const imageContent = item.image_path 
-                        ? `<img src="${item.image_path}" alt="${item.item_name}" style="width:100%; height:200px; object-fit:cover; border-radius: 8px 8px 0 0;">`
-                        : `<div class="card-img-placeholder">No Image Provided</div>`;
+    function renderItems() {
+        const grid = document.querySelector(".items-grid");
+        grid.innerHTML = "";
 
-                    card.innerHTML = `
-                        ${imageContent}
-                        <div class="card-content">
-                            <h3>${item.item_name}</h3>
-                            <hr class="title-line">
-                            <span class="badge">${item.category}</span>
-                            <div class="item-details">
-                                <p><strong>Description:</strong> ${item.description || 'No description'}</p>
-                                <p><strong>Where Lost:</strong> ${item.location}</p>
-                                <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
-                                <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
-                                <p><strong>Phone Number:</strong> ${item.contact_phone}</p>
-                                <p><strong>Email:</strong> ${item.contact_email}</p>
-                                <div class="post-time">
-                                    <small>Date Lost: ${item.formattedDate}</small><br>
-                                    <small>Time Lost: ${item.formattedTime}</small>
-                                </div>
-                            </div>
-                            <input type="text" class="comment-input" placeholder="Type a lead or message..." onkeypress="handleComment(event, ${item.id})">
+        // Change: Check filteredItems instead of allItems
+        if (filteredItems.length === 0) {
+            grid.innerHTML = "<h3 style='grid-column: 1/-1; text-align:center;'>No items match your search.</h3>";
+            return;
+        }
+
+        // Pagination Logic: Slice the filtered array based on current page
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const paginatedItems = filteredItems.slice(start, end);
+
+        paginatedItems.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.setAttribute('data-id', item.id);
+            card.onclick = () => openModal(item.id);
+
+            const imgHtml = item.image_path     
+                ? `<img src="${item.image_path}" style="width:100%; height:200px; object-fit:cover; border-radius: 8px 8px 0 0;">`
+                : `<div class="card-img-placeholder">No Image Provided</div>`;
+
+            card.innerHTML = `
+                ${imgHtml}
+                <div class="card-content">
+                    <h3>${item.item_name}</h3>
+                    <hr class="title-line">
+                    <span class="badge">${item.category}</span>
+                    <div class="item-details">
+                        <p><strong>Description:</strong> ${item.description || 'No description'}</p>
+                        <p><strong>Where Lost:</strong> ${item.location}</p>
+                        <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
+                        <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                        <p><strong>Phone Number:</strong> ${item.contact_phone}</p>
+                        <p><strong>Email:</strong> ${item.contact_email}</p>
+                        <div class="post-time">
+                            <small>Date Lost: ${item.formattedDate}</small><br>
+                            <small>Time Lost: ${item.formattedTime || ''}</small>
                         </div>
-                    `;
-                    grid.appendChild(card);
-                });
+                    </div>
+                    <input type="text" class="comment-input" placeholder="Leave a comment..." onclick="event.stopPropagation()">
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
 
-                setTimeout(() => grid.classList.add("rise-up"), 100);
-            } catch (error) {
-                console.error("Error fetching lost items:", error);
+    function renderPagination() {
+        const paginationContainer = document.querySelector(".pagination");
+        if (!paginationContainer) return;
+        
+        paginationContainer.innerHTML = "";
+        // Change: Calculate totalPages based on filteredItems
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+
+        // Hide pagination if only one page
+        if (totalPages <= 1 && filteredItems.length > 0) return;
+
+        // Previous Button (<)
+        const prevBtn = document.createElement("button");
+        prevBtn.className = "pag-btn";
+        prevBtn.innerHTML = "&lt;";
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = (e) => { 
+            e.stopPropagation();
+            if(currentPage > 1) { currentPage--; updateView(); } 
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        // Page Numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                const pageBtn = document.createElement("button");
+                pageBtn.className = `pag-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = (e) => { 
+                    e.stopPropagation();
+                    currentPage = i; 
+                    updateView(); 
+                };
+                paginationContainer.appendChild(pageBtn);
+            } else if (i === currentPage - 2 || i === currentPage + 2) {
+                const dots = document.createElement("span");
+                dots.textContent = "..";
+                paginationContainer.appendChild(dots);
             }
         }
 
-        // Comment Interaction
-        function handleComment(event, itemId) {
-            if (event.key === 'Enter') {
-                alert("Lead submitted for item ID: " + itemId + ". (Feature coming soon!)");
-                event.target.value = "";
-            }
-        }
-    </script>
+        // Next Button (>)
+        const nextBtn = document.createElement("button");
+        nextBtn.className = "pag-btn";
+        nextBtn.innerHTML = "&gt;";
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = (e) => { 
+            e.stopPropagation();
+            if(currentPage < totalPages) { currentPage++; updateView(); } 
+        };
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    // Refresh view helper
+    function updateView() {
+        renderItems();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openModal(id) {
+        const highlighted = document.querySelector('.highlight-card');
+        if (highlighted) highlighted.classList.remove('highlight-card');
+
+        const item = allItems.find(i => i.id === id);
+        if (!item) return;
+
+        const body = document.getElementById("modalBody");
+        body.innerHTML = `
+            <div style="display: flex; gap: 40px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <span class="status-badge-published">Published</span>
+                    <h1 style="margin-top: 0;">${item.item_name}</h1>
+                    <img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <p style="margin-top:15px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
+                </div>
+                <div style="flex: 1;">
+                    <h3 class="info-header">Item Information</h3>
+                    <p><strong>Category:</strong> ${item.category}</p>
+                    <p><strong>Brand:</strong> ${item.brand || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${item.location}</p>
+                    <p><strong>Date:</strong> ${item.formattedDate}</p>
+                    <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
+                    <h3 class="info-header" style="margin-top:30px;">Description</h3>
+                    <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
+                    <div class="contact-box">
+                        <h4 style="margin-top:0;">Contact Owner</h4>
+                        <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                        <p><strong>Phone:</strong> ${item.contact_phone}</p>
+                        <p><strong>Email:</strong> ${item.contact_email}</p>
+                    </div>
+                    <button onclick="closeModal()" style="margin-top:20px; width:100%; padding:12px; background:#6B9E45; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                        <i class="fas fa-arrow-left"></i> Close Details
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById("itemModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("itemModal").style.display = "none";
+    }
+</script>
 </body>
 </html>

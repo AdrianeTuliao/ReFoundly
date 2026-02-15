@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details | ReFoundly</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Specific Styles for Detail Page */
+        .detail-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .detail-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #eee;
+        }
+        .info-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #78A454;
+            padding-bottom: 5px;
+        }
+        .data-row {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .data-row strong { color: #555; }
+        .contact-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #78A454;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: #78A454;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="detail-container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="itemName" style="margin:0;">Loading Item...</h2>
+                <div id="itemStatus"></div>
+            </div>
+
+            <div class="detail-grid" id="itemContent">
+                </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button class="btn-main" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('id');
+
+        async function fetchDetails() {
+            if (!itemId) return;
+
+            try {
+                const response = await fetch(`/api/items/${itemId}`);
+                
+                // NEW: Check if the response is actually JSON
+                const contentType = response.headers.get("content-type");
+                if (!response.ok || !contentType || !contentType.includes("application/json")) {
+                    const errorBody = await response.text();
+                    console.error("Server returned non-JSON response:", errorBody);
+                    throw new Error("Server error: Check console for HTML response");
+                }
+
+                const item = await response.json();
+
+                // ... (Your existing mapping logic below)
+                document.getElementById('itemName').innerText = item.item_name;
+                document.getElementById('itemStatus').innerHTML = `<span class="status-pill">${item.status}</span>`;
+                
+                const contentDiv = document.getElementById('itemContent');
+                contentDiv.innerHTML = `
+                    <div class="image-area">
+                        <img class="detail-image" src="${item.image_path || 'placeholder.png'}" alt="Item Image">
+                        <p style="margin-top:10px; color:#666; font-style:italic;">
+                            Report Type: <strong>${item.report_type}</strong>
+                        </p>
+                    </div>
+                    <div class="info-area">
+                        <div class="info-section">
+                            <h3>Item Information</h3>
+                            <div class="data-row"><strong>Category:</strong> ${item.category}</div>
+                            <div class="data-row"><strong>Brand:</strong> ${item.brand || 'N/A'}</div>
+                            <div class="data-row"><strong>Location:</strong> ${item.location}</div>
+                            <div class="data-row"><strong>Date:</strong> ${item.incident_date}</div>
+                            <div class="data-row"><strong>Time:</strong> ${item.incident_time || 'Not specified'}</div>
+                        </div>
+                        <div class="info-section" style="margin-top:20px;">
+                            <h3>Description</h3>
+                            <p style="font-size:14px; line-height:1.6;">${item.description || 'No additional details provided.'}</p>
+                        </div>
+                        <div class="contact-box">
+                            <h3>Contact Finder/Owner</h3>
+                            <div class="data-row"><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</div>
+                            <div class="data-row"><strong>Phone:</strong> ${item.contact_phone}</div>
+                            <div class="data-row"><strong>Email:</strong> ${item.contact_email}</div>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                document.getElementById('itemName').innerText = "Item Not Found";
+                document.getElementById('itemContent').innerHTML = `<p style="color:red;">Error: ${error.message}. Check if /api/items/${itemId} exists.</p>`;
+            }
+        }
+
+        fetchDetails();
+    </script>
+</body>
+</html>
