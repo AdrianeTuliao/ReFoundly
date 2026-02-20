@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="AdReport.css">
     <link rel="stylesheet" href="AdAnalytics.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Public+Sans:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-container">
@@ -34,12 +35,12 @@
                 <div class="admin-controls">
                     <span>Admin</span>
                     <div class="notif-wrapper">
-                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
                         <span id="notifBadge" class="notif-badge">0</span>
                         <div id="notifDropdown" class="notif-dropdown">
                             <div class="notif-header">
                                 <span>Notifications</span>
-                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                                <span class="clear-notifs" id="clearNotifsBtn">Clear All</span>
                             </div>
                             <div id="notifList">
                                 <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
@@ -81,169 +82,6 @@
         </main>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const wrapper = document.querySelector(".content-wrapper");
-            if (wrapper) {
-                setTimeout(() => { wrapper.classList.add("fade-in"); }, 100);
-            }
-            loadCharts();
-        });
-
-        async function loadCharts() {
-            try {
-                const res = await fetch('/api/admin/analytics');
-                const payload = await res.json();
-                const style = getComputedStyle(document.documentElement);
-                const colorPrimary = style.getPropertyValue('--chart-primary').trim() || '#6a994e';
-                const colorSecondary = style.getPropertyValue('--chart-secondary').trim() || '#facc15';
-
-                // 1. Line Chart
-                new Chart(document.getElementById('lineChart'), {
-                    type: 'line',
-                    data: {
-                        labels: payload.monthly.map(row => row.month),
-                        datasets: [{
-                            label: 'Reports',
-                            data: payload.monthly.map(row => row.total),
-                            borderColor: colorPrimary,
-                            tension: 0.4,
-                            fill: true,
-                            backgroundColor: 'rgba(106, 153, 78, 0.1)'
-                        }]
-                    },
-                    options: { maintainAspectRatio: false }
-                });
-
-                // 2. Bar Chart
-                new Chart(document.getElementById('barChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: payload.categories.map(row => row.category),
-                        datasets: [{
-                            data: payload.categories.map(row => row.count),
-                            backgroundColor: colorPrimary
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { 
-                            x: { ticks: { autoSkip: false } },
-                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                        },
-                        plugins: { legend: { display: false } }
-                    }
-                });
-
-                // 3. Pie Chart
-                const totalResolved = payload.monthly.reduce((sum, row) => sum + (row.resolved || 0), 0);
-                const grandTotal = payload.monthly.reduce((sum, row) => sum + row.total, 0);
-                new Chart(document.getElementById('pieChart'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Resolved', 'Pending'],
-                        datasets: [{
-                            data: [totalResolved, grandTotal - totalResolved],
-                            backgroundColor: [colorPrimary, colorSecondary]
-                        }]
-                    },
-                    options: { maintainAspectRatio: false }
-                });
-            } catch (e) { console.error(e); }
-        }
-
-        // --- Notification Variables ---
-let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
-let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
-let isInitialLoad = true;
-
-document.addEventListener("DOMContentLoaded", () => {
-    // ... your existing fade-in and nav logic ...
-    
-    // Initialize Notifications
-    updateNotifBadge();
-    // Check for notifications immediately and then every 20 seconds
-    checkNotifications(); 
-    setInterval(checkNotifications, 20000);
-});
-
-async function checkNotifications() {
-    try {
-        const response = await fetch('/api/admin/items'); // Using the same endpoint as AdReport
-        const freshData = await response.json();
-
-        freshData.forEach(item => {
-            if (!knownItemIds.has(item.id)) {
-                // Trigger notification if it's a new item or if it's the first load but pending
-                if (!isInitialLoad || item.status === "Pending Approval") {
-                    addNotif(`New Report: ${item.item_name}`, item.id);
-                }
-                knownItemIds.add(item.id);
-            }
-        });
-
-        localStorage.setItem('refoundly_known_ids', JSON.stringify([...knownItemIds]));
-        isInitialLoad = false;
-    } catch (error) {
-        console.error("Notification Fetch Error:", error);
-    }
-}
-
-function addNotif(text, itemId) {
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    notifications.unshift({ text, time, itemId, read: false });
-    if (notifications.length > 20) notifications.pop();
-    
-    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
-    updateNotifBadge();
-}
-
-function updateNotifBadge() {
-    const badge = document.getElementById("notifBadge");
-    const unreadCount = notifications.filter(n => !n.read).length;
-    if(unreadCount > 0) {
-        badge.innerText = unreadCount;
-        badge.style.display = "block";
-    } else {
-        badge.style.display = "none";
-    }
-}
-
-function toggleNotifs() {
-    const drop = document.getElementById("notifDropdown");
-    const list = document.getElementById("notifList");
-    const isOpening = drop.style.display === "none" || drop.style.display === "";
-    
-    drop.style.display = isOpening ? "block" : "none";
-    
-    if(isOpening) {
-        if (notifications.length === 0) {
-            list.innerHTML = `<div style="padding: 20px; text-align: center; color: #999; font-size: 0.85rem;">No notifications</div>`;
-        } else {
-            list.innerHTML = notifications.map((n, index) => `
-                <div style="padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.85rem; color: #444; cursor: pointer; background: ${n.read ? 'white' : '#f0f7ef'}" 
-                     onclick="handleNotifClick(${index})">
-                    <strong>${n.time}</strong>: ${n.text}
-                </div>
-            `).join('');
-        }
-    }
-}
-
-function handleNotifClick(index) {
-    notifications[index].read = true;
-    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
-    updateNotifBadge();
-    window.location.href = 'AdReport.html'; // Redirect to management page
-}
-
-function clearAllNotifs() {
-    notifications = [];
-    localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
-    updateNotifBadge();
-    toggleNotifs();
-}
-    </script>
+    <script src="AdAnalytics.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
 /* RESET */
 * {
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Public Sans', sans-serif;
 }
 
 /* BACKGROUND */
@@ -21,9 +21,8 @@ body::before {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: url("Park.png") no-repeat center center;
-    background-size: cover;
-    opacity: 0.5;
+    background: #f5f5f0;
+    opacity: 1; 
 }
 
 /* LAYOUT */
@@ -48,8 +47,18 @@ body::before {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    background: #6f9b3b;
-    color: #fff;
+    background: #ffffff;
+    color: #6f9b3b;
+
+   background: rgba(255, 255, 255, 0.7);
+    
+    /* This is the magic: it blurs the park image behind the sidebar */
+    backdrop-filter: blur(10px);
+    
+    
+    /* Add a very thin border on the right to define the edge */
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    
 }
 
 .logo {
@@ -61,7 +70,7 @@ body::before {
     gap: 0px;           
     font-weight: 700;
     font-size: 1.1rem;
-    color: #ffffff;
+    color: #6f9b3b;
 }
 
 .sidebar-logo-img {
@@ -78,13 +87,27 @@ body::before {
 .sidebar nav a {
     display: block;
     padding: 14px 20px;
-    color: #fff;
+    color: #6f9b3b;
     text-decoration: none;
 }
 
 .sidebar nav a.active,
 .sidebar nav a:hover {
     background: #8cc152;
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    /* Makes the hover box only as wide as the text + padding */
+    display: inline-block; 
+    width: 229px; 
+    
+    /* Adjust padding to control the "squareness" */
+    padding: 8px 16px; 
+    
+    /* Adds space so it doesn't touch the edges of the sidebar */
+    margin: 5px 10px; 
 }
 
 .sidebar-footer {
@@ -93,7 +116,7 @@ body::before {
 }
 
 .sidebar-footer a {
-    color: #fff;
+    color: #6f9b3b;
     text-decoration: none;
 }
 

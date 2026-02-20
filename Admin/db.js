@@ -2,9 +2,10 @@ const mysql = require('mysql2');
 
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root',       // change if needed
+    user: 'refoundly_app', 
+    password: 'password123',
     database: 'refoundly_db'
-});
+});;
 
 db.connect(err => {
     if (err) {

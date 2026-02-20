@@ -96,3 +96,10 @@ canvas {
     opacity: 1;
     transform: translateY(0);
 }
+
+.chart-box, .canvas-wrapper {
+    position: relative; /* REQUIRED for responsive: true */
+    height: 300px !important; /* Forces the chart to have height */
+    width: 100%;
+}
+

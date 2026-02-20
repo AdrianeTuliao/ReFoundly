@@ -11,78 +11,45 @@
     margin: 20px 0;
 }
 
-.card1 {
+.card1, .card2, .card3, .card4 {
     display: flex;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    cursor: pointer; 
-}
-
-.card2 {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    cursor: pointer; 
-}
-
-.card3 {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
+    
+    /* Much lower opacity (0.2 to 0.4) for that frosted glass look */
+    background:rgba(98, 158, 29, 0.856) ;
+    
+    /* Keep the blur high to make it look "frosted" */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    
+    /* A thin white border is the secret to a professional glass look */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    cursor: pointer; 
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); 
+    
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    /* Since the card is now light/frosted, use your brand green for the text */
+    color: #ffffff; 
 }
 
-.card4 {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    cursor: pointer; 
+/* Hover effect for a professional interactive feel */
+.card1:hover, .card2:hover, .card3:hover, .card4:hover {
+    transform: translateY(-8px);
+    background:rgba(98, 158, 29, 0.856) ;
+    box-shadow: 0 8px 20px rgba(111, 155, 59, 0.2);  
 }
 
-.card1:hover{
-    transform: translateY(-8px); 
-    background: rgba(255, 255, 255, 0.7); 
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
+/* Ensure the icons inside the card are also visible */
+.card1 .icon-box, .card2 .icon-box, .card3 .icon-box, .card4 .icon-box {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
 }
-.card2:hover:hover {
-    transform: translateY(-8px); 
-    background: rgba(255, 255, 255, 0.7); 
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
-}   
-.card3:hover:hover {
-    transform: translateY(-8px); 
-    background: rgba(255, 255, 255, 0.7); 
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
-}
-.card4:hover:hover {
-    transform: translateY(-8px); 
-    background: rgba(255, 255, 255, 0.7); 
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15); 
-}
+
 .card p {
     margin: 0;
     font-size: 14px;
@@ -132,6 +99,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
     cursor: pointer; 
+    font-size: 18px;
 }
 
 .graph-card:hover {
@@ -143,8 +111,8 @@
 
 
 .progress-circle {
-    width: 100px;
-    height: 100px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     background: conic-gradient(#4caf50 54deg, #e0e0e0 0deg);
     display: flex;
@@ -265,7 +233,7 @@ tbody tr:not(:last-child) {
     padding: 6px 10px;
     border-radius: 6px;
     cursor: pointer;
-    background: #e5e7eb;
+    background: #737475;
 }
 
 .btn-archive-sm {
