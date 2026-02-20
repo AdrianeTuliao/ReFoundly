@@ -53,3 +53,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+    function checkSession() {
+    fetch('/user/me')
+        .then(response => {
+            if (response.status === 401) {
+                const modal = document.getElementById('session-alert');
+                if (modal) {
+                    modal.style.setProperty('display', 'flex', 'important');
+                }
+            }
+        })
+        .catch(err => {
+            console.log("Connection lost or session check failed.");
+        });
+}
+setInterval(checkSession, 5000);

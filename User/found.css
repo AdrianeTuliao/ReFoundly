@@ -474,3 +474,97 @@ footer p {
     color: #ccc;
     border-color: #eee;
 }
+
+       .expiry-modal {
+    display: none; 
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85) !important; 
+    z-index: 1000000 !important;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content-alert {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border-top: 8px solid #78A454;
+}
+
+.exclamation-icon {
+    font-size: 50px;
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+   /* The "Green Light" Highlight effect */
+        .highlight-card {
+            border: 2px solid #6B9E45 !important;
+            box-shadow: 0 0 20px rgba(107, 158, 69, 0.6) !important;
+            transform: scale(1.02);
+            transition: all 0.5s ease;
+        }
+
+        /* Modal specific styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 900px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideUp 0.4s ease-out;
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-button {
+            position: absolute;
+            right: 25px; top: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+        }
+        .status-badge-published {
+            background-color: #8dbb69;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            float: right;
+        }
+        .contact-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid #6B9E45;
+            margin-top: 20px;
+        }
+        .info-header {
+            border-bottom: 2px solid #6B9E45;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #333;
+        }
