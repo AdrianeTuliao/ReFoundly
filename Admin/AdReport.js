@@ -1,13 +1,81 @@
-/**
- * AdReport.js - Refoundly Admin Logic
- * Fixed for CSP compliance and Fetch Error handling
- */
-
 // --- GLOBAL STATE ---
 let itemsData = [];
 let filteredData = [];
 let currentPage = 1;
 const itemsPerPage = 5;
+
+const contractAddress = "0x03993a3bDF34c76DaF5ee2c8eb1FA98699177996"; 
+const contractABI = [
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": false, "internalType": "uint256", "name": "id", "type": "uint256" },
+            { "indexed": false, "internalType": "string", "name": "title", "type": "string" },
+            { "indexed": false, "internalType": "address", "name": "reporter", "type": "address" }
+        ],
+        "name": "ReportLogged",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            { "internalType": "string", "name": "_title", "type": "string" },
+            { "internalType": "string", "name": "_category", "type": "string" },
+            { "internalType": "string", "name": "_location", "type": "string" }
+        ],
+        "name": "createReport",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" }
+        ],
+        "name": "markAsResolved",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "name": "reports",
+        "outputs": [
+            { "internalType": "uint256", "name": "id", "type": "uint256" },
+            { "internalType": "string", "name": "itemTitle", "type": "string" },
+            { "internalType": "string", "name": "category", "type": "string" },
+            { "internalType": "string", "name": "location", "type": "string" },
+            { "internalType": "address", "name": "reporter", "type": "address" },
+            { "internalType": "bool", "name": "isResolved", "type": "bool" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalReports",
+        "outputs": [
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]; // Ensur
 
 let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) || [];
 let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
@@ -40,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateNotifBadge();
 });
 
-// --- API FUNCTIONS ---
+// API FUNCTIONS
 
 async function fetchItems() {
     try {
@@ -87,22 +155,51 @@ setInterval(fetchItems, 20000);
 
 async function changeStatus(id, newStatus) {
     try {
+        let txHash = null;
+        const web3 = new Web3("http://127.0.0.1:7545");
+        const accounts = await web3.eth.getAccounts();
+        const adminWallet = accounts[1]; 
+
+        // Only "Published" and "Resolved" interact with the Smart Contract
+        if (newStatus === 'Published' || newStatus === 'Resolved') {
+            const myContract = new web3.eth.Contract(contractABI, contractAddress);
+            
+            // UI Feedback: Let the admin know blockchain is working
+            console.log(`Sending ${newStatus} status to blockchain...`);
+            
+            const receipt = await myContract.methods.markAsResolved(id).send({
+                from: adminWallet,
+                gas: 300000
+            });
+            txHash = receipt.transactionHash;
+        }
+
+        // Send to server regardless (Denials will just have txHash as null)
         const response = await fetch('/api/admin/update-status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itemId: id, newStatus: newStatus })
+            body: JSON.stringify({ 
+                itemId: id, 
+                newStatus: newStatus, 
+                txHash: txHash,
+                walletAddress: adminWallet 
+            })
         });
+
         const result = await response.json();
         if (result.success) {
-            addNotif(`Item #${id} updated to ${newStatus}`, id);
-            fetchItems();
+            fetchItems(); 
+        } else {
+            alert("Database update failed: " + result.message);
         }
+
     } catch (error) { 
-        console.error("Update status error:", error); 
+        console.error("Action cancelled or failed:", error);
+        alert("Transaction failed. Check Ganache/Blockchain connection.");
     }
 }
 
-// --- UI RENDERING ---
+// UI RENDERING
 
 function renderTable() {
     const tbody = document.getElementById("reportsTableBody");
