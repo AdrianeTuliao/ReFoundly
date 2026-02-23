@@ -35,33 +35,57 @@ db.connect(err => {
     console.log('Connected to ReFoundly Database');
 });
 
-/* AUDIT LOG HELPER */
-function createAuditLog(req, action, details) {
+/* IMPROVED AUDIT LOG HELPER */
+function createAuditLog(req, action, details, txHash = null, guestEmail = null) { 
     const userId = req.session.userId || null;
     const adminId = req.session.admin ? req.session.admin.id : null;
     const ip = req.ip;
+    
+    // CHANGE: If guestEmail is provided, use it exclusively for the identifier.
+    // Only fallback to session email for regular actions (like item updates).
+    let identifier = null;
+    if (guestEmail) {
+        identifier = guestEmail;
+    } else if (req.session.admin) {
+        identifier = req.session.admin.email;
+    }
 
-    const sql = 'INSERT INTO audit_logs (user_id, admin_id, action, details, ip_address) VALUES (?, ?, ?, ?, ?)';
-    db.execute(sql, [userId, adminId, action, JSON.stringify(details), ip], (err) => {
-        if (err) console.error("Audit Logging Error:", err);
+    const finalDetails = { 
+        ...details, 
+        identifier: identifier 
+    };
+ 
+    const sql = 'INSERT INTO audit_logs (user_id, admin_id, action, details, ip_address, blockchain_tx, wallet_address) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    
+    const values = [
+        userId, 
+        adminId, 
+        action, 
+        JSON.stringify(finalDetails), 
+        ip, 
+        txHash, 
+        details.wallet || details.walletAddress || null
+    ];
+
+    db.execute(sql, values, (err) => {
+        if (err) console.error("CRITICAL Audit Logging Error:", err.message);
     });
 }
-
 
 /* MIDDLEWARE */
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            "default-src": ["'self'"], 
-            "script-src": ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+            "default-src": ["'self'"],
+            "script-src": ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "'unsafe-eval'"],
             "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
             "font-src": ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             "img-src": ["'self'", "data:", "blob:"],
-            "connect-src": ["'self'", "https://cdn.jsdelivr.net"] 
+            "connect-src": ["'self'", "https://cdn.jsdelivr.net", "http://127.0.0.1:7545"], // Essential for Web3
+            "script-src-attr": ["'unsafe-inline'"],
         },
     },
 }));
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); 
@@ -70,9 +94,16 @@ app.use(cookieParser());
 const loginLimiter = rateLimit({
     windowMs: 5 * 1000, 
     max: 5, 
+    handler: (req, res, next, options) => {
+        const targetedEmail = req.body.email || "Unknown";
+
+        // IMPORTANT: We pass {} as the 'details' object so the helper doesn't crash
+        createAuditLog(req, 'LOGIN_RATE_LIMIT_EXCEEDED', {}, null, targetedEmail); 
+
+        res.status(options.statusCode).send(options.message);
+    },
     message: { success: false, message: "Too many attempts. Try again in 5 Seconds." }
 });
-
 
 /* SESSION CONFIGURATION */
 app.use(session({
@@ -80,7 +111,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false, 
     cookie: { 
-        maxAge: 15 * 60 * 1000, 
+        maxAge: 30 * 60 * 1000, 
         httpOnly: true,  
         secure: false  
     }
@@ -96,11 +127,16 @@ app.get('/api/csrf-token', csrfProtection, (req, res) => {
 /* MFA / OTP LOGIC */
 app.post('/verify-otp', (req, res) => {
     const { otp } = req.body;
-    if (otp === req.session.tempOTP) {
+
+    if (otp == req.session.tempOTP) {
         req.session.userId = req.session.tempUserId;
+        
         delete req.session.tempOTP;
+        delete req.session.tempUserId; 
+        
         return res.json({ success: true });
     }
+    
     res.json({ success: false, message: "Invalid OTP" });
 });
 
@@ -246,13 +282,18 @@ app.get('/admin/me', requireAdmin, (req, res) => {
     });
 });
 
-/* ITEM REPORTING & HISTORY */
+/* ITEM REPORTING & HISTORY - SECURE VERSION */
 app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) => {
-    const { itemName, category, brand, dateLost, timeLost, location, description, reportType, firstName, lastName, phoneNumber, email } = req.body;
+    const { 
+        itemName, category, brand, dateLost, timeLost, location, 
+        description, reportType, firstName, lastName, phoneNumber, 
+        email, txHash, walletAddress 
+    } = req.body;
 
     if (!itemName || !category || !location || !reportType) {
-        return res.status(400).send("<script>alert('Error: Required fields are missing!'); window.history.back();</script>");
+        return res.redirect('/report.html?error=missing_fields');
     }
+    
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     const userId = req.session.userId;
 
@@ -261,9 +302,15 @@ app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) =
     
     db.execute(sql, [userId, itemName, category, brand, dateLost, timeLost, location, imagePath, description, reportType, firstName, lastName, phoneNumber, email], (err) => {
         if (err) return res.status(500).send("Database Error");
-        createAuditLog(req, 'ITEM_REPORTED', { item: itemName, type: reportType }); 
 
-        res.send("<script>alert('Report Submitted!'); window.location='/dashboard.html';</script>");
+        createAuditLog(req, 'ITEM_REPORTED', { 
+            item: itemName, 
+            type: reportType,
+            txHash: txHash || null, 
+            wallet: walletAddress || null 
+        }); 
+
+        res.status(200).json({ success: true, message: "Report logged successfully!" });
     });
 });
 
@@ -321,22 +368,32 @@ app.get('/api/admin/items', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/update-status', requireAdmin, (req, res) => {
-    const { itemId, newStatus } = req.body;
-    const sql = "UPDATE items SET status = ? WHERE id = ?";
-    
-    db.execute(sql, [newStatus, itemId], (err) => {
-        if (err) return res.status(500).json({ success: false, error: err.message });
+    const { itemId, newStatus, txHash, walletAddress } = req.body;
+    const adminEmail = req.session.admin.email; 
 
-        // --- ADD THIS LOG TRIGGER ---
-        createAuditLog(req, 'ADMIN_STATUS_UPDATE', { itemId: itemId, status: newStatus });
+    const updateSql = "UPDATE items SET status = ? WHERE id = ?";
+    db.query(updateSql, [newStatus, itemId], (err) => {
+        if (err) return res.status(500).json({ success: false, message: "DB Error" });
 
-        res.json({ success: true });
+        createAuditLog(req, `ADMIN_STATUS_${newStatus.toUpperCase()}`, { 
+            itemId, 
+            status: newStatus,
+            wallet: walletAddress 
+        }, txHash); 
+        const updateWalletSql = `UPDATE audit_logs SET wallet_address = ? WHERE blockchain_tx = ?`;
+        db.execute(updateWalletSql, [walletAddress, txHash], () => {
+            res.json({ success: true });
+        });
     });
 });
 
-app.get('/api/admin/audit-logs', requireAdmin, (req, res) => {
+app.get('/api/admin/audit_logs', requireAdmin, (req, res) => {
     const sql = `
-        SELECT a.*, u.name as user_name, ad.email as admin_email 
+        SELECT 
+            a.*, 
+            u.name as user_name, 
+            ad.email as admin_email,
+            JSON_UNQUOTE(JSON_EXTRACT(a.details, '$.identifier')) as guest_identifier
         FROM audit_logs a
         LEFT JOIN users u ON a.user_id = u.id
         LEFT JOIN admins ad ON a.admin_id = ad.id
@@ -415,6 +472,7 @@ app.get('/api/admin/analytics', (req, res) => {
         });
     });
 });
+
 
 // --- FETCH SINGLE ITEM DETAILS ---
 app.get('/api/items/:id', (req, res) => {
