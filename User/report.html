@@ -55,7 +55,15 @@
                             <select name="category" required>
                                 <option value="" disabled selected>Select Category...</option>
                                 <option value="wallet">Wallet</option>
-                                <option value="cellphone">Cellphone</option>
+                                <option value="gadgets">Gadgets</option>
+                                <option value="accessories">Accessories</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="id">ID</option>
+                                <option value="documents">Documents</option>
+                                <option value="books">Books</option>
+                                <option value="school_supplies">School Supplies</option>
+                                <option value="tools">Tools</option>
+                                <option value="others">Others</option>
                             </select>
                         </div>
 
@@ -91,7 +99,7 @@
 
                         <div class="input-group">
                             <label>Additional Information</label>
-                            <small>Details or description of your lost items.</small>
+                            <small>Description of your lost items and any relevant details (e.g landmarks, specific location, etc.  ).</small>
                             <textarea name="description" rows="6" style="resize: vertical;"></textarea>
                         </div>
                     </div>
@@ -102,8 +110,41 @@
                         <h3>Location Information</h3>
                         <div class="input-group">
                             <label>Where Lost<span>*</span></label>
-                            <small>City, Barangay, or specific landmark.</small>
-                            <input type="text" name="location" required>
+    <small>Select the Barangay/Location.</small>
+    <select name="location" id="locationSelect" required>
+        <option value="" disabled selected>Select Barangay...</option>
+        <option value="Bacayao Norte">Bacayao Norte</option>
+<option value="Bacayao Sur">Bacayao Sur</option>
+<option value="Barangay I (T. Bugallon)">Barangay I (T. Bugallon)</option>
+<option value="Barangay II (Nueva)">Barangay II (Nueva)</option>
+<option value="Barangay IV (Zamora)">Barangay IV (Zamora)</option>
+<option value="Bolosan">Bolosan</option>
+<option value="Bonuan Binloc">Bonuan Binloc</option>
+<option value="Bonuan Boquig">Bonuan Boquig</option>
+<option value="Bonuan Gueset">Bonuan Gueset</option>
+<option value="Calmay">Calmay</option>
+<option value="Carael">Carael</option>
+<option value="Caranglaan">Caranglaan</option>
+<option value="Herrero">Herrero</option>
+<option value="Lasip Chico">Lasip Chico</option>
+<option value="Lasip Grande">Lasip Grande</option>
+<option value="Lomboy">Lomboy</option>
+<option value="Lucao">Lucao</option>
+<option value="Malued">Malued</option>
+<option value="Mamalingling">Mamalingling</option>
+<option value="Mangin">Mangin</option>
+<option value="Mayombo">Mayombo</option>
+<option value="Pantal">Pantal</option>
+<option value="Poblacion Oeste">Poblacion Oeste</option>
+<option value="Pogo Chico">Pogo Chico</option>
+<option value="Pogo Grande">Pogo Grande</option>
+<option value="Pugaro Suit">Pugaro Suit</option>
+<option value="Salapingao">Salapingao</option>
+<option value="Salisay">Salisay</option>
+<option value="Tambac">Tambac</option>
+<option value="Tapuac">Tapuac</option>
+<option value="Tebeng">Tebeng</option>
+    </select>
                         </div>
                     </div>
 

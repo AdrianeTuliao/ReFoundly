@@ -33,7 +33,25 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // These will now work because you added the columns to MySQL
             if (infoContact) infoContact.textContent = user.contact_number || 'Not Set';
-            if (infoDob) infoDob.textContent = user.dob || 'Not Set';
+            // Inside your .then(user => { ... }) block
+
+if (infoDob) {
+    if (user.dob) {
+        // Create a date object from the database string
+        const dateObj = new Date(user.dob);
+        
+        // Format options: 'long' gives "May 13, 2004", 'medium' gives "May 13, 2004"
+        const formattedDate = dateObj.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        infoDob.textContent = formattedDate;
+    } else {
+        infoDob.textContent = 'Not Set';
+    }
+}
         }
     })
     .catch(err => {
