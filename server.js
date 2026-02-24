@@ -443,31 +443,68 @@ app.get('/api/admin/recent-activity', (req, res) => {
 });
 
 app.get('/api/admin/analytics', (req, res) => {
-    // Query 1: Monthly Trends
-    const monthlySql = `
-        SELECT DATE_FORMAT(incident_date, '%M') as month, COUNT(*) as total,
-        SUM(CASE WHEN status = 'Resolved' THEN 1 ELSE 0 END) as resolved
-        FROM items 
-        GROUP BY MONTH(incident_date) 
-        ORDER BY MONTH(incident_date) ASC;`;
+    const { category, range } = req.query;
 
-    // Query 2: Category Distribution
+    let conditions = ["1=1"]; 
+    let params = [];
+
+    if (category && category !== 'all') {
+        conditions.push("category = ?");
+        params.push(category);
+    }
+
+    if (range) {
+        conditions.push("created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
+        params.push(parseInt(range));
+    }
+
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    // 1. Monthly Trends (Success Rate logic)
+    const monthlySql = `
+        SELECT DATE_FORMAT(incident_date, '%M') as month, 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'Resolved' THEN 1 ELSE 0 END) as resolved,
+        SUM(CASE WHEN status = 'Denied' THEN 1 ELSE 0 END) as denied,
+        SUM(CASE WHEN status = 'Published' THEN 1 ELSE 0 END) as published
+        FROM items 
+        ${whereClause}
+        GROUP BY MONTH(incident_date), YEAR(incident_date)
+        ORDER BY MIN(incident_date) ASC;`;
+
+    // 2. "ANO" - Category Distribution
     const categorySql = `
         SELECT category, COUNT(*) as count 
         FROM items 
+        ${whereClause}
         GROUP BY category 
         ORDER BY count DESC 
         LIMIT 5;`;
 
-    db.query(monthlySql, (err, monthlyResults) => {
-        if (err) return res.status(500).json(err);
+    // 3. "SAAN" - Top Locations (NEW!)
+    const locationSql = `
+        SELECT location, COUNT(*) as count 
+        FROM items 
+        ${whereClause}
+        GROUP BY location 
+        ORDER BY count DESC 
+        LIMIT 5;`;
+
+    db.query(monthlySql, params, (err, monthlyResults) => {
+        if (err) return res.status(500).json({ error: "Monthly query failed" });
         
-        db.query(categorySql, (err, categoryResults) => {
-            if (err) return res.status(500).json(err);
-            
-            res.json({
-                monthly: monthlyResults,
-                categories: categoryResults
+        db.query(categorySql, params, (err2, categoryResults) => {
+            if (err2) return res.status(500).json({ error: "Category query failed" });
+
+            db.query(locationSql, params, (err3, locationResults) => {
+                if (err3) return res.status(500).json({ error: "Location query failed" });
+
+                // Send all three sets of data to the frontend
+                res.json({
+                    monthly: monthlyResults,
+                    categories: categoryResults,
+                    locations: locationResults
+                });
             });
         });
     });
