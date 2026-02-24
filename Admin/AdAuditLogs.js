@@ -2,6 +2,12 @@ let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) 
 let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
 let isInitialLoad = true;
 
+// --- GLOBAL STATE FOR PAGINATION & SEARCH ---
+let allLogs = [];         
+let filteredLogs = [];    
+let currentPage = 1;
+const logsPerPage = 10;
+
 document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.getElementById("audit-wrapper");
     
@@ -14,6 +20,27 @@ document.addEventListener("DOMContentLoaded", () => {
     checkNotifications(); 
     setInterval(checkNotifications, 20000);
     setInterval(fetchLogs, 30000); 
+
+    // --- SEARCH & PAGINATION LISTENERS ---
+    const searchInput = document.getElementById('auditSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+
+    document.getElementById('prevPage')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderTable();
+        }
+    });
+
+    document.getElementById('nextPage')?.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderTable();
+        }
+    });
 
     const bell = document.querySelector('.fa-bell');
     const clearBtn = document.getElementById('clearNotifsBtn');
@@ -40,69 +67,99 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// fetchLogs now stores data globally and triggers the filter/render flow
 async function fetchLogs() {
     try {
         const response = await fetch('/api/admin/audit_logs');
-        const logs = await response.json();
-        const container = document.getElementById('audit-log-body');
-        if (!container) return;
-
-        container.innerHTML = logs.map(log => {
-            let detailsObj = {};
-            try {
-                detailsObj = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
-            } catch(e) { detailsObj = { raw: log.details }; }
-
-            let displayDetails = "—";
-            if (detailsObj.item) {
-                displayDetails = `<em>Item: ${detailsObj.item} (${detailsObj.type})</em>`;
-            } else if (detailsObj.itemId) {
-                displayDetails = `<em>Update ID: ${detailsObj.itemId} -> ${detailsObj.status}</em>`;
-            }
-
-            const wallet = log.wallet_address || "No Wallet Recorded";
-            const txHash = detailsObj.txHash || log.blockchain_tx || "N/A";
-            const shortHash = txHash !== "N/A" ? `${txHash.substring(0, 6)}...${txHash.substring(txHash.length - 4)}` : "Pending/NA";
-
-            // BADGE
-            let badgeClass = "badge-report"; 
-            if (log.action.includes('ADMIN')) {
-                badgeClass = "badge-admin";  
-            } else if (log.action.includes('LOGIN')) {
-                badgeClass = "badge-security"; 
-            }
-
-            // USER DISPLAY LOGIC
-            let userDisplay = "Guest User";
-            if (log.admin_email) {
-                userDisplay = `<span class="admin-label">Admin:</span> ${log.admin_email}`;
-            } else if (log.user_name) {
-                userDisplay = log.user_name;
-            } else if (log.guest_identifier) {
-                userDisplay = `<span style="color: #d32f2f; font-weight:600;">User:</span> ${log.guest_identifier}`;
-            }
-
-            return `
-                <tr>
-                    <td><strong>${new Date(log.created_at).toLocaleDateString()}</strong><br><small>${new Date(log.created_at).toLocaleTimeString()}</small></td>
-                    <td>${userDisplay}</td>
-                    <td><span class="log-badge ${badgeClass}">${log.action.replace(/_/g, ' ')}</span></td>
-                    <td class="details-cell">${displayDetails}</td>
-                    <td>
-                        <div style="font-size: 0.8rem; line-height: 1.2;">
-                            <span style="color: #000000; font-weight: 600;">Wallet:</span> <code>${wallet}</code><br>
-                            <span style="color: #000000; font-weight: 600;">TX:</span> <code title="${txHash}">${shortHash}</code>
-                        </div>
-                    </td>
-                    <td><code>${log.ip_address}</code></td>
-                </tr>
-            `;
-        }).join('');
+        allLogs = await response.json();
+        handleSearch(); // Initialize the table display
     } catch (err) {
         console.error("Audit Fetch Error:", err);
     }
 }
-/* NOTIFICATIONS & PAGE TRANSITIONS */
+
+// Search Filter Logic
+function handleSearch() {
+    const query = document.getElementById('auditSearch')?.value.toLowerCase() || "";
+    
+    filteredLogs = allLogs.filter(log => {
+        const user = (log.admin_email || log.user_name || log.guest_identifier || "").toLowerCase();
+        const action = log.action.toLowerCase();
+        const wallet = (log.wallet_address || "").toLowerCase();
+        return user.includes(query) || action.includes(query) || wallet.includes(query);
+    });
+
+    currentPage = 1; // Reset to page 1 on search
+    renderTable();
+}
+
+// Render function containing your original row-mapping logic
+function renderTable() {
+    const container = document.getElementById('audit-log-body');
+    const pageInfo = document.getElementById('pageInfo');
+    if (!container) return;
+
+    // PAGINATION CALCULATION
+    const totalPages = Math.ceil(filteredLogs.length / logsPerPage) || 1;
+    const start = (currentPage - 1) * logsPerPage;
+    const end = start + logsPerPage;
+    const paginatedItems = filteredLogs.slice(start, end);
+
+    if (pageInfo) pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+
+    container.innerHTML = paginatedItems.map(log => {
+        // --- DATA PROCESSING LOGIC ---
+        let detailsObj = {};
+        try {
+            detailsObj = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+        } catch(e) { detailsObj = { raw: log.details }; }
+
+        let displayDetails = "—";
+        if (detailsObj.item) {
+            displayDetails = `<em>Item: ${detailsObj.item} (${detailsObj.type})</em>`;
+        } else if (detailsObj.itemId) {
+            displayDetails = `<em>Update ID: ${detailsObj.itemId} -> ${detailsObj.status}</em>`;
+        }
+
+        const wallet = log.wallet_address || "No Wallet Recorded";
+        const txHash = detailsObj.txHash || log.blockchain_tx || "N/A";
+        const shortHash = txHash !== "N/A" ? `${txHash.substring(0, 6)}...${txHash.substring(txHash.length - 4)}` : "Pending/NA";
+
+        let badgeClass = "badge-report"; 
+        if (log.action.includes('ADMIN')) {
+            badgeClass = "badge-admin";  
+        } else if (log.action.includes('LOGIN')) {
+            badgeClass = "badge-security"; 
+        }
+
+        let userDisplay = "Guest User";
+        if (log.admin_email) {
+            userDisplay = `<span class="admin-label">Admin:</span> ${log.admin_email}`;
+        } else if (log.user_name) {
+            userDisplay = log.user_name;
+        } else if (log.guest_identifier) {
+            userDisplay = `<span style="color: #d32f2f; font-weight:600;">User:</span> ${log.guest_identifier}`;
+        }
+
+        return `
+            <tr>
+                <td><strong>${new Date(log.created_at).toLocaleDateString()}</strong><br><small>${new Date(log.created_at).toLocaleTimeString()}</small></td>
+                <td>${userDisplay}</td>
+                <td><span class="log-badge ${badgeClass}">${log.action.replace(/_/g, ' ')}</span></td>
+                <td class="details-cell">${displayDetails}</td>
+                <td>
+                    <div style="font-size: 0.8rem; line-height: 1.2;">
+                        <span style="color: #000000; font-weight: 600;">Wallet:</span> <code>${wallet}</code><br>
+                        <span style="color: #000000; font-weight: 600;">TX:</span> <code title="${txHash}">${shortHash}</code>
+                    </div>
+                </td>
+                <td><code>${log.ip_address}</code></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/* --- NOTIFICATION & TRANSITION LOGIC --- */
 async function checkNotifications() {
     try {
         const response = await fetch('/api/admin/items');

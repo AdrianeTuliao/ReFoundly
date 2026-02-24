@@ -81,7 +81,6 @@ async function loadDashboardData() {
     }
 }
 
-// Separate function for table rendering to keep it clean
 function renderActivityTable(activity) {
     const tbody = document.getElementById("activity-table-body");
     if (!tbody) return;
@@ -94,16 +93,26 @@ function renderActivityTable(activity) {
         if (type === 'lost') statusClass = "lost-badge"; 
         else if (type === 'found') statusClass = "found-badge";
 
+        // --- 12-HOUR FORMAT LOGIC ---
+        let displayTime = "N/A";
+        if (item.incident_time) {
+            // Split the "HH:MM:SS" string from the database
+            const [hours, minutes] = item.incident_time.split(':');
+            let h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12; // Convert 0 to 12 for midnight
+            displayTime = `${h}:${minutes} ${ampm}`;
+        }
+
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><strong>${item.item_name}</strong></td>
             <td>${item.category}</td>
             <td><span class="badge ${statusClass}">${item.report_type}</span></td>
             <td>${item.formattedDate || "N/A"}</td> 
-            <td class="action-cell"></td>
+            <td>${displayTime}</td> <td class="action-cell"></td>
         `;
 
-        // Create button manually to attach listener (Avoiding onclick string)
         const manageBtn = document.createElement('button');
         manageBtn.className = 'btn-view';
         manageBtn.textContent = 'Manage';

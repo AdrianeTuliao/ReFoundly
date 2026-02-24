@@ -55,25 +55,38 @@
                 </div>
             </header>
 
-            <section class="content-wrapper" id="audit-wrapper">
-                <h1 style="font-family: 'Montserrat', sans-serif;">Security Audit Logs</h1>
-                <div class="audit-table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>User / Admin</th>
-                                <th>Action</th>
-                                <th>Details</th>
-                                <th>Blockchain Proof</th> 
-                                <th>IP Address</th>
-                            </tr>
-                        </thead>
-                        <tbody id="audit-log-body">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
+           <section class="content-wrapper" id="audit-wrapper">
+    <div class="audit-page-header">
+        <h1 style="font-family: 'Montserrat', sans-serif;">Security Audit Logs</h1>
+        <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="userSearch" placeholder="Search Users">
+                    </div>
+    </div>
+
+    <div class="audit-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User / Admin</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Blockchain Proof</th> 
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody id="audit-log-body"></tbody>
+        </table>
+        
+        <div class="pagination">
+            <button id="prevPage" class="pag-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button id="nextPage" class="pag-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
         </main>
     </div>
 
