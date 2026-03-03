@@ -4,6 +4,7 @@ const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
+
 const multer = require('multer');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -20,6 +21,34 @@ const db = mysql.createConnection({
     password: process.env.DB_PASSWORD || 'password123',
     database: process.env.DB_NAME || 'refoundly_db'
 });
+
+/* BLOCKCHAIN SETUP */
+let refoundlyContract;
+let adminWallet;
+
+try {
+    const { ethers } = require('ethers'); 
+    const rpcUrl = process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:7545';
+    
+    // Compatibility check for Ethers v5 vs v6
+    const provider = ethers.providers 
+        ? new ethers.providers.JsonRpcProvider(rpcUrl) 
+        : new ethers.JsonRpcProvider(rpcUrl);
+
+    if (process.env.ADMIN_PRIVATE_KEY) {
+        adminWallet = new ethers.Wallet(process.env.ADMIN_PRIVATE_KEY, provider);
+        const contractABI = ["function markAsResolved(uint256 _id) public"];
+        
+        refoundlyContract = new ethers.Contract(
+            process.env.CONTRACT_ADDRESS, 
+            contractABI, 
+            adminWallet
+        );
+        console.log("✅ Blockchain Service Initialized");
+    }
+} catch (error) {
+    console.error("⚠️ Blockchain Setup Failed:", error.message);
+}
 
 const storage = multer.diskStorage({
     destination: './User/uploads/',
@@ -41,8 +70,6 @@ function createAuditLog(req, action, details, txHash = null, guestEmail = null) 
     const adminId = req.session.admin ? req.session.admin.id : null;
     const ip = req.ip;
     
-    // CHANGE: If guestEmail is provided, use it exclusively for the identifier.
-    // Only fallback to session email for regular actions (like item updates).
     let identifier = null;
     if (guestEmail) {
         identifier = guestEmail;
@@ -55,7 +82,7 @@ function createAuditLog(req, action, details, txHash = null, guestEmail = null) 
         identifier: identifier 
     };
  
-    const sql = 'INSERT INTO audit_logs (user_id, admin_id, action, details, ip_address, blockchain_tx, wallet_address) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const sql = 'INSERT INTO audit_logs (user_id, admin_id, action, details, ip_address, blockchain_tx, wallet_address, gas_used) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
     
     const values = [
         userId, 
@@ -64,7 +91,8 @@ function createAuditLog(req, action, details, txHash = null, guestEmail = null) 
         JSON.stringify(finalDetails), 
         ip, 
         txHash, 
-        details.wallet || details.walletAddress || null
+        details.wallet || details.walletAddress || null,
+        details.gasUsed || details.gas || null
     ];
 
     db.execute(sql, values, (err) => {
@@ -81,7 +109,7 @@ app.use(helmet({
             "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
             "font-src": ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             "img-src": ["'self'", "data:", "blob:"],
-            "connect-src": ["'self'", "https://cdn.jsdelivr.net", "http://127.0.0.1:7545"], // Essential for Web3
+            "connect-src": ["'self'", "https://cdn.jsdelivr.net", "http://127.0.0.1:7545"], 
             "script-src-attr": ["'unsafe-inline'"],
         },
     },
@@ -94,15 +122,16 @@ app.use(cookieParser());
 const loginLimiter = rateLimit({
     windowMs: 5 * 1000, 
     max: 5, 
-    handler: (req, res, next, options) => {
+    // Ensure the handler returns JSON so script.js doesn't crash
+    handler: (req, res) => {
         const targetedEmail = req.body.email || "Unknown";
-
-        // IMPORTANT: We pass {} as the 'details' object so the helper doesn't crash
         createAuditLog(req, 'LOGIN_RATE_LIMIT_EXCEEDED', {}, null, targetedEmail); 
-
-        res.status(options.statusCode).send(options.message);
-    },
-    message: { success: false, message: "Too many attempts. Try again in 5 Seconds." }
+        
+        res.status(429).json({ 
+            success: false, 
+            message: "Too many attempts. Try again in 5 Seconds." 
+        });
+    }
 });
 
 /* SESSION CONFIGURATION */
@@ -124,83 +153,88 @@ app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
-/* MFA / OTP LOGIC */
-app.post('/verify-otp', (req, res) => {
-    const { otp } = req.body;
-
-    if (otp == req.session.tempOTP) {
-        req.session.userId = req.session.tempUserId;
-        
-        delete req.session.tempOTP;
-        delete req.session.tempUserId; 
-        
-        return res.json({ success: true });
-    }
-    
-    res.json({ success: false, message: "Invalid OTP" });
-});
-
-/* USER AUTHENTICATION */
-app.post('/login', loginLimiter, (req, res) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) return res.status(400).json({ success: false, message: "Missing fields" });
-
-    const query = 'SELECT * FROM users WHERE email = ?';
-    db.execute(query, [email], async (err, results) => {
-        if (err) return res.status(500).json({ success: false, message: 'Database Error' });
-        if (results.length === 0) return res.json({ success: false, message: 'Invalid Credentials' });
-
-        const user = results[0];
-        const match = await bcrypt.compare(password, user.password);
-        
-        if (!match) return res.json({ success: false, message: 'Invalid Credentials' });
-
-        // MFA TRIGGER: Generate 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        req.session.tempOTP = otp;
-        req.session.tempUserId = user.id;
-
-        console.log(`[MFA DEBUG] OTP for ${email}: ${otp}`); 
-        res.json({ success: true, mfaRequired: true, message: "OTP sent to your email (check console)" });
-    });
-});
-
-// User Registration with Strong Password Check
-app.post('/register', async (req, res) => {
-    const { name, email, password, contact_number, dob } = req.body;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Password too weak! Must include uppercase, lowercase, number, and special character." 
-        });
-    }
-
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const sql = 'INSERT INTO users (name, email, password, contact_number, dob) VALUES (?, ?, ?, ?, ?)';
-        db.execute(sql, [name, email, hashedPassword, contact_number, dob], (err) => {
-            if (err) return res.status(500).json({ success: false, message: 'Email already exists' });
-            res.json({ success: true, message: 'ReFoundly account created securely!' });
-        });
-    } catch (err) {
-        res.status(500).json({ success: false });
-    }
-});
-
-function requireAdmin(req, res, next) {
-    if (!req.session.admin) return res.redirect('/AdLogin.html');
-    next();
-}
-
+/* FIXED MIDDLEWARE: Sends JSON error instead of HTML redirect for APIs */
 function requireUser(req, res, next) {
     if (req.session && req.session.userId) {
         next();
     } else {
+        // Check if the request expects JSON
+        if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.status(401).json({ success: false, message: "Session expired. Please log in again." });
+        }
         res.redirect('/index.html');
     }
+}
+
+/* ADMIN AUTHENTICATION MIDDLEWARE */
+function requireAdmin(req, res, next) {
+    if (req.session && req.session.admin) {
+        next();
+    } else {
+        if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.status(403).json({ success: false, message: "Admin access denied." });
+        }
+        res.redirect('/index.html'); // Or your admin login page
+    }
+}
+
+/* FIXED ROUTE: Ensure this is ABOVE app.use(express.static) */
+app.post('/api/update-tx', requireUser, csrfProtection, (req, res) => {
+    const { itemId, txHash, gasUsed } = req.body;
+    const sql = "UPDATE items SET blockchain_tx = ?, gas_used = ? WHERE id = ?";
+
+    db.execute(sql, [txHash, gasUsed, itemId], (err) => {
+        if (err) return res.status(500).json({ success: false });
+
+        // CRITICAL: This is what actually writes to the audit_logs table!
+        createAuditLog(req, 'BLOCKCHAIN_ANCHOR_SUCCESS', { 
+            itemId, 
+            txHash, 
+            gasUsed 
+        }, txHash);
+
+        res.json({ success: true, message: "Logged and Anchored!" });
+    });
+});
+
+/* REGISTRATION FORM SUBMISSION */
+function handleRegistrationSubmit() {
+    signUpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        // ... (Keep your validation checks) ...
+
+        const data = { /* ... your form data ... */ };
+
+        try {
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+
+            if (result.otpSent) {
+                const otp = prompt("Verify your email. Enter OTP:");
+                if (!otp) return;
+
+                const verifyRes = await fetch('/verify-registration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp: otp.trim() })
+                });
+
+                const verifyResult = await verifyRes.json();
+                if (verifyResult.success) {
+                    alert("Account created! Please log in.");
+                    container.classList.remove("active"); // Sends user to login page
+                } else {
+                    alert("Invalid OTP.");
+                }
+            }
+        } catch (error) {
+            alert("Registration failed.");
+        }
+    });
 }
 
 /* USER LOGOUT */
@@ -212,7 +246,7 @@ app.post('/logout', (req, res) => {
     });
 });
 
-app.get('/user/me', (req, res) => {
+app.get('/user/me', requireUser, (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authorized" });
     const query = "SELECT name, email, contact_number, dob FROM users WHERE id = ?";
     db.query(query, [req.session.userId], (err, results) => {
@@ -221,25 +255,240 @@ app.get('/user/me', (req, res) => {
     });
 });
 
-/* USER REGISTRATION */
+const nodemailer = require('nodemailer');
+
+// 1. Setup the Gmail Sender
+const transporter = nodemailer.createTransport({
+    pool: true, // This is the magic line
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // use TLS
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+    // This helps prevent timeouts
+    maxConnections: 5,
+    maxMessages: 100
+});
+
+// Add this right after your transporter definition
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log("❌ Transporter connection error:", error);
+  } else {
+    console.log("🚀 Server is ready to take our messages");
+  }
+});
+
+/* --- REAL GMAIL OTP FOR REGISTRATION --- */
 app.post('/register', async (req, res) => {
-    const { name, email, password, contact_number, dob } = req.body;
+    const { name, username, email, password, contact_number, dob } = req.body; 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const sql = 'INSERT INTO users (name, email, password, contact_number, dob) VALUES (?, ?, ?, ?, ?)';
-        
-        db.execute(sql, [name, email, hashedPassword, contact_number, dob], (err, result) => {
-            if (err) {
-                console.error("Reg Error:", err);
-                return res.status(500).json({ success: false, message: 'Email already exists or DB error' });
-            }
-            res.json({ success: true, message: 'Account created securely!' });
-        });
+        req.session.regData = { name, username, email, password: hashedPassword, contact_number, dob };
+        req.session.regOTP = otp;
+
+        const mailOptions = {
+            from: `"ReFoundly" <${process.env.EMAIL_USER}>`, 
+            to: email,
+            subject: 'Verify your recovery email', // Matched your screenshot
+            html: `
+                <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #3c4043; font-size: 24px; font-weight: 400; margin-top: 0;">Verify your email</h1>
+                    </div>
+                    
+                    <div style="color: #3c4043; font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
+                        ReFoundly received a request to use <b>${email}</b> as a recovery email for ReFoundly Account <b>${username}</b>.
+                        <br><br>
+                        Use this code to finish setting up this recovery email:
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <span style="font-size: 40px; letter-spacing: 5px; color: #202124;">${otp}</span>
+                    </div>
+
+                    <div style="color: #70757a; font-size: 12px; margin-bottom: 20px;">
+                        This code will expire in 24 hours.
+                    </div>
+
+                    <div style="color: #70757a; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                        If you don't recognize <b>${process.env.EMAIL_USER}</b>, you can safely ignore this email.
+                    </div>
+                </div>`
+        };
+
+        transporter.sendMail(mailOptions).catch(err => console.error("Registration Mail Error:", err));
+        res.json({ success: true, otpSent: true, message: "Verification code sent!" }); 
+
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Hashing Error' });
+        console.error("Registration Error:", err);
+        res.status(500).json({ success: false, message: "Server error during registration." });
     }
 });
+
+/* --- OPTIMIZED GMAIL OTP FOR LOGIN --- */
+app.post('/login', loginLimiter, (req, res) => {
+    const { email, password } = req.body;
+
+    db.execute('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+        if (err || results.length === 0) return res.json({ success: false, message: 'User not found' });
+
+        const user = results[0];
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) return res.json({ success: false, message: 'Wrong password' });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        req.session.tempOTP = otp;
+        req.session.tempUserId = user.id;
+
+        const mailOptions = {
+            from: `"ReFoundly" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Your Login Security Code',
+            html: `
+                <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #3c4043; font-size: 24px; font-weight: 400; margin-top: 0;">Login Verification</h1>
+                    </div>
+                    
+                    <div style="color: #3c4043; font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
+                        A login request was made for your account. Use this code to finish logging in:
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <span style="font-size: 40px; letter-spacing: 5px; color: #7aa340; font-weight: bold;">${otp}</span>
+                    </div>
+
+                    <div style="color: #70757a; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                        This code is highly sensitive. If you did not request this, please change your password immediately.
+                    </div>
+                </div>`
+        };
+
+        transporter.sendMail(mailOptions).catch(mailErr => console.error("Background Mail Error:", mailErr));
+
+        return res.json({ 
+            success: true, 
+            mfaRequired: true, 
+            message: "OTP sent! Please check your inbox." 
+        });
+    });
+});
+
+/* --- FORGOT PASSWORD: SEND OTP --- */
+app.post('/api/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    db.execute('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+        if (err || results.length === 0) {
+            return res.json({ success: false, message: "If that email exists, an OTP has been sent." });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        req.session.resetOTP = otp;
+        req.session.resetEmail = email;
+
+        const mailOptions = {
+            from: `"ReFoundly Verification" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Reset your ReFoundly password',
+            html: `
+                <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #3c4043; font-size: 24px; font-weight: 400; margin-top: 0;">Password Reset</h1>
+                    </div>
+                    <div style="color: #3c4043; font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
+                        We received a request to reset your password. Use the code below to proceed:
+                    </div>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <span style="font-size: 40px; letter-spacing: 5px; color: #7aa340; font-weight: bold;">${otp}</span>
+                    </div>
+                    <div style="color: #70757a; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                        This code is highly sensitive. If you did not request this, please change your password immediately.
+                    </div>
+                </div>`
+        };
+
+        transporter.sendMail(mailOptions).catch(err => console.error("Reset Mail Error:", err));
+        res.json({ success: true, message: "OTP sent to your email." });
+    });
+});
+
+/* --- FORGOT PASSWORD: VERIFY & UPDATE --- */
+app.post('/api/reset-password', async (req, res) => {
+    const { otp, newPassword } = req.body;
+
+    if (otp === req.session.resetOTP) {
+        try {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            const email = req.session.resetEmail;
+
+            db.execute('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email], (err) => {
+                if (err) return res.status(500).json({ success: false });
+
+                // Clear reset session
+                delete req.session.resetOTP;
+                delete req.session.resetEmail;
+
+                res.json({ success: true, message: "Password updated successfully!" });
+            });
+        } catch (err) {
+            res.status(500).json({ success: false });
+        }
+    } else {
+        res.json({ success: false, message: "Invalid OTP code." });
+    }
+});
+
+/* --- FIXED VERIFICATION ROUTE --- */
+app.post('/verify-registration', loginLimiter, (req, res) => {
+    const { otp } = req.body;
+    
+    // 1. Check if OTP matches
+    if (otp === req.session.regOTP) {
+        const d = req.session.regData;
+
+        // 2. Insert into DB (Ensure columns match your table!)
+        // Safer way to write the insert
+const sql = 'INSERT INTO users SET ?';
+const userData = {
+    name: d.name,
+    username: d.username,
+    email: d.email,
+    password: d.password,
+    contact_number: d.contact_number,
+    dob: d.dob
+};
+
+db.query(sql, userData, (err) => {
+    if (err) {
+        console.error("DB Insert Error:", err);
+        return res.json({ success: false, message: "Database error." });
+    }
+            
+            // 3. Clear session data after success
+            delete req.session.regOTP;
+            delete req.session.regData;
+            
+            res.json({ success: true });
+        });
+    } else { 
+        res.json({ success: false, message: "Invalid OTP code." }); 
+    }
+});
+
+app.post('/verify-otp', loginLimiter, (req, res) => {
+    if (req.body.otp === req.session.tempOTP) {
+        req.session.userId = req.session.tempUserId; // Log them in for real
+        res.json({ success: true });
+    } else { res.json({ success: false }); }
+});
+
 
 /* ADMIN AUTHENTICATION */
 app.post('/admin/login', (req, res) => {
@@ -284,36 +533,55 @@ app.get('/admin/me', requireAdmin, (req, res) => {
 
 /* ITEM REPORTING & HISTORY - SECURE VERSION */
 app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) => {
+    // 1. EXTRACTION (Was missing in your snippet)
+    const userId = req.session.userId;
     const { 
-        itemName, category, brand, dateLost, timeLost, location, 
-        description, reportType, firstName, lastName, phoneNumber, 
-        email, txHash, walletAddress 
+        itemName, category, brand, dateLost, timeLost, 
+        location, description, reportType, firstName, 
+        lastName, phoneNumber, email, txHash, gasUsed, walletAddress 
     } = req.body;
 
-    if (!itemName || !category || !location || !reportType) {
-        return res.redirect('/report.html?error=missing_fields');
-    }
-    
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    const userId = req.session.userId;
 
-    const sql = `INSERT INTO items (user_id, item_name, category, brand, incident_date, incident_time, location, image_path, description, report_type, contact_firstname, contact_lastname, contact_phone, contact_email, status) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending Approval')`;
+    // 2. DATABASE EXECUTION
+    const sql = `INSERT INTO items (
+                    user_id, item_name, category, brand, incident_date, 
+                    incident_time, location, image_path, description, 
+                    report_type, contact_firstname, contact_lastname, 
+                    contact_phone, contact_email, status, blockchain_tx, gas_used
+                ) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending Approval', ?, ?)`;
     
-    db.execute(sql, [userId, itemName, category, brand, dateLost, timeLost, location, imagePath, description, reportType, firstName, lastName, phoneNumber, email], (err) => {
-        if (err) return res.status(500).send("Database Error");
+    db.execute(sql, [
+        userId, itemName, category, brand, dateLost, timeLost, location, 
+        imagePath, description, reportType, firstName, lastName, 
+        phoneNumber, email, txHash || null, gasUsed || null
+    ], (err, results) => { 
+        if (err) {
+            console.error("DB Error:", err);
+            return res.status(500).json({ success: false, message: "Database Error" });
+        }
 
+        const newReportId = results.insertId;
+
+        // 3. AUDIT LOGGING
         createAuditLog(req, 'ITEM_REPORTED', { 
             item: itemName, 
+            itemId: newReportId,
             type: reportType,
             txHash: txHash || null, 
-            wallet: walletAddress || null 
+            wallet: walletAddress || null,
+            gasUsed: gasUsed || 0 
         }); 
 
-        res.status(200).json({ success: true, message: "Report logged successfully!" });
+        // 4. RESPONSE
+        res.status(200).json({ 
+            success: true, 
+            itemId: newReportId, 
+            message: "Database record created" 
+        });
     });
 });
-
 
 app.get('/api/user-history', requireUser, (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate, TIME_FORMAT(incident_time, '%h:%i %p') as formattedTime 
@@ -328,13 +596,28 @@ app.get('/api/user-history', requireUser, (req, res) => {
 /**
  * PUBLIC & DASHBOARD API
  */
+
+// Risk4: Mask contact info for privacy optimization
 app.get('/api/items/published', (req, res) => {
-    const sql = `SELECT id, item_name, category, report_type, image_path, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate 
-                 FROM items WHERE status = 'Published' ORDER BY created_at DESC LIMIT 12`;
-    /* This route fetches only the necessary fields for the homepage and dashboard listings, which improves performance by reducing the amount of data sent to the client. The frontend can then make a separate API call to fetch full details when a user clicks on an item. */
+    const sql = `SELECT * FROM items WHERE status = 'Published' ORDER BY created_at DESC LIMIT 12`;
+    
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(results);
+
+        const maskedResults = results.map(item => {
+            return {
+                ...item,
+
+                contact_phone: item.contact_phone 
+                    ? item.contact_phone.replace(/(\d{4})(\d+)(\d{3})/, "$1-****-$3") 
+                    : "N/A",
+                contact_email: item.contact_email 
+                    ? item.contact_email.replace(/(.{2})(.*)(@.*)/, "$1**$3") 
+                    : "N/A"
+            };
+        });
+
+        res.json(maskedResults);
     });
 });
 
@@ -367,24 +650,53 @@ app.get('/api/admin/items', requireAdmin, (req, res) => {
     });
 });
 
-app.post('/api/admin/update-status', requireAdmin, (req, res) => {
-    const { itemId, newStatus, txHash, walletAddress } = req.body;
-    const adminEmail = req.session.admin.email; 
+app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
+    const { itemId, newStatus } = req.body;
+    let txHash = null;
 
-    const updateSql = "UPDATE items SET status = ? WHERE id = ?";
-    db.query(updateSql, [newStatus, itemId], (err) => {
-        if (err) return res.status(500).json({ success: false, message: "DB Error" });
+    console.log(`[Admin Action] Updating Item ${itemId} to ${newStatus}`);
 
-        createAuditLog(req, `ADMIN_STATUS_${newStatus.toUpperCase()}`, { 
-            itemId, 
-            status: newStatus,
-            wallet: walletAddress 
-        }, txHash); 
-        const updateWalletSql = `UPDATE audit_logs SET wallet_address = ? WHERE blockchain_tx = ?`;
-        db.execute(updateWalletSql, [walletAddress, txHash], () => {
-            res.json({ success: true });
+    try {
+        // 1. BLOCKCHAIN LOGIC (Only if contract is initialized and status is Published/Resolved)
+        if (refoundlyContract && (newStatus === 'Published' || newStatus === 'Resolved')) {
+            try {
+                console.log(`[Blockchain] Sending transaction for ID: ${itemId}...`);
+                const tx = await refoundlyContract.markAsResolved(itemId);
+                const receipt = await tx.wait(); 
+                txHash = receipt.hash || receipt.transactionHash;
+                console.log(`✅ Blockchain Success: ${txHash}`);
+            } catch (bcErr) {
+                console.error("⚠️ Blockchain Transaction Failed (ID mismatch?), continuing with DB update:", bcErr.message);
+                // We don't 'return' here so the DB still updates!
+            }
+        }
+
+        // 2. DATABASE LOGIC (Always runs)
+        const updateSql = "UPDATE items SET status = ? WHERE id = ?";
+        db.query(updateSql, [newStatus, itemId], (err) => {
+            if (err) {
+                console.error("❌ Database Update Error:", err);
+                return res.status(500).json({ success: false, message: "Database Error" });
+            }
+
+            // 3. AUDIT LOGGING
+            createAuditLog(req, `ADMIN_STATUS_${newStatus.toUpperCase()}`, { 
+                itemId, 
+                status: newStatus,
+                wallet: adminWallet ? adminWallet.address : "Server-Only"
+            }, txHash); 
+
+            res.json({ 
+                success: true, 
+                message: txHash ? "Status updated on Chain & DB" : "Status updated in DB (Blockchain skipped/failed)",
+                txHash: txHash 
+            });
         });
-    });
+
+    } catch (criticalErr) {
+        console.error("❌ Critical Route Error:", criticalErr);
+        res.status(500).json({ success: false, message: "Server encountered a critical error" });
+    }
 });
 
 app.get('/api/admin/audit_logs', requireAdmin, (req, res) => {
@@ -412,9 +724,9 @@ app.use(express.static(path.join(__dirname, 'Admin')));
 app.get('/dashboard.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'dashboard.html')));
 app.get('/user_acc.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'user_acc.html')));
 app.get('/AdHome.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'Admin', 'AdHome.html')));
+app.get('/AdReport.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'Admin', 'AdReport.html')));
 
-
-app.get('/api/admin/stats', (req, res) => {
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
     const sql = `
         SELECT 
             SUM(CASE WHEN report_type = 'Lost' THEN 1 ELSE 0 END) as totalLost,
@@ -430,7 +742,7 @@ app.get('/api/admin/stats', (req, res) => {
     });
 });
 
-app.get('/api/admin/recent-activity', (req, res) => {
+app.get('/api/admin/recent-activity', requireAdmin, (req, res) => {
     const sql = `SELECT id, item_name, category, status, report_type, brand, incident_time,
                  DATE_FORMAT(incident_date, '%b. %d, %Y') as formattedDate 
                  FROM items 
@@ -442,7 +754,7 @@ app.get('/api/admin/recent-activity', (req, res) => {
     });
 });
 
-app.get('/api/admin/analytics', (req, res) => {
+app.get('/api/admin/analytics', requireAdmin, (req, res) => {
     const { category, range } = req.query;
 
     let conditions = ["1=1"]; 
