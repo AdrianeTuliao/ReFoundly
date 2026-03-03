@@ -7,22 +7,15 @@
     --text-dark: #333;
 }
 
+html, body {
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    
-    /* 'to top' para magsimula ang dark green sa baba paakyat sa light green/white */
-    background: linear-gradient(to top, #94D85D 0%, #f0f7eb 30%);
-    
-    /* Ito ang pipigil sa background na gumalaw habang nag-sscroll */
-    background-attachment: fixed;
-    
-    /* Sinisiguro nito na laging sakop ang buong viewport */
-    background-size: cover;
-    background-repeat: no-repeat;
-    
+    background-color: var(--bg-gray);
     color: var(--text-dark);
-    min-height: 100vh;
 }
 
 /* Header & Nav */
@@ -38,13 +31,13 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+.navbar h1 { color: white; margin: 0; font-size: 1.7rem; }
 
 .nav-icons {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;
+    font-size: 1.7rem;
 }
 
 .nav-icons i { cursor: pointer; transition: 0.3s; }
@@ -57,7 +50,7 @@ body {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;     
+    font-size: 1.7rem;     
 }
 
 .icons-link:hover {
@@ -78,7 +71,7 @@ body {
 
 .hamburger {
     cursor: pointer;
-    font-size: 2rem; /* Kapantay ng ibang icons mo */
+    font-size: 1.7rem; 
     color: white;
     transition: 0.3s;
     display: flex;
@@ -358,6 +351,9 @@ body {
 
 .card-body { padding: 20px; }
 .badge { background: var(--accent-green); color: white; padding: 3px 10px; border-radius: 4px; font-size: 18px; }
+
+
+
 
 /* Pagination Container (View All, Page Info, Next) */
 .pagination-container {

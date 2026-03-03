@@ -7,6 +7,10 @@
     --text-dark: #333;
 }
 
+html, body {
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -33,7 +37,7 @@ body {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;
+    font-size: 1.7rem;
 }
 
 .nav-icons i { cursor: pointer; transition: 0.3s; }
@@ -46,7 +50,7 @@ body {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;     
+    font-size: 1.7rem;     
 }
 
 .icons-link:hover {
@@ -67,7 +71,7 @@ body {
 
 .hamburger {
     cursor: pointer;
-    font-size: 2rem; /* Kapantay ng ibang icons mo */
+    font-size: 1.7rem; 
     color: white;
     transition: 0.3s;
     display: flex;

@@ -1,6 +1,6 @@
 // Blockchain Connections 
 const web3 = new Web3("http://127.0.0.1:7545");
-const contractAddress = "0x476893BF34ac2e30259b51B1B08809eE6860F2b5";
+const contractAddress = "0xd920b4Ad789Dc5ceAbd59DfF1427912153deaD73";
 const contractABI = [
     { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
     {
@@ -15,6 +15,7 @@ const contractABI = [
     },
     {
         "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" }, 
             { "internalType": "string", "name": "_title", "type": "string" },
             { "internalType": "string", "name": "_category", "type": "string" },
             { "internalType": "string", "name": "_location", "type": "string" }
@@ -85,68 +86,83 @@ fileInput.addEventListener('change', function() {
     }
 });
 
-/* FORM SUBMISSION (BLOCKCHAIN + DATABASE) */
+/* FORM SUBMISSION LOGIC */
 document.getElementById('mainForm').addEventListener('submit', async function(event) {
     event.preventDefault(); 
-    
     const submitBtn = document.getElementById('btnSubmit');
     const itemName = document.getElementById('itemName').value;
     const category = document.querySelector('select[name="category"]').value;
-    const location = document.querySelector('input[name="location"]').value;
+    const location = document.getElementById('locationSelect').value;
 
     try {
         submitBtn.disabled = true;
-        submitBtn.innerText = "⏳ Confirming on Blockchain...";
+        submitBtn.innerText = "⏳ Saving to Database...";
 
-        // GET CSRF TOKEN FOR SECURE SERVER COMMUNICATION
         const csrfResponse = await fetch('/api/csrf-token');
         const { csrfToken } = await csrfResponse.json();
 
-        // GANACHE WALLET INTERACTION
-        const accounts = await web3.eth.getAccounts();
-        const userWallet = accounts[0]; 
-        
-        // SMART CONTRACT INTERACTION
-        const receipt = await myContract.methods.createReport(itemName, category, location)
-            .send({ from: userWallet, gas: 300000 });
-
-        const txHash = receipt.transactionHash;
-        console.log("Blockchain Success! TX:", txHash);
-        
-        // PREPARE FORM DATA FOR SERVER
         const formData = new FormData(this);
-        formData.append('txHash', txHash);
-        formData.append('walletAddress', userWallet);
-
-        submitBtn.innerText = "💾 Saving to Audit Logs...";
-
-        // POST to Server with CSRF Token
         const response = await fetch('/submit-report', { 
             method: 'POST',
             body: formData,
-            headers: {
-                'CSRF-Token': csrfToken
+            headers: { 
+                'CSRF-Token': csrfToken,
+                'Accept': 'application/json'
             }
         });
 
-		// HANDLE SERVER RESPONSE
-        if (response.ok) {
-            const result = await response.json(); 
-            alert("Report submitted and logged to Blockchain!");
-            window.location.href = "/dashboard.html"; 
-        } else {
-            throw new Error("Server processed the request but returned an error.");
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Server session expired or internal error");
         }
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "Server Error");
+
+        const realId = result.itemId; 
+
+        /* STEP 2: BLOCKCHAIN ANCHORING (PRODUCTION MODE) */
+        submitBtn.innerText = "🔗 Anchoring to Blockchain...";
+        const accounts = await web3.eth.getAccounts();
+        const activeWallet = accounts[0]; 
+
+        // Match realId from MySQL to the Blockchain ID
+        const receipt = await myContract.methods
+            .createReport(Number(realId), itemName, category, location)
+            .send({ 
+                from: activeWallet, 
+                gas: 300000 
+            });
+
+        /* STEP 3: SYNC DATABASE & AUDIT LOG */
+        const updateRes = await fetch('/api/update-tx', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'CSRF-Token': csrfToken 
+            },
+            body: JSON.stringify({
+                itemId: realId,
+                txHash: receipt.transactionHash,
+                gasUsed: receipt.gasUsed.toString() 
+            })
+        });
+
+        if (!updateRes.ok) console.warn("Blockchain synced, but Audit Logging failed.");
+
+        alert("Success! Report secured on DB and Blockchain.");
+        window.location.href = "/dashboard.html";
 
     } catch (error) {
         console.error("Submission Error:", error);
-        alert("Error: " + error.message);
+        alert("Submission Failed: " + error.message);
         submitBtn.disabled = false;
         submitBtn.innerText = "Submit Report";
     }
 });
 
-/* AUTO-FILL & SESSION */
+/* AUTO-FILL & SESSION LOGIC */
 window.onload = async () => {
     try {
         const response = await fetch('/user/me');
@@ -175,4 +191,4 @@ function checkSession() {
         }
     }).catch(() => console.log("Connection lost."));
 }
-setInterval(checkSession, 10000); 
+setInterval(checkSession, 10000);

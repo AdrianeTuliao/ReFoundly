@@ -23,7 +23,7 @@ body {
     justify-content: center;
 }
 
-/* Update these values in your CSS */
+/* Update the container to maintain a stable structure */
 .container {
     background-color: var(--glass-bg);
     border-radius: 40px;
@@ -31,12 +31,11 @@ body {
     position: relative;
     overflow: hidden;
     width: 90%;          
-    max-width: 1100px; /* Slightly wider to accommodate labels */
-    
-    height: 90vh;      /* Increased from 85vh */
-    max-height: 950px; /* Increased from 650px to fit all 7 input fields */
+    max-width: 1100px; 
+    height: 90vh;      
+    max-height: 700px; /* FIXED HEIGHT for the overall glass box */
     min-height: 550px; 
-    
+    display: flex;
     backdrop-filter: blur(10px);   
 }
 
@@ -53,18 +52,39 @@ body {
 }
 
 
-/* Forms */
+/* Update the form to scroll internally with cleaner spacing */
 form {
     background-color: #fff;
     display: flex;
     flex-direction: column;
-    padding: 10px;            /* Keeps nice inner spacing */
-    height: 700px;             /* CHANGED: Let the form size itself to content */
-    max-height: 95%;          /* Prevents it from touching the absolute edges */
-    width: 90%;                                
-    justify-content: flex-start; /* CHANGED: Moves content to the top */
+    height: 650px;           
+    width: 100%; 
+    max-width: 480px;        
+    overflow-y: hidden;        
+    overflow-x: hidden;      
+    padding: 10px;                       
+    justify-content: flex-start; 
     border: 3px solid var(--green-main);
-    border-radius: 30px;              /* Adds a tiny, consistent gap between all inputs */
+    border-radius: 30px;
+    margin: auto;            
+}
+
+form::-webkit-scrollbar {
+    width: 1px;
+}
+
+form::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 20px 0;         
+}
+
+form::-webkit-scrollbar-thumb {
+    background: var(--green-light);
+    border-radius: 10px;
+}
+
+form::-webkit-scrollbar-thumb:hover {
+    background: var(--green-main);
 }
 
 form p {
@@ -363,4 +383,191 @@ input {
 
 .toggle-password:hover {
     color: #5cb85c; /* ReFoundly green on hover */
+}
+
+/* Tablet and Small Laptops */
+@media (max-width: 768px) {
+    .container {
+        height: auto;
+        min-height: 800px;
+        flex-direction: column;
+    }
+
+    .form-container {
+        width: 100%;
+        position: relative;
+    }
+
+    .toggle-container {
+        display: none; 
+    }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+    form h1 {
+        font-size: 24px; /
+    }
+
+    input {
+        padding: 15px; 
+        font-size: 16px; 
+    }
+    
+    .brand-title {
+        font-size: 32px;
+        text-align: center;
+    }
+}
+
+/* Styling for sanitized error outputs */
+.error-msg {
+    background: rgba(217, 83, 79, 0.1);
+    color: #d9534f;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin: 10px 0;
+    border-left: 4px solid #d9534f;
+    display: none; 
+}
+
+/* Ensure password visibility toggle stays clickable on all screens */
+.password-container i {
+    right: 15px;
+    z-index: 100;
+}
+
+/* Floating Label Container */
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+/* The actual Label text */
+.input-group label {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff; /* Matches your form white */
+    padding: 0 5px;
+    font-size: 14px;
+    color: #888;
+    pointer-events: none;
+    transition: 0.2s ease all;
+}
+
+/* Floating effect: moves up when focused or has text */
+input:focus + label,
+input:not(:placeholder-shown) + label {
+    top: 0;
+    font-size: 11px;
+    color: #7aa340; /* ReFoundly Green */
+    font-weight: bold;
+}
+
+/* Tooltip with Triangle Arrow */
+.input-tooltip-neat {
+    position: absolute;
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    width: 210px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow: visible; /* Keeps arrow visible */
+}
+
+.input-tooltip-neat::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent #ffffff transparent transparent;
+}
+
+.req-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.otp-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.otp-box {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    max-width: 350px;
+    width: 90%;
+}
+
+.otp-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 20px 0;
+    font-size: 24px;
+    letter-spacing: 8px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+.otp-box button {
+    width: 100%;
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-link { background: none !important; color: #666 !important; margin-top: 10px; font-size: 14px; }
+
+.forgot-password-box {
+    position: absolute;
+    top: 0;
+    height: 93%;
+    width: 50%;
+    left: 0;
+    z-index: 10;
+    display: none;
+    margin-top: 25px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* Ensure the form inside matches your other forms */
+.forgot-password-box form {
+    padding: 0 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
 }

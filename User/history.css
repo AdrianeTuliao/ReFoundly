@@ -8,6 +8,10 @@
     --danger-red: #e74c3c;
 }
 
+html, body {
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -34,14 +38,14 @@ body {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;
+    font-size: 1.7rem;
 }
 
 .icons-link {
     text-decoration: none; 
     color: white;
     display: flex;
-    font-size: 2rem; 
+   font-size: 1.7rem;
     transition: 0.3s;
 }
 
@@ -60,7 +64,7 @@ body {
 
 .hamburger {
     cursor: pointer;
-    font-size: 2rem;
+    font-size: 1.7rem;
     color: white;
     transition: 0.3s;
 }

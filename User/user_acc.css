@@ -7,6 +7,8 @@
     --text-dark: #333;
 }
 
+
+
 /* Apply this to the outer-most tags */
 html, body {
     height: 100%;
@@ -52,7 +54,7 @@ body {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;
+    font-size: 1.7rem;
 }
 
 .nav-icons i { cursor: pointer; transition: 0.3s; }
@@ -65,7 +67,7 @@ body {
     color: white;
     display: flex;
     gap: 20px;
-    font-size: 2rem;     
+   font-size: 1.7rem;
 }
 
 .icons-link:hover {
@@ -86,7 +88,7 @@ body {
 
 .hamburger {
     cursor: pointer;
-    font-size: 2rem; /* Kapantay ng ibang icons mo */
+    font-size: 1.7rem;
     color: white;
     transition: 0.3s;
     display: flex;
