@@ -6,7 +6,7 @@ let isInitialLoad = true;
 let allLogs = [];         
 let filteredLogs = [];    
 let currentPage = 1;
-const logsPerPage = 10;
+const logsPerPage = 8;
 
 document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.getElementById("audit-wrapper");
@@ -89,7 +89,7 @@ function handleSearch() {
         return user.includes(query) || action.includes(query) || wallet.includes(query);
     });
 
-    currentPage = 1; // Reset to page 1 on search
+    currentPage = 1;
     renderTable();
 }
 
@@ -153,7 +153,6 @@ function renderTable() {
                         <span style="color: #000000; font-weight: 600;">TX:</span> <code title="${txHash}">${shortHash}</code>
                     </div>
                 </td>
-                <td><code>${log.ip_address}</code></td>
             </tr>
         `;
     }).join('');

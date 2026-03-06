@@ -117,13 +117,13 @@ tbody tr:not(:last-child) {
 
 /* ACTION BUTTONS */
 .btn-view { 
-    background-color: #495057; /* Darker charcoal gray for better contrast */
+    background-color: #495057; 
     color: #ffffff !important; 
     padding: 6px 12px; 
     border: none; 
     border-radius: 4px; 
     cursor: pointer; 
-    font-weight: 600; /* Makes text thicker and easier to see */
+    font-weight: 600;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -154,28 +154,25 @@ tbody tr:not(:last-child) {
 .btn-danger { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
 .btn-secondary { background: #bdc3c7; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
 
-/* Card Style Modal */
 .view-card {
-    width: 600px !important; /* Wider for the two-column look */
+    width: 600px !important; 
     padding: 0 !important;
     overflow: hidden;
 }
 
-/* Reduce header height and align content */
 .modal-header {
     background-color: #6a994e;
     color: white;
-    padding: 10px 20px; /* Reduced from 15px to 10px */
+    padding: 10px 20px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 50px; /* Force a consistent slim height */
+    height: 50px; 
 }
 
-/* Make X button larger and easier to click */
 .close-x {
     cursor: pointer;
-    font-size: 1.8rem; /* Increased size */
+    font-size: 1.8rem; 
     font-weight: bold;
     line-height: 1;
     transition: color 0.2s;
@@ -185,17 +182,15 @@ tbody tr:not(:last-child) {
     color: #e0e0e0;
 }
 
-/* Reduce the gray background area behind the avatar */
 .view-image-container {
     text-align: center;
-    padding: 15px 0; /* Reduced vertical padding */
+    padding: 15px 0; 
     background: #f9f9f9;
     border-bottom: 1px solid #eee;
 }
 
-/* Adjust avatar size slightly to keep the card compact */
 .view-avatar-large {
-    width: 100px; /* Slightly smaller to save vertical space */
+    width: 100px; 
     height: 100px;
     background: #ddd;
     border-radius: 10px;
@@ -231,26 +226,23 @@ tbody tr:not(:last-child) {
     margin-top: 5px;
 }
 
-/* Container to put image and text side-by-side */
 .profile-main {
     display: flex;
-    align-items: center; /* Centers items vertically */
+    align-items: center; 
     padding: 30px;
-    gap: 40px; /* Space between photo and details */
+    gap: 40px;
 }
 
-/* Circular Avatar Styling */
 .view-avatar-circle {
     width: 150px;
     height: 150px;
-    background-color: #e0e0e0; /* Gray placeholder */
-    border-radius: 50%; /* Makes it a circle */
+    background-color: #e0e0e0; 
+    border-radius: 50%; 
     border: 4px solid #f9f9f9;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    flex-shrink: 0; /* Prevents the circle from squishing */
+    flex-shrink: 0; 
 }
 
-/* Adjusting the grid to fit beside the photo */
 .info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -264,9 +256,8 @@ tbody tr:not(:last-child) {
     color: #333;
 }
 
-/* Header Adjustments */
 .modal-header {
-    position: relative; /* Essential for the X button positioning */
+    position: relative; 
 }
 
 .close-x {
@@ -274,38 +265,34 @@ tbody tr:not(:last-child) {
     font-size: 2rem;
     font-weight: bold;
     color: white;
-    z-index: 1000;      /* Keeps it above other elements */
-    padding: 10px;      /* Increases the "hit area" so it's easier to click */
+    z-index: 1000;      
+    padding: 10px;     
     line-height: 1;
 }
 
-/* Footer Button styling */
 .modal-actions {
     padding: 15px 20px;
     border-top: 1px solid #eee;
     text-align: right;
 }
 
-/* Red Header to match View Modal style */
 .modal-header-danger {
-    background-color: #d9534f; /* Danger Red */
+    background-color: #d9534f; 
     color: white;
-    padding: 10px 20px; /* Slimmer height like we did for View */
+    padding: 10px 20px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 50px; 
-    border-radius: 8px 8px 0 0; /* Rounds only top corners */
+    border-radius: 8px 8px 0 0; 
 }
 
-/* Make sure the Suspend Modal content has 0 padding so header hits the edges */
 #suspendModal .modal-content {
     padding: 0 !important; 
     overflow: hidden;
-    width: 500px; /* Slightly narrower than View, but same style */
+    width: 500px;
 }
 
-/* Large White X for Red Header */
 .close-x-white {
     cursor: pointer;
     font-size: 1.8rem;
@@ -314,16 +301,122 @@ tbody tr:not(:last-child) {
     line-height: 1;
 }
 
-/* Step 1 & 2 Container padding */
 #confirmView, #reasonView {
-    padding: 30px; /* Adds space back to the body since content padding is 0 */
+    padding: 30px; 
 }
 
 .reason-checklist {
     text-align: left;
     padding: 20px;
-    background: #fff8f8; /* Very light red tint */
-    border-left: 4px solid #d9534f; /* Matches the green detail box style */
+    background: #fff8f8; 
+    border-left: 4px solid #d9534f; 
     border-radius: 4px;
     margin-bottom: 20px;
+}
+
+.modal-header-deactivate {
+    background-color: #4a4a4a; 
+    color: white;
+    padding: 10px 20px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px; 
+    border-radius: 8px 8px 0 0; 
+}
+#toggleStatusModal .modal-content {
+    padding: 0 !important; 
+    overflow: hidden;
+    width: 500px;
+    border: none;
+}
+
+.toggle-body-padding {
+    padding: 30px;
+    text-align: center;
+}
+
+#addUserModal .btn-generate {
+    position: relative;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.modal-content {
+    position: relative;
+    z-index: 10001;
+}
+
+.input-tooltip-neat {
+    position: absolute;
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    width: 210px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow: visible; 
+}
+
+.input-tooltip-neat::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent #ffffff transparent transparent;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    white-space: nowrap; 
+}
+
+.action-buttons button {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.action-buttons button:hover {
+    opacity: 0.8;
+}
+
+.btn-deactivate, .btn-activate {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border: none !important; 
+    box-shadow: none !important; 
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-family: 'Public Sans', sans-serif;
+    line-height: normal;
+    height: auto;
+}
+
+#inactivityContainer {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f0f7ff; 
+    border-radius: 6px;
+    border: 1px solid #bee3f8;
+}
+
+#inactivityContainer p {
+    margin: 0;
+    color: #2b6cb0;
+    font-weight: 600;
 }

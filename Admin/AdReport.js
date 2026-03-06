@@ -2,9 +2,9 @@
 let itemsData = [];
 let filteredData = [];
 let currentPage = 1;
-const itemsPerPage = 5;
+const itemsPerPage = 6;
 
-const contractAddress = "0x03993a3bDF34c76DaF5ee2c8eb1FA98699177996"; 
+const contractAddress = "0xd920b4Ad789Dc5ceAbd59DfF1427912153deaD73"; 
 const contractABI = [
     {
         "inputs": [],
@@ -21,17 +21,19 @@ const contractABI = [
         "name": "ReportLogged",
         "type": "event"
     },
-    {
-        "inputs": [
-            { "internalType": "string", "name": "_title", "type": "string" },
-            { "internalType": "string", "name": "_category", "type": "string" },
-            { "internalType": "string", "name": "_location", "type": "string" }
-        ],
-        "name": "createReport",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
+    // Replace the createReport part in your contractABI array with this:
+{
+    "inputs": [
+        { "internalType": "uint256", "name": "_id", "type": "uint256" }, 
+        { "internalType": "string", "name": "_title", "type": "string" },
+        { "internalType": "string", "name": "_category", "type": "string" },
+        { "internalType": "string", "name": "_location", "type": "string" }
+    ],
+    "name": "createReport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+},
     {
         "inputs": [
             { "internalType": "uint256", "name": "_id", "type": "uint256" }
@@ -154,27 +156,33 @@ async function fetchItems() {
 setInterval(fetchItems, 20000);
 
 async function changeStatus(id, newStatus) {
+    let txHash = null;
+    let gasUsed = null;
+    const web3 = new Web3("http://127.0.0.1:7545");
+    const accounts = await web3.eth.getAccounts();
+    const adminWallet = accounts[0];
+
+    /* LOCATE THIS IN YOUR AdReport.js */
+if (newStatus === 'Resolved') {
     try {
-        let txHash = null;
-        const web3 = new Web3("http://127.0.0.1:7545");
-        const accounts = await web3.eth.getAccounts();
-        const adminWallet = accounts[1]; 
+        const myContract = new web3.eth.Contract(contractABI, contractAddress);
+        
+        // Use Number() to ensure the ID is a valid uint256 for the Solidity require check
+        const receipt = await myContract.methods.markAsResolved(Number(id)).send({
+            from: adminWallet,
+            gas: 200000 
+        });
 
-        // Only "Published" and "Resolved" interact with the Smart Contract
-        if (newStatus === 'Published' || newStatus === 'Resolved') {
-            const myContract = new web3.eth.Contract(contractABI, contractAddress);
-            
-            // UI Feedback: Let the admin know blockchain is working
-            console.log(`Sending ${newStatus} status to blockchain...`);
-            
-            const receipt = await myContract.methods.markAsResolved(id).send({
-                from: adminWallet,
-                gas: 300000
-            });
-            txHash = receipt.transactionHash;
-        }
+        txHash = receipt.transactionHash;
+        gasUsed = receipt.gasUsed;
+    } catch (blockchainError) {
+        console.error("Blockchain error:", blockchainError);
+        // This is where your 'Report does not exist' revert is caught
+    }
+}
 
-        // Send to server regardless (Denials will just have txHash as null)
+    // 2. DATABASE LOGIC (Always runs for Approve, Deny, AND successfully resolved items)
+    try {
         const response = await fetch('/api/admin/update-status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -182,20 +190,19 @@ async function changeStatus(id, newStatus) {
                 itemId: id, 
                 newStatus: newStatus, 
                 txHash: txHash,
+                gasUsed: gasUsed, 
                 walletAddress: adminWallet 
             })
         });
 
         const result = await response.json();
         if (result.success) {
-            fetchItems(); 
+            fetchItems(); // UI Refreshes here
         } else {
             alert("Database update failed: " + result.message);
         }
-
-    } catch (error) { 
-        console.error("Action cancelled or failed:", error);
-        alert("Transaction failed. Check Ganache/Blockchain connection.");
+    } catch (dbError) {
+        console.error("Database error:", dbError);
     }
 }
 
@@ -291,25 +298,39 @@ function confirmStatusChange(id, newStatus) {
     const title = document.getElementById("confirmTitle");
     const msg = document.getElementById("confirmMessage");
     const yesBtn = document.getElementById("confirmYes");
-    const item = itemsData.find(i => i.id === id);
 
-    if (newStatus === 'Published') {
-        header.style.backgroundColor = "#28a745"; title.innerText = "Approve Item";
-        msg.innerText = `Approve "${item.item_name}"?`; yesBtn.style.backgroundColor = "#28a745";
-    } else if (newStatus === 'Denied') {
-        header.style.backgroundColor = "#dc3545"; title.innerText = "Deny Item";
-        msg.innerText = `Deny "${item.item_name}"?`; yesBtn.style.backgroundColor = "#dc3545";
-    } else {
-        header.style.backgroundColor = "#17a2b8"; title.innerText = "Mark Resolved";
-        msg.innerText = `Mark "${item.item_name}" as resolved?`; yesBtn.style.backgroundColor = "#17a2b8";
+    // Robust ID matching to handle number vs string
+    const item = itemsData.find(i => String(i.id) === String(id));
+
+    // 1. SAFETY CHECK: Prevents the "Uncaught TypeError" if item is missing
+    if (!item) {
+        console.error(`Item ID ${id} not found. Try refreshing the page.`);
+        return;
     }
+
+    // 2. UI CONFIGURATION based on status
+    const config = {
+        'Published': { color: "#28a745", title: "Approve Item", verb: "Approve" },
+        'Denied':    { color: "#dc3545", title: "Deny Item",    verb: "Deny" },
+        'Resolved':  { color: "#17a2b8", title: "Mark Resolved", verb: "Resolve" }
+    };
+
+    const settings = config[newStatus] || config['Resolved'];
+
+    header.style.backgroundColor = settings.color;
+    title.innerText = settings.title;
+    msg.innerText = `${settings.verb} "${item.item_name}"?`;
+    yesBtn.style.backgroundColor = settings.color;
 
     modal.style.display = "block";
 
-    // Re-bind click listener securely
+    // 3. SECURE LISTENER REBINDING
+    // Clones the button to remove old event listeners from previous clicks
     const newYesBtn = yesBtn.cloneNode(true);
     yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+    
     newYesBtn.addEventListener('click', () => {
+        console.log(`Executing ${newStatus} for Item ID: ${id}`);
         changeStatus(id, newStatus);
         closeConfirmModal();
     });
@@ -416,11 +437,3 @@ function updateCounts() {
     }
 }
 
-db.execute(sql, [...params], (err) => {
-    if (err) return res.status(500).send("Database Error");
-    
-    // ADD THIS LINE
-    createAuditLog(req, 'ITEM_REPORTED', { itemName, reportType }); 
-
-    res.send("<script>alert('Report Submitted!'); window.location='/dashboard.html';</script>");
-});

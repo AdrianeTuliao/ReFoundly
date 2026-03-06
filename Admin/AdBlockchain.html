@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Blockchain Ledger</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdHome.css"> 
+    <link rel="stylesheet" href="AdBlockchain.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar"> 
+            <div class="logo">
+                <img src="ReLogo.png" alt="Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+                <a href="AdBlockchain.html"  class="active"><i class="fa-solid fa-link"></i> Blockchain Ledger</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="AdLogin.html"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+             <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                              <span class="clear-notifs" id="clearNotifsBtn">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+
+            <section class="content-wrapper" id="blockchain-wrapper">
+                <div class="page-header">
+                        <h1 style="font-family: 'Montserrat', sans-serif;">Blockchain Ledger</h1>
+                </div>
+                
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="bcSearch" placeholder="0x... or Block #" onkeyup="filterLedger()">
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container blockchain-card">
+                        <h3>Smart Contract Activity</h3>
+                        <div class="table-container" style="overflow-x:auto;">
+                            <table style="width:100%; border-collapse: collapse; margin-top: 15px;">
+                                <thead>
+                                    <tr style="text-align: left; border-bottom: 2px solid var(--chart-primary);">
+                                        <th style="padding: 12px;">Timestamp / Block</th>
+                                        <th>Event Type</th>
+                                        <th>Transaction Hash</th>
+                                        <th>Details</th>
+                                        <th>Gas Used</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="blockchain-log-body">
+                                    </tbody>
+                            </table>
+                            <div class="pagination">
+            <button id="prevPage" class="pag-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button id="nextPage" class="pag-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+    <script src="AdBlockchain.js"></script>
+</body>
+</html>

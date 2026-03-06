@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Audit Logs</title>
     <link rel="stylesheet" href="Global.css">
-    <link rel="stylesheet" href="AdHome.css"> <link rel="stylesheet" href="AdAuditLogs.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="AdHome.css"> 
+    <link rel="stylesheet" href="AdAuditLogs.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
@@ -27,6 +29,7 @@
                 <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
                 <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
                 <a href="AdAuditLogs.html" class="active"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+                <a href="AdBlockchain.html"><i class="fa-solid fa-link"></i> Blockchain Ledger</a>
             </nav>
             <div class="sidebar-footer">
                 <hr>
@@ -56,14 +59,14 @@
             </header>
 
            <section class="content-wrapper" id="audit-wrapper">
-    <div class="audit-page-header">
-        <h1 style="font-family: 'Montserrat', sans-serif;">Security Audit Logs</h1>
-        <div class="filter-bar">
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="userSearch" placeholder="Search Users">
+                    <div class="audit-page-header">
+                        <h1 style="font-family: 'Montserrat', sans-serif;">Security Audit Logs</h1>
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="userSearch" placeholder="Search Users">
+                        </div>
                     </div>
-    </div>
 
     <div class="audit-table-container">
         <table>
@@ -74,7 +77,6 @@
                     <th>Action</th>
                     <th>Details</th>
                     <th>Blockchain Proof</th> 
-                    <th>IP Address</th>
                 </tr>
             </thead>
             <tbody id="audit-log-body"></tbody>
