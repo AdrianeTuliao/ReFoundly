@@ -14,6 +14,14 @@ const adminUsersRoute = require("./Routes/adminUsers.js");
 
 const app = express();
 
+const cors = require('cors');
+app.use(cors({
+    origin: 'http://127.0.0.1:5500', 
+    credentials: true
+}));
+
+app.use(express.json());
+
 /* DATABASE CONNECTION */
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
@@ -118,20 +126,30 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); 
 
-/* LIMIT LOG IN ATTEMPTS */
-const loginLimiter = rateLimit({
-    windowMs: 5 * 1000, 
-    max: 5, 
-    // Ensure the handler returns JSON so script.js doesn't crash
+// Prevents clicking "Login" faster than once every 3 seconds.
+const burstLimiter = rateLimit({
+    windowMs: 3 * 1000, 
+    max: 3, 
+    message: { success: false, message: "Slow down! Wait 3 seconds." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const bruteForceLimiter = rateLimit({
+    windowMs: 3 * 60 * 1000, 
+    max: 3, 
     handler: (req, res) => {
-        const targetedEmail = req.body.email || "Unknown";
-        createAuditLog(req, 'LOGIN_RATE_LIMIT_EXCEEDED', {}, null, targetedEmail); 
+        // Calculate remaining seconds: (Reset Time - Current Time) / 1000
+        const secondsLeft = Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000);
         
         res.status(429).json({ 
             success: false, 
-            message: "Too many attempts. Try again in 5 Seconds." 
+            message: "Too many attempts.", 
+            retryAfter: secondsLeft 
         });
-    }
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 /* SESSION CONFIGURATION */
@@ -139,6 +157,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'refoundly_secure_key_2026',
     resave: false,
     saveUninitialized: false, 
+    rolling: true,
     cookie: { 
         maxAge: 30 * 60 * 1000, 
         httpOnly: true,  
@@ -146,27 +165,26 @@ app.use(session({
     }
 }));
 
-/* CSRF PROTECTION SETUP */
+/* --- CSRF PROTECTION SETUP --- */
 const csrfProtection = csrf({ cookie: true });
 
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
-/* FIXED MIDDLEWARE: Sends JSON error instead of HTML redirect for APIs */
 function requireUser(req, res, next) {
     if (req.session && req.session.userId) {
         next();
     } else {
-        // Check if the request expects JSON
+        // This block prevents the 302 Redirect and sends a 401 instead
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            return res.status(401).json({ success: false, message: "Session expired. Please log in again." });
+            return res.status(401).json({ success: false, message: "Session expired." });
         }
         res.redirect('/index.html');
     }
 }
 
-/* ADMIN AUTHENTICATION MIDDLEWARE */
+/* --- ADMIN AUTHENTICATION MIDDLEWARE --- */
 function requireAdmin(req, res, next) {
     if (req.session && req.session.admin) {
         next();
@@ -174,11 +192,11 @@ function requireAdmin(req, res, next) {
         if (req.headers.accept && req.headers.accept.includes('application/json')) {
             return res.status(403).json({ success: false, message: "Admin access denied." });
         }
-        res.redirect('/index.html'); // Or your admin login page
+        res.redirect('/index.html'); 
     }
 }
 
-/* FIXED ROUTE: Ensure this is ABOVE app.use(express.static) */
+/* --- API ROUTES --- */
 app.post('/api/update-tx', requireUser, csrfProtection, (req, res) => {
     const { itemId, txHash, gasUsed } = req.body;
     const sql = "UPDATE items SET blockchain_tx = ?, gas_used = ? WHERE id = ?";
@@ -197,45 +215,7 @@ app.post('/api/update-tx', requireUser, csrfProtection, (req, res) => {
     });
 });
 
-/* REGISTRATION FORM SUBMISSION */
-function handleRegistrationSubmit() {
-    signUpForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        // ... (Keep your validation checks) ...
 
-        const data = { /* ... your form data ... */ };
-
-        try {
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await response.json();
-
-            if (result.otpSent) {
-                const otp = prompt("Verify your email. Enter OTP:");
-                if (!otp) return;
-
-                const verifyRes = await fetch('/verify-registration', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ otp: otp.trim() })
-                });
-
-                const verifyResult = await verifyRes.json();
-                if (verifyResult.success) {
-                    alert("Account created! Please log in.");
-                    container.classList.remove("active"); // Sends user to login page
-                } else {
-                    alert("Invalid OTP.");
-                }
-            }
-        } catch (error) {
-            alert("Registration failed.");
-        }
-    });
-}
 
 /* USER LOGOUT */
 app.post('/logout', (req, res) => {
@@ -257,23 +237,22 @@ app.get('/user/me', requireUser, (req, res) => {
 
 const nodemailer = require('nodemailer');
 
-// 1. Setup the Gmail Sender
+// Gmail Sender
 const transporter = nodemailer.createTransport({
-    pool: true, // This is the magic line
+    pool: true, 
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // use TLS
+    port: 587,
+    secure: false, 
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    // This helps prevent timeouts
+    // Prevent timeouts
     maxConnections: 5,
     maxMessages: 100
 });
 
-// Add this right after your transporter definition
 transporter.verify(function (error, success) {
   if (error) {
     console.log("❌ Transporter connection error:", error);
@@ -295,7 +274,7 @@ app.post('/register', async (req, res) => {
         const mailOptions = {
             from: `"ReFoundly" <${process.env.EMAIL_USER}>`, 
             to: email,
-            subject: 'Verify your recovery email', // Matched your screenshot
+            subject: 'Verify your email', 
             html: `
                 <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px;">
                     <div style="text-align: center; margin-bottom: 30px;">
@@ -303,7 +282,7 @@ app.post('/register', async (req, res) => {
                     </div>
                     
                     <div style="color: #3c4043; font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
-                        ReFoundly received a request to use <b>${email}</b> as a recovery email for ReFoundly Account <b>${username}</b>.
+                        ReFoundly received a request to use <b>${email}</b> as your email for ReFoundly Account <b>${username}</b>.
                         <br><br>
                         Use this code to finish setting up this recovery email:
                     </div>
@@ -331,9 +310,9 @@ app.post('/register', async (req, res) => {
     }
 });
 
-/* --- OPTIMIZED GMAIL OTP FOR LOGIN --- */
-app.post('/login', loginLimiter, (req, res) => {
-    const { email, password } = req.body;
+/* --- OPTIMIZED GMAIL OTP FOR LOGIN (WITH TRUSTED DEVICE LOGIC) --- */
+app.post('/login', burstLimiter, bruteForceLimiter, (req, res) => {
+    const { email, password, isTrustedDevice } = req.body;
 
     db.execute('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
         if (err || results.length === 0) return res.json({ success: false, message: 'User not found' });
@@ -341,6 +320,15 @@ app.post('/login', loginLimiter, (req, res) => {
         const user = results[0];
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.json({ success: false, message: 'Wrong password' });
+
+        if (isTrustedDevice === true) {
+            req.session.userId = user.id; 
+            return res.json({ 
+                success: true, 
+                mfaRequired: false, 
+                message: "Welcome back! Login successful." 
+            });
+        }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         req.session.tempOTP = otp;
@@ -445,46 +433,29 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
-/* --- FIXED VERIFICATION ROUTE --- */
-app.post('/verify-registration', loginLimiter, (req, res) => {
+app.post('/verify-registration', (req, res) => {
     const { otp } = req.body;
-    
-    // 1. Check if OTP matches
+
     if (otp === req.session.regOTP) {
-        const d = req.session.regData;
-
-        // 2. Insert into DB (Ensure columns match your table!)
-        // Safer way to write the insert
-const sql = 'INSERT INTO users SET ?';
-const userData = {
-    name: d.name,
-    username: d.username,
-    email: d.email,
-    password: d.password,
-    contact_number: d.contact_number,
-    dob: d.dob
-};
-
-db.query(sql, userData, (err) => {
-    if (err) {
-        console.error("DB Insert Error:", err);
-        return res.json({ success: false, message: "Database error." });
-    }
+        const { name, username, email, password, contact_number, dob } = req.session.regData;
+        
+        const sql = "INSERT INTO users (name, username, email, password, contact_number, dob) VALUES (?, ?, ?, ?, ?, ?)";
+        db.execute(sql, [name, username, email, password, contact_number, dob], (err) => {
+            if (err) return res.status(500).json({ success: false, message: "Database error" });
             
-            // 3. Clear session data after success
             delete req.session.regOTP;
             delete req.session.regData;
             
             res.json({ success: true });
         });
-    } else { 
-        res.json({ success: false, message: "Invalid OTP code." }); 
+    } else {
+        res.status(400).json({ success: false, message: "Invalid OTP code" });
     }
 });
 
-app.post('/verify-otp', loginLimiter, (req, res) => {
+app.post('/verify-otp', burstLimiter, (req, res) => {
     if (req.body.otp === req.session.tempOTP) {
-        req.session.userId = req.session.tempUserId; // Log them in for real
+        req.session.userId = req.session.tempUserId; 
         res.json({ success: true });
     } else { res.json({ success: false }); }
 });
@@ -533,7 +504,7 @@ app.get('/admin/me', requireAdmin, (req, res) => {
 
 /* ITEM REPORTING & HISTORY - SECURE VERSION */
 app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) => {
-    // 1. EXTRACTION (Was missing in your snippet)
+    // EXTRACTION (Was missing in your snippet)
     const userId = req.session.userId;
     const { 
         itemName, category, brand, dateLost, timeLost, 
@@ -543,7 +514,7 @@ app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) =
 
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // 2. DATABASE EXECUTION
+    // DATABASE EXECUTION
     const sql = `INSERT INTO items (
                     user_id, item_name, category, brand, incident_date, 
                     incident_time, location, image_path, description, 
@@ -564,7 +535,7 @@ app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) =
 
         const newReportId = results.insertId;
 
-        // 3. AUDIT LOGGING
+        // AUDIT LOGGING
         createAuditLog(req, 'ITEM_REPORTED', { 
             item: itemName, 
             itemId: newReportId,
@@ -574,7 +545,7 @@ app.post('/submit-report', requireUser, upload.single('itemImage'), (req, res) =
             gasUsed: gasUsed || 0 
         }); 
 
-        // 4. RESPONSE
+        // RESPONSE
         res.status(200).json({ 
             success: true, 
             itemId: newReportId, 
@@ -597,7 +568,7 @@ app.get('/api/user-history', requireUser, (req, res) => {
  * PUBLIC & DASHBOARD API
  */
 
-// Risk4: Mask contact info for privacy optimization
+// Mask contact info for privacy optimization
 app.get('/api/items/published', (req, res) => {
     const sql = `SELECT * FROM items WHERE status = 'Published' ORDER BY created_at DESC LIMIT 12`;
     
@@ -639,6 +610,16 @@ app.get('/api/items/found', (req, res) => {
     });
 });
 
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+});
+
+// Add this to your server.js
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
+
 //* ADMIN USER MANAGEMENT ROUTES */
 app.use("/api/admin-users", adminUsersRoute);
 
@@ -667,7 +648,6 @@ app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
                 console.log(`✅ Blockchain Success: ${txHash}`);
             } catch (bcErr) {
                 console.error("⚠️ Blockchain Transaction Failed (ID mismatch?), continuing with DB update:", bcErr.message);
-                // We don't 'return' here so the DB still updates!
             }
         }
 
@@ -718,13 +698,14 @@ app.get('/api/admin/audit_logs', requireAdmin, (req, res) => {
 });
 
 /* STATIC FILES & DASHBOARD PAGES */
-app.use(express.static(path.join(__dirname, 'User')));
-app.use(express.static(path.join(__dirname, 'Admin')));
-
 app.get('/dashboard.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'dashboard.html')));
 app.get('/user_acc.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'user_acc.html')));
 app.get('/AdHome.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'Admin', 'AdHome.html')));
 app.get('/AdReport.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'Admin', 'AdReport.html')));
+
+app.use(express.static(path.join(__dirname, 'User')));
+app.use(express.static(path.join(__dirname, 'Admin')));
+app.use('/uploads', express.static(path.join(__dirname, 'User', 'uploads')));
 
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
     const sql = `
@@ -849,6 +830,33 @@ app.get('/api/items/:id', (req, res) => {
     });
 });
 
+// Add Admin account
+app.post('/api/admin-users/add', requireAdmin, csrfProtection, async (req, res) => {
+    const { name, email, contact_number, password } = req.body;
+    
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Target the 'admins' table specifically
+        const sql = 'INSERT INTO admins (name, email, password, contact_number) VALUES (?, ?, ?, ?)';
+        const values = [name, email, hashedPassword, contact_number];
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+        db.execute(sql, values, (err, result) => {
+            if (err) {
+                console.error("Database Error:", err.message);
+                return res.json({ success: false, message: "Email may already exist." });
+            }
+            res.json({ success: true, message: "Admin account created!" });
+        });
+    } catch (error) {
+        console.error("Hash Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ Server is actually listening on port ${PORT}`);
+});
