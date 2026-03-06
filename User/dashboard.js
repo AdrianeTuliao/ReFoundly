@@ -38,8 +38,7 @@ function setupSearch(inputId, listId) {
 async function loadPublishedItems() {
     try {
         const response = await fetch('/api/items/published');
-        if (response.status === 401) return; // Let checkSession handle this
-        
+        if (response.status === 401) return; 
         allItems = await response.json(); 
         filteredItems = [...allItems]; 
         renderPage(1); 
@@ -178,20 +177,25 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('retry-login-btn')?.addEventListener('click', () => {
         window.location.href = '/index.html';
     });
-});
+}); 
 
 function checkSession() {
-    fetch('/user/me')
-        .then(response => {
-            if (response.status === 401) {
-                const modal = document.getElementById('session-alert');
-                if (modal) {
-                    modal.style.setProperty('display', 'flex', 'important');
-                }
+    fetch('/user/me', {
+        headers: { 'Accept': 'application/json' } 
+    })
+    .then(response => {
+        if (response.status === 401) {
+            const modal = document.getElementById('session-alert');
+            if (modal) {
+                modal.style.setProperty('display', 'flex', 'important');
             }
-        })
-        .catch(() => {
-            console.log("Connection lost or session check failed.");
-        });
+            // Clear UI to prevent further interaction
+            const grid = document.querySelector(".grid");
+            if (grid) grid.innerHTML = "<h3>Session Expired. Please log in.</h3>";
+        }
+    })
+    .catch((err) => {
+        console.warn("Server connection offline.");
+    });
 }
 setInterval(checkSession, 5000);

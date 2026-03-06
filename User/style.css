@@ -104,7 +104,7 @@ form h1 {
 input {
     background-color: #fff;
     border: 1.5px solid #d1d1d1;
-    margin: 8px 0;
+    margin: 5px 0;
     padding: 12px 15px;
     border-radius: 10px;
     width: 100%;
@@ -510,7 +510,7 @@ input:not(:placeholder-shown) + label {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 1000 !important;
 }
 
 .otp-box {
@@ -537,7 +537,7 @@ input:not(:placeholder-shown) + label {
 .otp-box button {
     width: 100%;
     padding: 12px;
-    background: #28a745;
+    background: #7aa340;
     color: white;
     border: none;
     border-radius: 8px;
@@ -570,4 +570,32 @@ input:not(:placeholder-shown) + label {
     justify-content: center;
     height: 100%;
     width: 100%;
+}
+
+.error-shake {
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(5px); }
+    50% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+.input-invalid {
+    outline: 1px solid #ff4d4d !important;
+    border-color: #ff4d4d !important;
+    background-color: #fff5f5; 
+}
+
+.shake {
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+@keyframes shake {
+    0% { margin-left: 0rem; }
+    25% { margin-left: 0.5rem; }
+    75% { margin-left: -0.5rem; }
+    100% { margin-left: 0rem; }
 }

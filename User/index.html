@@ -20,7 +20,18 @@
                 <input type="email" name="email" placeholder="Email" maxlength="30" required>
                 <span class="error-msg" id="email-error"></span>
                 <input type="text" name="contact_number" placeholder="Contact Number" maxlength="11" required>
-                <input type="date" name="dob" placeholder="Date of Birth" required>
+                <div class="dob-container" style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <p>Date of Birth</p>
+    <select id="dob-month" name="dob_month" required style="flex: 1.5; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px;">
+        <option value="" disabled selected>Month</option>
+        </select>
+    <select id="dob-day" name="dob_day" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px;">
+        <option value="" disabled selected>Day</option>
+        </select>
+    <select id="dob-year" name="dob_year" required style="flex: 1.2; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px;">
+        <option value="" disabled selected>Year</option>
+        </select>
+</div>
                 <div class="password-container">
                     <input type="password" name="password" id="regPassword" placeholder="Password" maxlength="20" required>
                     <i class="fa-regular fa-eye toggle-password" data-target="regPassword"></i>
@@ -33,8 +44,16 @@
                 <span class="error-msg" id="confirm-error"></span>
                 <button type="submit">Sign Up</button>
                 <p>Already have an account? <span class="link-btn" id="login">Login</span></p>
+                <div class="terms-check-container" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin: 15px 0; font-size: 13px;">
+    <input type="checkbox" id="terms-checkbox" required style="width: 16px; height: 16px; cursor: pointer; accent-color: #7aa340;">
+    <label for="terms-checkbox" style="cursor: pointer; color: #555;">
+        I agree to the <span id="open-terms" style="color: #7aa340; font-weight: bold; text-decoration: underline;">Terms and Conditions</span>
+    </label>
+</div>
+                
             </form>
         </div>
+
 
         <div class="form-container sign-in">   
             <form id="loginForm"> 
@@ -50,6 +69,8 @@
                 <p>Don't have an account? <span class="link-btn" id="register">Sign up</span></p>
             </form>
         </div>
+
+        
 
         <div class="form-container forgot-password-box" id="forgot-password-section" style="display:none;">
             <form onsubmit="event.preventDefault();">
@@ -106,13 +127,26 @@
 
     <div id="otp-overlay" class="otp-overlay" style="display: none;">
         <div class="otp-box">
-            <h3>Verify Your Email</h3>
+            <h3 id="otp-title">Verify Your Email</h3> 
             <p>We sent a 6-digit code to your email.</p>
             <input type="text" id="otp-input" placeholder="000000" maxlength="6">
             <button id="verify-btn">Verify OTP</button>
             <button id="cancel-otp" class="btn-link">Cancel</button>
         </div>
     </div>
+
+    <div id="terms-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+    <div class="modal-content" style="background:white; padding:25px; border-radius:15px; width:90%; max-width:450px; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h2 style="color: #7aa340; margin-bottom: 15px;">Terms & Conditions</h2>
+        <div style="text-align: left; font-size: 14px; color: #444; margin-bottom: 20px; line-height: 1.6;">
+            <p><strong>1. Be Honest:</strong> To help lost items find their way home, please ensure all information you provide is true and accurate.</p>
+            <p><strong>2. Safe & Private:</strong> Your personal details are kept strictly private and are protected by high-level digital security.</p>
+            <p><strong>3. Age Rule:</strong> You must be at least 15 years old to use this service alone. If you are younger, please ask a parent or guardian to help you.</p>
+            <p><strong>4. Play Fair:</strong> We are a community! Please be respectful and kind when messaging other users about lost or found items.</p>
+            </div>
+        <button id="agree-btn" style="background:#7aa340; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">I Agree & Continue</button>
+    </div>
+</div>
 
     <script src="script.js"></script>
 </body>

@@ -11,7 +11,7 @@ function handleFormToggle() {
     loginBtn.addEventListener('click', () => container.classList.remove("active"));
 }
 
-/* --- NEW SIDE TOOLTIP SYSTEM --- */
+/* --- TOOLTIP SYSTEM --- */
 function updateChecklist(input, requirements) {
     let tooltip = document.getElementById(`tooltip-${input.name}`);
     
@@ -20,6 +20,14 @@ function updateChecklist(input, requirements) {
         tooltip.className = 'input-tooltip-neat';
         tooltip.id = `tooltip-${input.name}`;
         document.body.appendChild(tooltip);
+    }
+
+    const allValid = requirements.every(req => req.isValid);
+
+    if (!allValid && input.value.length > 0) {
+        input.classList.add('input-invalid');
+    } else {
+        input.classList.remove('input-invalid');
     }
 
     const rect = input.getBoundingClientRect();
@@ -132,7 +140,6 @@ function validateResetPassword() {
 
     const check = () => {
         const val = newPassInput.value;
-        // This uses your existing updateChecklist function
         updateChecklist(newPassInput, [
             { text: "At least 8 characters", isValid: val.length >= 8 },
             { text: "One uppercase & one number", isValid: /[A-Z]/.test(val) && /\d/.test(val) },
@@ -146,19 +153,48 @@ function validateResetPassword() {
     newPassInput.addEventListener('blur', () => removeTooltip('new_password'));
 }
 
+/* --- INITIALIZE DROPDOWNS --- */
+function initializeDobDropdowns() {
+    const monthSel = document.getElementById('dob-month');
+    const daySel = document.getElementById('dob-day');
+    const yearSel = document.getElementById('dob-year');
+    const currentYear = new Date().getFullYear();
+
+    // Months
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    months.forEach((m, i) => {
+        monthSel.options[monthSel.options.length] = new Option(m, i + 1);
+    });
+
+    // Days
+    for (let i = 1; i <= 31; i++) {
+        daySel.options[daySel.options.length] = new Option(i, i);
+    }
+
+    // Years (Limit: 15 to 100 years old)
+    const startYear = currentYear - 15;  // 2011
+    const endYear = currentYear - 100;   // 1926
+    for (let i = startYear; i >= endYear; i--) {
+        yearSel.options[yearSel.options.length] = new Option(i, i);
+    }
+}
+
+/* --- UPDATED REGISTRATION HANDLER --- */
 function handleRegistrationSubmit() {
     signUpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // 1. IMMEDIATE UI FEEDBACK
+
         const submitBtn = signUpForm.querySelector('button');
         const originalText = submitBtn.innerText;
-        submitBtn.innerText = "Sending OTP...";
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = "0.7"; // Visual cue it's working
-        submitBtn.style.cursor = "not-allowed";
+        const termsCheckbox = document.getElementById('terms-checkbox');
 
-        // 2. Perform Validation
+        // MANDATORY TERMS CHECK
+        if (!termsCheckbox.checked) {
+            alert("You must agree to the Terms and Conditions to create an account.");
+            return;
+        }
+
+        // REGEX VALIDATIONS
         const isNameValid = /^[a-zA-Z\s]+,\s[a-zA-Z\s]+$/.test(nameInput.value.trim());
         const isEmailValid = /^[a-zA-Z0-9._%+-]+@(gmail\.com|example\.com)$/.test(emailInput.value.trim());
         const isPassValid = passwordInput.value.length >= 8 && /[A-Z]/.test(passwordInput.value);
@@ -166,13 +202,19 @@ function handleRegistrationSubmit() {
 
         if (!isNameValid || !isEmailValid || !isPassValid || !isMatch) {
             alert("Please satisfy all requirements shown in the side tooltips.");
-            // Reset button if validation fails
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = "1";
-            submitBtn.style.cursor = "pointer";
             return;
         }
+
+        // COMBINE DOB FROM DROPDOWNS
+        const year = document.getElementById('dob-year').value;
+        const month = document.getElementById('dob-month').value.padStart(2, '0');
+        const day = document.getElementById('dob-day').value.padStart(2, '0');
+        const dobString = `${year}-${month}-${day}`;
+
+        // NETWORK REQUEST
+        submitBtn.innerText = "Sending OTP...";
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = "0.7";
 
         const data = {
             name: nameInput.value.trim(),
@@ -180,11 +222,11 @@ function handleRegistrationSubmit() {
             email: emailInput.value.trim(),
             password: passwordInput.value,
             contact_number: contactInput.value,
-            dob: signUpForm.querySelector('input[name="dob"]').value
+            dob: dobString
         };
 
         try {
-            const response = await fetch('/register', {
+            const response = await fetch('http://localhost:3000/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -200,28 +242,64 @@ function handleRegistrationSubmit() {
                 alert(result.message || "Registration error.");
             }
         } catch (error) {
-            alert("Connection error.");
+            console.error("🔥 Error:", error);
+            alert("Server connection failed.");
         } finally {
             submitBtn.innerText = originalText;
             submitBtn.disabled = false;
             submitBtn.style.opacity = "1";
         }
     });
+
+    // TRIGGER MODAL VIEW
+    document.getElementById('open-terms').addEventListener('click', () => {
+        document.getElementById('terms-modal').style.display = 'flex';
+    });
+
+    // AUTO-CHECK ON AGREE
+    document.getElementById('agree-btn').addEventListener('click', () => {
+        document.getElementById('terms-modal').style.display = 'none';
+        document.getElementById('terms-checkbox').checked = true;
+    });
 }
+
+function startLoginTimer(seconds) {
+    const submitBtn = loginForm.querySelector('button');
+    const originalText = "Login"; 
+    let timeLeft = seconds;
+
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.7";
+
+    const timer = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            errorDiv.textContent = "";
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+            submitBtn.style.opacity = "1";
+        } else {
+            // Display the message in your errorDiv and on the button itself
+            errorDiv.innerHTML = `Too many attempts. Try again in <b style="color:red;">${timeLeft}s</b>`;
+            submitBtn.innerText = `Locked (${timeLeft}s)`;
+            timeLeft--;
+        }
+    }, 1000);
+}
+
+initializeDobDropdowns();
 
 function handleLoginSubmit() {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const isTrusted = localStorage.getItem('device_trusted') === 'true';
             const submitBtn = loginForm.querySelector('button');
             const originalText = submitBtn.innerText;
-            
-            // 1. Better Selectors: Using name="email" is usually safer
             const emailField = loginForm.querySelector('input[name="email"]') || loginForm.querySelector('input[type="email"]');
             const passwordField = loginForm.querySelector('input[name="password"]') || loginForm.querySelector('input[type="password"]');
 
-            // 2. Safety Check: Don't try to read .value if the field wasn't found
             if (!emailField || !passwordField) {
                 console.error("Could not find login input fields. check your HTML names/types.");
                 return;
@@ -237,16 +315,23 @@ function handleLoginSubmit() {
             submitBtn.style.opacity = "0.7";
 
             try {
-                const response = await fetch('/login', {
+                const response = await fetch('http://localhost:3000/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
                 });
 
-                if (response.status === 429) {
-                    const rateLimitData = await response.json();
-                    throw new Error(rateLimitData.message || "Too many attempts.");
-                }
+
+if (response.status === 429) {
+    const rateLimitData = await response.json();
+    
+    // --- TRIGGER THE TIMER HERE ---
+    if (rateLimitData.retryAfter) {
+        startLoginTimer(rateLimitData.retryAfter);
+    }
+    
+    throw new Error(rateLimitData.message || "Too many attempts.");
+}
 
                 const result = await response.json();
 
@@ -299,7 +384,7 @@ function initializeOTPHandler() {
 
     verifyBtn.addEventListener('click', async () => {
         const mode = otpOverlay.getAttribute('data-mode');
-        const userEmail = otpOverlay.getAttribute('data-email'); // Gets the stored email for login OTP verification
+        const userEmail = otpOverlay.getAttribute('data-email'); 
         const otpValue = otpInput.value.trim();
 
         if (otpValue.length !== 6) {
@@ -310,19 +395,16 @@ function initializeOTPHandler() {
         verifyBtn.innerText = "Sending OTP in email...";
         verifyBtn.disabled = true;
 
-        // Choose endpoint based on mode
         const endpoint = mode === 'register' ? '/verify-registration' : '/verify-otp';
 
-        // Prepare the data to send
         const requestData = { otp: otpValue };
         
-        // If it's a login, we MUST send the email so the server knows whose OTP it is
         if (mode === 'login' && userEmail) {
             requestData.email = userEmail;
         }
 
         try {
-            const response = await fetch(endpoint, {
+            const response = await fetch(`http://localhost:3000${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
@@ -336,6 +418,7 @@ function initializeOTPHandler() {
                     location.reload();
                 } else {
                     // Login success
+                    localStorage.setItem('device_trusted', 'true');
                     window.location.href = '/dashboard.html';
                 }
             } else {
@@ -365,11 +448,11 @@ function showResetMessage(text, isError = false) {
     msgDiv.style.display = 'block';
     
     if (isError) {
-        msgDiv.style.backgroundColor = '#f8d7da'; // Soft Red
+        msgDiv.style.backgroundColor = '#f8d7da'; 
         msgDiv.style.color = '#721c24';
         msgDiv.style.border = '1px solid #f5c6cb';
     } else {
-        msgDiv.style.backgroundColor = '#d4edda'; // Soft Green
+        msgDiv.style.backgroundColor = '#d4edda'; 
         msgDiv.style.color = '#155724';
         msgDiv.style.border = '1px solid #c3e6cb';
     }
