@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | History</title>
+    <link rel="stylesheet" href="history.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Essential Functional Styles only */
+        .items-grid {
+            transition: opacity 0.3s ease;
+        }
+
+        .pag-btn.active {
+            background-color: #6B9E45 !important;
+            color: white !important;
+        }
+
+        /* Smooth fade for filtering */
+        .grid-fade {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <main class="main-wrapper container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>History</span>
+        </nav>
+
+        <section class="search-section">
+            <div class="search-bar-pill">
+                <i class="fas fa-search"></i>
+                <input type="text" id="history-search" placeholder="Search in History">
+            </div>
+        </section>
+
+        <div id="history-grid" class="items-grid">
+            <p style="grid-column: 1/-1; text-align: center; opacity: 0.5;">Loading your history...</p>
+        </div>
+
+        <div class="pagination" id="pagination-container"></div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners.
+                </span>
+            </div>
+            | <div class="popup-item"><a href="#">Contact</a></div>
+            | <div class="popup-item"><a href="#">Privacy Policy</a></div>
+            | <div class="popup-item"><a href="#">Terms</a></div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+    <script src="history.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="notifications.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blockchain Integration Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .box { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { padding: 10px 15px; cursor: pointer; background: #5d9e52; color: white; border: none; border-radius: 4px; font-size: 1rem; }
+        button:hover { background: #4a8c40; }
+        #logs { background: #222; color: #0f0; padding: 15px; font-family: monospace; border-radius: 5px; list-style: none; }
+        h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <h1>ReFoundly x Blockchain Implementation</h1>
+
+    <div class="box">
+        <h3>Test 1: Blockchain Connection</h3>
+        <p>Status: <span id="status" style="font-weight:bold; color:orange;">Connecting...</span></p>
+        <button onclick="checkConnection()">Retry Connection</button>
+    </div>
+
+    <div class="box">
+        <h3>Test 2: Smart Contract Input</h3>
+        <input type="text" id="itemInput" placeholder="Enter Item Name (e.g., Lost iPhone)" style="padding: 10px; width: 250px;">
+        <button onclick="addReportToChain(document.getElementById('itemInput').value)">Mock User Submit</button>
+    </div>
+
+    <div class="box">
+        <h3>Test 3: On-Chain Verification</h3>
+        <p>Total Immutable Reports on Ledger: <strong id="chainCount" style="font-size: 1.5rem;">0</strong></p>
+        <button onclick="getTotalReports()">Verify Blockchain Data</button>
+    </div>
+
+    <div class="box">
+        <h3>Transaction Logs</h3>
+        <ul id="logs"></ul>
+    </div>
+
+    <script src="Blockchain.js"></script> 
+</body>
+</html>

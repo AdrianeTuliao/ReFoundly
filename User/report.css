@@ -1,0 +1,622 @@
+/* Using your specific Color Variables */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+html, body {
+    overflow-x: hidden;
+    font-size: 90%;
+    
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+}
+
+/* Header & Nav */
+.navbar {
+    background-color: var(--primary-green);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 1.7rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover { color: var(--accent-green); }
+
+.icons-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 1.7rem;     
+}
+
+.icons-link:hover {
+    color: var(--accent-green);        
+}
+
+/* --- Burger Menu beside Notifications --- */
+
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 1.7rem; 
+    color: white;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.hamburger:hover {
+    color: var(--accent-green);
+}
+
+/* The Dropdown Menu */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px; /* Adjust base sa kapal ng navbar */
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Show menu on click */
+#menu-toggle:checked ~ .nav-menu {
+    display: flex;
+}
+
+/* Menu Links */
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    padding: 22px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: 0.2s;
+}
+
+.nav-menu a i {
+    font-size: 2rem;
+    color: var(--primary-green);
+    width: 40px;
+}
+
+.nav-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-green);
+}
+
+/* Logout Button Style */
+.nav-menu a.logout-btn {
+    color: #e74c3c;
+    border-bottom: none;
+}
+
+.nav-menu a.logout-btn i {
+    color: #e74c3c;
+}
+
+/* Container - Ultra Wide */
+.container {
+    width: 95%;
+    max-width: 1600px; 
+    margin: 40px auto;
+}
+
+/* Breadcrumb Styling */
+.breadcrumb {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+/* Base style para sa 'Home' link */
+.breadcrumb a {
+    color: var(--primary-green); /* Gamit ang iyong primary green variable */
+    text-decoration: none; /* Default na may underline */
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+/* Hover effect kapag tinapatan ng mouse */
+.breadcrumb a:hover {
+    color: var(--accent-green); /* Magbabago ang kulay sa accent green */
+    text-decoration: underline;      /* Pwede mong alisin ang underline sa hover para mas interactive */
+}
+
+/* Active/Pressed effect kapag pinindot (clicked) */
+.breadcrumb a:active {
+    color: var(--dark-green);
+}
+
+/* Form Card */
+.form-card {
+    background: white;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.form-row {
+    display: flex;
+    gap: 80px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.form-column {
+    flex: 1;
+    min-width: 400px;
+}
+
+/* Inputs & Labels */
+.input-group { margin-bottom: 20px; }
+.input-group label {
+    font-family: sans-serif;
+    font-size: 18px;
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.input-group label span { color: #e74c3c; }
+.input-group small {
+    font-family: sans-serif;
+    font-size: 14px;
+    display: block;
+    color: #777;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+input, select, textarea {
+    width: 97%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    background: #eeeeee; /* Matches your search bar style */
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* I-update ang section na ito para lumiit ang circles */
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start; /* Naka-align sa taas para sa multi-line text */
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: 0.3s;
+    background: #fdfdfd;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+/* Eto yung pampaliit sa bilog (Radio Button) */
+.checkbox-group input[type="radio"] {
+    width: 18px;  /* Standard size */
+    height: 18px; /* Standard size */
+    margin-top: 4px; /* Para pantay sa unang line ng text */
+    cursor: pointer;
+    accent-color: var(--primary-green); /* Kulay green yung loob pag na-select */
+}
+
+.checkbox-group label {
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.checkbox-group label strong {
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.checkbox-group label small {
+    font-size: 0.85rem;
+    color: #777;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Hover effect para sa buong row */
+.checkbox-group:hover {
+    background: #daffc0;
+}
+
+/* Button Styles - Using your btn-main style */
+.btn-main { 
+    background-color:#83b873; 
+    color: white; 
+    border: none; 
+    padding: 15px 40px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 18px;
+    transition: background 0.3s ease;
+}
+
+.btn-main:hover {
+    background-color: #5D8252;
+    transform: translateY(-2px);
+}
+
+.submit-section { text-align: right; margin-top: 30px; }
+
+/* --- Footer & Popup CSS --- */
+
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+    font-family: sans-serif;
+}
+
+.footer-links { 
+    margin-bottom: 20px;
+    display: flex; /* Ginawang flex para sa pantay na spacing ng popup */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Container para sa popup logic */
+.popup-item {
+    position: relative; /* Anchor para sa popup box */
+    display: inline-block;
+}
+
+.footer-links a { 
+    color: white; 
+    text-decoration: none; 
+    font-size: 18px; 
+    transition: 0.3s;
+}
+
+/* Ang Pop-up Box (Nakalutang sa itaas ng link) */
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 150%; /* Nilagay sa itaas ng link */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Initial position para sa animation */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Hindi istorbo sa mouse movement */
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+/* Little triangle pointer */
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Popup Box Header/Title style */
+.popup-box strong {
+    display: block;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Hover Effect - Dito lalabas ang popup */
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Smooth slide up */
+}
+
+.popup-item:hover a {
+    color: var(--accent-green);
+    text-decoration: underline;
+}
+
+/* --- Socials & P --- */
+
+footer p {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+.socials i {
+    font-size: 35px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.socials i:hover {
+    transform: scale(1.2);
+    color: var(--accent-green);
+}
+
+       .expiry-modal {
+    display: none; 
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85) !important; 
+    z-index: 1000000 !important;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content-alert {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border-top: 8px solid #78A454;
+}
+
+.exclamation-icon {
+    font-size: 50px;
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.input-group input, 
+.input-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.input-group small {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+#custom-toast {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    background: #ffffff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-left: 6px solid #5D8252;
+    min-width: 300px;
+}
+
+.toast-hidden {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+.toast-visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.toast-icon {
+    font-size: 28px;
+    color: #5D8252; 
+}
+
+.toast-title {
+    display: block;
+    font-weight: 700;
+    color: #1c1e21;
+    font-size: 1rem;
+}
+
+.toast-body {
+    margin: 0;
+    color: #65676b;
+    font-size: 0.85rem;
+}
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: #e4e6eb;
+}
+
+.toast-progress::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: #5D8252;
+    animation: progress 3s linear forwards;
+}
+
+@keyframes progress {
+    100% { width: 0%; }
+}
+
+/* Box Base */
+.image-upload-box {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    cursor: pointer;
+    color: #777;
+}
+
+/* Preview Container & Overlay */
+.upload-preview-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.upload-preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upload-preview-container:hover .preview-overlay {
+    opacity: 1;
+}
+
+/* Overlay Action Buttons */
+.overlay-btn {
+    background: #fff;
+    border: none;
+    color: #333;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s, color 0.2s;
+}
+
+.overlay-btn:hover {
+    transform: scale(1.1);
+}
+
+.overlay-btn.view-btn:hover {
+    background: #007bff;
+    color: #fff;
+}
+
+.overlay-btn.remove-btn:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* Lightbox Modal */
+.image-modal {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    max-width: 85%;
+    max-height: 85%;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}

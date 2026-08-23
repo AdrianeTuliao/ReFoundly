@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | ReFoundly</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; overflow-y: auto; }
+        
+        .history-container {
+            max-width: 850px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .notif-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notif-header-section {
+            padding: 25px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-top h2 { margin: 0; font-size: 1.6rem; color: #333; }
+
+        .btn-clear-history {
+            background: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-clear-history:hover { background: #ff4d4f; color: white; }
+
+        .notif-tabs { display: flex; gap: 10px; }
+
+        #historyList {
+            min-height: 200px;
+            padding-top: 10px; 
+        }
+
+        .notif-list-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid #f9f9f9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notif-list-item:hover { background: #f9f9f9; }
+        .notif-list-item.unread { background: #f7faf6; border-left: 4px solid #7aa340; }
+
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            background: #f0f2f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        .notif-info p { margin: 0; color: #333; font-size: 1rem; line-height: 1.4; }
+        .notif-info span { font-size: 0.85rem; color: #999; margin-top: 5px; display: block; }
+
+     /* PAGINATION STYLING */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 5px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.page-arrow { 
+    background: transparent;
+    border: none;
+    color: #555;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-arrow:hover:not(:disabled) {
+    background-color: rgba(122, 163, 64, 0.1); 
+    color: #7aa340;
+}
+
+.page-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.page-num {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 600;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Persistent Highlight for the Navbar Bell on History Page */
+.notif-wrapper.nav-active i {
+    color: #ffffff !important; /* Your specific brand green */
+}
+
+.notif-wrapper.nav-active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px; /* Adjust based on your navbar height */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(122, 163, 64, 0.5);
+}
+
+/* Ensure the wrapper is relative so the dot positions correctly */
+.notif-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.breadcrumb {
+    max-width: 850px;
+    margin: 20px auto -30px auto; /* Pulls it closer to the card */
+    padding: 0 20px;
+    color: #888;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.breadcrumb a {
+    color: var(--primary-green); 
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+    color: var(--accent-green);
+}
+
+.breadcrumb span {
+    color: #555;
+    margin-left: 5px;
+}
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link"><i class="fas fa-comment-dots"></i></a>
+        <div class="notif-wrapper nav-active">
+            <i class="fa-solid fa-bell" style="color: white; font-size: 1.5rem;"></i>
+        </div>
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a> 
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Found Items</span>
+        </nav>
+
+
+<div class="history-container">
+    <div class="notif-card">
+        <div class="notif-header-section">
+            <div class="header-top">
+                <h2>Notification History</h2>
+                <button class="btn-clear-history" onclick="clearNotifs()">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="updateFilter('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="updateFilter('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="historyList">
+            </div>
+
+        <div class="pagination-controls" id="pagination-container">
+            <button class="page-arrow" id="prevBtn" onclick="movePage(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="page-num" id="pageCounter">Page 1 of 1</span>
+            <button class="page-arrow" id="nextBtn" onclick="movePage(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="NotifHistory.js"></script>
+</body>
+</html>

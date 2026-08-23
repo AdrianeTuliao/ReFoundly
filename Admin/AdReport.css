@@ -1,0 +1,422 @@
+/* PAGE TRANSITION */
+/* Update this in your CSS file */
+.content-wrapper {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.content-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.content-wrapper.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    margin-left: 8px;
+}
+
+/* PAGE HEADER */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.btn-archive {
+    background: #5D8252;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* SUMMARY CARDS */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+/* ICON COLORS */
+.reports-bg {
+    background: rgba(108, 117, 125, 0.15);
+    color: #6c757d;
+}
+
+.resolved-bg {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+.pending-bg {
+    background: rgba(241, 196, 15, 0.15);
+    color: #f1c40f;
+}
+
+/* FILTER BAR */
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.filter-bar select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+}
+
+.btn-generate {
+    margin-left: auto;
+    background: #8cc152;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* TABLE */
+.table-container {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #e5e5e5;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+}
+
+tbody tr:not(:last-child) {
+    border-bottom: 1px solid #eee;
+}
+
+/* BADGES */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.badge.resolved {
+    background: #5D8252;
+    color: #fff;
+}
+
+.badge.pending {
+    background: #facc15;
+    color: #000;
+}
+
+/* ACTION BUTTONS */
+
+
+.btn-archive-sm {
+    background: #d1d5db;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Modal Animation */
+.modal {
+    display: none; 
+    position: fixed; 
+    /* This ensures it sits on top of navbars and tables */
+    z-index: 9999 !important; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6); /* Slightly darker for focus */
+    overflow-y: auto; /* Allows scrolling if the ID photo is too big */
+}
+
+.modal-content {
+    background-color: white; 
+    margin: 5% auto; 
+    width: 50%; 
+    border-radius: 12px; 
+    overflow: hidden; /* Ensures the green header follows border-radius */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    
+    /* Animation Trigger */
+    animation: fadeInSlide 0.4s ease-out;
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Green Header Styling */
+.modal-header {
+    background-color: #6a994e; /* Matches your sidebar green */
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-btn {
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    color: #f2e8cf;
+}
+
+/* Modal Padding for body */
+#modalBody {
+    padding: 25px;
+}
+
+/* Modern Transparent Arrow Pagination */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Slightly tighter gap for a cleaner look */
+    margin-top: 30px;
+}
+
+.page-arrow { 
+    background: transparent; /* Removes background color */
+    border: none;             /* Removes outlines/borders */
+    color: #555;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;            /* Ensures no focus ring shows */
+}
+
+.page-arrow:hover:not(:disabled) {
+    /* Subtle background highlight on hover so the user knows it's clickable */
+    background-color: rgba(93, 158, 82, 0.1); 
+    color: #5d9e52; /* Changes arrow color to green on hover */
+}
+
+.page-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.page-num {
+    font-size: 0.9rem;
+    color: #4444446e;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+    background: transparent; /* Blends with background */
+}
+
+.notif-item { 
+    padding: 12px; 
+    border-bottom: 1px solid #eee; 
+    font-size: 0.85rem; 
+    color: #444; 
+    cursor: pointer; 
+    transition: background 0.2s;
+}
+.notif-item:hover { background-color: #f8f9fa; }
+.notif-item.unread { background-color: #f0f7ef; border-left: 3px solid #5d9e52; }
+
+@keyframes green-glow {
+    0% { box-shadow: 0 0 0px rgba(122, 163, 64, 0); background-color: transparent; }
+    50% { box-shadow: 0 0 20px rgba(122, 163, 64, 0.6); background-color: #f0f7ef; }
+    100% { box-shadow: 0 0 0px rgba(122, 163, 64, 0); background-color: transparent; }
+}
+
+.highlight-glow {
+    outline: 3px solid #7aa340; /* ReFoundly Green */
+    outline-offset: -3px;
+    background-color: #f0f7ef !important; 
+    transition: all 0.5s ease;
+}
+
+.action-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+}
+
+.action-cell button {
+    white-space: nowrap;
+}
+
+/* --- SOFT PASTEL BADGES --- */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+}
+
+.badge.published {
+    background-color: #e0f2fe !important; /* Soft Pastel Blue */
+    color: #0369a1 !important;
+}
+
+.badge.pending-approval, .badge.pending {
+    background-color: #fef3c7 !important; /* Soft Pastel Yellow/Amber */
+    color: #b45309 !important;
+}
+
+.badge.resolved {
+    background-color: #dcfce7 !important; /* Soft Pastel Sage Green */
+    color: #15803d !important;
+}
+
+.badge.denied {
+    background-color: #fee2e2 !important; /* Soft Pastel Red */
+    color: #b91c1c !important;
+}
+
+/* --- SUMMARY CARD ICON FIX --- */
+.reports-bg {
+    background: #e0f2fe !important; /* Soft Blue highlight to match Published badge */
+    color: #0369a1 !important;
+}
+
+/* --- ACTION BUTTON CLEANUP & HIERARCHY --- */
+.action-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-view, .btn-approve, .btn-resolve, .btn-deny, .btn-archive-sm {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Primary Details / View Button */
+.btn-view {
+    background-color: #e2e8f0 !important; /* Soft Slate Gray Background */
+    color: #1e293b !important;            /* Dark Visible Text */
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-view:hover {
+    background-color: #cbd5e1 !important; /* Darker Slate on Hover */
+    color: #0f172a !important;
+}
+
+/* Approve & Resolve (ReFoundly Green) */
+.btn-approve, .btn-resolve {
+    background-color: #5D8252;
+    color: #ffffff;
+}
+.btn-approve:hover, .btn-resolve:hover {
+    background-color: #4a6a41;
+}
+
+/* Deny Button */
+.btn-deny {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+.btn-deny:hover {
+    background-color: #dc2626;
+}
+
+/* Minimalist Archive Button */
+.btn-archive-sm {
+    background-color: transparent;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+.btn-archive-sm:hover {
+    background-color: #f8fafc;
+    color: #1e293b;
+}

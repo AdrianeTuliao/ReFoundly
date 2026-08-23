@@ -1,0 +1,434 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --green-main: #7aa340;
+    --green-dark: #5f842f;
+    --green-light: #b1d985;
+    --green-mid: #9fd861;
+    --glass-bg: rgba(255, 255, 255, 0.699);
+
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+
+}
+
+body {
+    background: url('Park.png') center/cover no-repeat fixed;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+/* Main Card */
+.container {
+    background-color: var(--glass-bg);
+    border-radius: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    width: 90%;          
+    max-width: 1100px; 
+    height: 90vh;      
+    max-height: 700px; 
+    min-height: 550px; 
+    display: flex;
+    backdrop-filter: blur(10px); 
+}
+
+.form-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50%;          
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.6s ease-in-out;
+}
+
+form {
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 530px;              
+    width: 100%; 
+    max-width: 450px;        
+    padding: 20px; 
+    justify-content: center; 
+    border: 3px solid #5D8252;
+    border-radius: 30px;
+    margin: auto;           
+}
+
+@media screen and (max-width: 768px) {
+    form {
+        width: 90% !important;
+        max-width: 360px !important;
+        height: auto !important;
+        padding: 30px 20px !important;
+        margin: 20px auto !important;
+        border: 2px solid #5D8252;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+}
+form h1 {
+    color: #5D8252;
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+input {
+
+    background-color: #fff;
+    border: 1.5px solid #d1d1d1;
+    margin: 8px 0;
+    padding: 12px 15px;
+    border-radius: 10px;
+    width: 100%;
+    outline: none;
+
+}
+
+input:focus {
+    border-color: var(--green-main);
+
+}
+
+.password-input {
+    position: relative;
+    width: 100%;
+
+}
+
+.password-input i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button {
+    background-color: #5D8252;
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #7B9672;
+}
+
+/* Sliding Transitions */
+.sign-in { left: 0; z-index: 2; }
+.sign-up { left: 0; opacity: 0; z-index: 1; }
+.container.active .sign-in { transform: translateX(100%); opacity: 0; }
+.container.active .sign-up { transform: translateX(100%); opacity: 1; z-index: 5; }
+
+/* Toggle (Info Panel) Logic */
+.toggle-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 0.6s ease-in-out;
+    z-index: 1000;
+}
+
+.container.active .toggle-container { transform: translateX(-100%); }
+
+.toggle {
+    background-color: transparent;
+    height: 100%;
+    position: relative;
+    left: -100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: all 0.6s ease-in-out;
+}
+
+.container.active .toggle { transform: translateX(50%); }
+
+.toggle-panel {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 40px;
+    text-align: center;
+    top: 0;
+    transition: all 0.6s ease-in-out;
+}
+
+.toggle-left { transform: translateX(-200%); }
+.container.active .toggle-left { transform: translateX(0); }
+.toggle-right {
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 50px 0px; 
+    height: 100%;
+}
+
+.brand-title { color: var(--green-dark); font-size: 48px; margin-bottom: 20px; width: 100%; text-align: left;}
+.feature-box {
+    color: white;
+    padding: 15px 20px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    width: 100%;
+    text-align: left;
+}
+
+.shade-1 { background-color: var(--green-light); }
+.shade-2 { background-color: var(--green-mid); }
+.shade-3 { background-color: var(--green-dark); }
+
+.text-content {
+    text-align: left;
+
+}
+
+.text-content h1 {
+    font-size: 68px;
+
+}
+
+.welcome-title {
+    color: var(--green-dark);
+    font-size: 42px;
+    line-height: 1.2;
+
+}
+
+.green-text {
+    color: #5D8252;
+    
+
+}
+
+.welcome-desc {
+    margin: 15px 0;
+    color: #444;
+    font-size: 14px;
+}
+
+.logo-area img { 
+  width: 650px; 
+  height: auto;
+  max-width: none;
+  opacity: 0.6;
+  transform: translateY(-65px); 
+}
+
+.link-btn {
+    color: #2563eb;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+@media (max-width: 400px) {
+    .container {
+        width: 95%;
+        min-height: 200px;
+    }
+    form h1 {
+        font-size: 28px;
+    }
+    .welcome-title {
+        font-size: 32px;
+    }
+    .logo-area img {
+
+        width: 300px;
+
+    }
+
+}
+
+@media (max-width: 480px) {
+    .container {
+        min-height: 550px;
+        border-radius: 20px;
+
+    }
+
+    .toggle-container {
+        display: none
+    }
+
+    .form-container {
+        width: 100%; /
+    }
+    .container.active .sign-in {
+        transform: translateX(-100%);
+    }
+
+    .container.active .sign-up {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+   
+
+    form {
+        padding: 0 20px;
+        margin: 10px;
+        height: calc(100% - 20px);
+        width: calc(100% - 20px);
+    }
+
+}
+
+#login-error:not(:empty) {
+    background-color: rgba(255, 0, 0, 0.1); 
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    margin-bottom: 10px;
+}
+
+
+.shake {
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+@keyframes shake {
+    0% { margin-left: 0; }
+    25% { margin-left: 5px; }
+    75% { margin-left: -5px; }
+    100% { margin-left: 0; }
+}
+
+/* ==========================================
+   SUSPENDED MODAL STYLES
+   ========================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-card {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    animation: modalPop 0.3s ease-out;
+}
+
+.modal-icon {
+    font-size: 50px;
+    color: #e74c3c;
+    margin-bottom: 15px;
+}
+
+.modal-card h3 {
+    color: #2c3e50;
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.sub-text {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.reason-box {
+    background-color: #fdf2f2;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px 15px;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.reason-box strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #c0392b;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-actions button {
+    background-color: #5D8252;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 0;
+    transition: background 0.2s;
+}
+
+.modal-actions button:hover {
+    background-color: #4a6a41;
+}
+
+.btn-support {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 15px;
+}
+
+.btn-support:hover {
+    text-decoration: underline;
+}
+
+@keyframes modalPop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

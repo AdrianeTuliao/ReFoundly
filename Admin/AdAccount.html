@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Account</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdAccount.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdAnalytics.html" id="nav-analytics"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Manage Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                <h1>Account</h1>
+
+                <div class="account-card">
+                    <div class="profile-left">
+                        <div class="profile-avatar"></div>
+                        <h3>Admin</h3>
+                        <p id="admin-subtext"></p>
+                    </div>
+
+                    <div class="profile-right">
+                        <h2>Admin Information</h2>
+
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <label>Email</label>
+                                <p id="admin-email">Loading...</p>
+                                <a href="#" class="link">Edit</a>
+                            </div>
+
+                            <div class="info-box">
+                                <label>Contact Number</label>
+                                <p id="admin-contact">Loading...</p>
+                                <a href="javascript:void(0)" class="link" onclick="editContact()">Edit</a>
+                            </div>
+
+                            <div class="info-box">
+                                <label>Password</label>
+                                <p>••••••••</p>
+                                <a href="#" class="link">Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </section>
+        </main>
+    </div>
+
+    <script src="Adminscript.js"></script>
+    <script src="AdAccount.js"></script>
+
+</body>
+</html>

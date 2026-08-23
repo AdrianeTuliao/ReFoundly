@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="AdAnalytics.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Public+Sans:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html" class="active"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header-modern">
+                                <div class="notif-title-row">
+                                    <span>Notifications</span>
+                                    <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+                                </div>
+                                <div class="notif-tabs">
+                                    <button class="tab-pill active" id="tabAll">All</button>
+                                    <button class="tab-pill" id="tabUnread">Unread</button>
+                                </div>
+                            </div>
+                            <div id="notifList" class="notif-scroll-area"></div>
+                            <div class="notif-footer">
+                                <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                <div class="page-header">
+                    <h1>Data Insights</h1>
+                </div>
+
+                <div class="analytics-filters">
+                    <div class="filter-group">
+                        <label>Filter by Category:</label>
+                        <select id="categoryFilter" onchange="applyFilters()">
+                            <option value="all">All Categories</option>
+                            <option value="wallet">Wallet</option>
+                            <option value="gadgets">Gadgets</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="id">ID</option>
+                            <option value="documents">Documents</option>
+                            <option value="books">Books</option>
+                            <option value="school_supplies">School Supplies</option>
+                            <option value="tools">Tools</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range:</label>
+                        <select id="timeFilter" onchange="applyFilters()">
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="all">Year to Date</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container bar-chart-card">
+                        <h3>Top Reported Categories</h3>
+                        <div class="chart-box" style="height: 280px;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container location-card">
+                        <h3>Top Loss Hotspots</h3>
+                        <div class="chart-box" style="height: 280px;">
+                            <canvas id="locationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Monthly Activity Trends</h3>
+                        <div class="canvas-wrapper" style="height: 250px;">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container resolution-card">
+                        <h3>Resolution Success Rate</h3>
+                        <div class="canvas-wrapper" style="height: 250px;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="AdAnalytics.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Items</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdManage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Action Buttons */
+        .btn-approve { background-color: #28a745; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-deny { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-resolve { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-view { background-color: #6c757d; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        
+        /* Status Badges */
+        .badge.pending-approval { background-color: #ffc107; color: #333; }
+        .badge.published { background-color: #007bff; color: white; }
+        .badge.resolved { background-color: #28a745; color: white; }
+        .badge.denied { background-color: #6c757d; color: white; }
+
+        /* Pagination Styling */
+        .pagination-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; padding: 10px; }
+        .page-arrow { cursor: pointer; background: none; border: none; font-size: 1.2rem; color: #5d9e52; }
+        .page-arrow:disabled { color: #ccc; cursor: default; }
+
+        /* Notification Styling */
+        .notif-wrapper { position: relative; display: inline-block; margin-right: 15px; }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; display: none; }
+        .notif-dropdown { display: none; position: absolute; right: 0; top: 35px; width: 300px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; max-height: 400px; overflow-y: auto; }
+        
+        .notif-header { padding: 10px 15px; font-weight: bold; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .clear-notifs { font-size: 0.7rem; color: #007bff; cursor: pointer; text-decoration: underline; }
+        
+        .notif-item { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.85rem; color: #444; cursor: pointer; transition: background 0.2s; }
+        .notif-item:hover { background-color: #f8f9fa; }
+        .notif-item.unread { background-color: #f0f7ef; border-left: 4px solid #5d9e52; }
+        .notif-item:last-child { border-bottom: none; }
+        
+        /* Fade in animation */
+        .content-wrapper { opacity: 0; transition: opacity 0.5s ease; }
+        .content-wrapper.fade-in { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                    <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html" class="active">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+                <a href="AdBlockchain.html"><i class="fa-solid fa-link"></i> Blockchain Ledger</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+               <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+
+                <h1>Manage Items</h1>
+
+                <div class="filter-bar">
+                    <select id="categoryFilter">
+                        <option value="all">Category</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Gadget">Gadget</option>
+                        <option value="Bag">Bag</option>
+                    </select>
+
+                    <select id="statusFilter">
+                        <option value="all">Status</option>
+                        <option value="Lost">Lost</option>
+                        <option value="Found">Found</option>
+                    </select>
+
+                    <input type="text" id="searchInput" placeholder="Search Items" class="search-input">
+    <button class="btn-generate" id="clearBtn">Clear</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wallet</td>
+                                <td>Personal</td>
+                                <td><span class="badge resolved">Found</span></td>
+                                <td>Jan. 7, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Phone</td>
+                                <td>Gadget</td>
+                                <td><span class="badge pending">Lost</span></td>
+                                <td>Jan. 2, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
+
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100);
+            }
+
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+
+                        if (wrapper) wrapper.classList.remove("fade-in");
+
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+
+        // Filter and Search Functionality
+        document.addEventListener("DOMContentLoaded", () => {
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    function filterTable() {
+        const catValue = categoryFilter.value.toLowerCase();
+        const statValue = statusFilter.value.toLowerCase();
+        const searchValue = searchInput.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const itemText = row.cells[0].textContent.toLowerCase();
+            const catText = row.cells[1].textContent.toLowerCase();
+            const statText = row.cells[2].textContent.toLowerCase();
+            
+            // This combines all searchable text into one "haystack"
+            const allRowText = `${itemText} ${catText} ${statText}`;
+
+            // 1. Dropdown matches
+            const matchesCat = catValue === "all" || catText.includes(catValue);
+            const matchesStat = statValue === "all" || statText.includes(statValue);
+            
+            // 2. Search matches (Now checks the combined string)
+            const matchesSearch = allRowText.includes(searchValue);
+
+            if (matchesCat && matchesStat && matchesSearch) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    // Event Listeners
+    categoryFilter.addEventListener('change', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    searchInput.addEventListener('input', filterTable);
+
+    // Clear Button Logic
+    clearBtn.addEventListener('click', () => {
+        categoryFilter.value = "all";
+        statusFilter.value = "all";
+        searchInput.value = "";
+        filterTable();
+    });
+});
+    </script>
+
+    <script src="Adminscript.js"></script>
+
+</body>
+</html>

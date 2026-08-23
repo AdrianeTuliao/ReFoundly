@@ -1,0 +1,645 @@
+/* Using your specific Color Variables */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+html, body {
+    overflow-x: hidden;
+    font-size: 90%;
+    
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+}
+
+/* Header & Nav */
+.navbar {
+    background-color: var(--primary-green);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 15px;
+    font-size: 1.7rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover { color: var(--accent-green); }
+
+.icons-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 1.7rem;
+}
+
+.icons-link:hover {
+    color: var(--accent-green);        
+}
+
+/* --- Burger Menu beside Notifications --- */
+
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 1.7rem;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.hamburger:hover {
+    color: var(--accent-green);
+}
+
+/* The Dropdown Menu */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px; /* Adjust base sa kapal ng navbar */
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Show menu on click */
+#menu-toggle:checked ~ .nav-menu {
+    display: flex;
+}
+
+/* Menu Links */
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    padding: 22px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: 0.2s;
+}
+
+.nav-menu a i {
+    font-size: 2rem;
+    color: #5D8252;
+    width: 40px;
+}
+
+.nav-menu a:hover {
+    background-color: #f9f9f9;
+    color: var(--primary-green);
+}
+
+/* Logout Button Style */
+.nav-menu a.logout-btn {
+    color: #e74c3c;
+    border-bottom: none;
+}
+
+.nav-menu a.logout-btn i {
+    color: #e74c3c;
+}
+
+/* Container - Ultra Wide */
+.container {
+    width: 95%;
+    max-width: 1600px; 
+    margin: 40px auto;
+}
+
+/* Breadcrumb Styling */
+.breadcrumb {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+/* Base style para sa 'Home' link */
+.breadcrumb a {
+    color: var(--primary-green); /* Gamit ang iyong primary green variable */
+    text-decoration: none; /* Default na may underline */
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+/* Hover effect kapag tinapatan ng mouse */
+.breadcrumb a:hover {
+    color: var(--accent-green); /* Magbabago ang kulay sa accent green */
+    text-decoration: underline;      /* Pwede mong alisin ang underline sa hover para mas interactive */
+}
+
+/* Active/Pressed effect kapag pinindot (clicked) */
+.breadcrumb a:active {
+    color: var(--dark-green);
+}
+
+/* Search Bar - Sinunod yung nasa screenshot */
+.search-section {
+    background: linear-gradient(90deg, #5D8252 0%, #7B9672 50%, #A2B499 100%);
+    padding: 15px 40px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.search-bar-pill {
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 10px 25px;
+    border-radius: 50px; /* Pill shape */
+}
+
+.search-bar-pill i { color: #888; font-size: 18px; }
+
+.search-bar-pill input {
+    border: none;
+    outline: none;
+    width: 100%;
+    margin-left: 15px;
+    font-size: 16px;
+    color: #555;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
+    gap: 30px;
+    justify-content: center; 
+    margin: 0 auto;
+    width: 100%;
+}
+
+.items-grid.rise-up {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.item-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px; 
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    transition: transform 0.2s;
+    width: 100%;
+    max-width: 280px;
+}
+
+.item-card:hover {
+    transform: translateY(-5px); 
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+    padding: 15px;
+}
+
+.comment-input {
+    width: 100%;
+    margin-top: auto; 
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box; 
+}
+
+.item-details p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.8em; 
+}
+
+.item-card img, 
+.card-img-placeholder {
+    width: 100%;
+    height: 200px !important; 
+    min-height: 200px !important;
+    max-height: 200px !important;
+    object-fit: cover; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 12px 12px 0 0;
+}
+
+.item-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    overflow: hidden; 
+    height: 100%; 
+}
+
+.card-content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.item-details p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-img-placeholder {
+    background-color: #d1d1d1;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #888;
+    border-radius: 4px;
+}
+
+.card-content h3 { 
+    font-family: sans-serif;
+    margin: 15px 0 5px 0; 
+    color: black; 
+    font-size: 20px;
+}
+
+.title-line { border: 0; border-top: 1px solid var(--primary-green); margin-bottom: 10px; }
+
+.badge {
+    align-self: flex-start; 
+    width: fit-content;
+    font-family: sans-serif;
+    background-color: #D97706;
+    color: white;
+    padding: 3px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.item-details p { margin: 4px 0; font-size: 16px; font-family: sans-serif; line-height: 1.4; }
+.status-lost { color: red; font-weight: bold; font-family: sans-serif; }
+.post-time { margin-top: 8px; color: #636363; font-family: sans-serif; font-size: 14px; }
+
+/* Pagination Bar */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.pag-btn { border: 1px solid #ccc; background: white; padding: 5px 12px; cursor: pointer; }
+.pag-btn.active { background-color: #ddd; font-weight: bold; }
+
+/* --- Footer & Popup CSS --- */
+
+footer { 
+    background: var(--primary-green); 
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+    font-family: sans-serif;
+}
+
+.status-found {
+    color:  #5D8252;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+    
+
+.footer-links { 
+    margin-bottom: 20px;
+    display: flex; /* Ginawang flex para sa pantay na spacing ng popup */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Container para sa popup logic */
+.popup-item {
+    position: relative; /* Anchor para sa popup box */
+    display: inline-block;
+}
+
+.footer-links a { 
+    color: white; 
+    text-decoration: none; 
+    font-size: 18px; 
+    transition: 0.3s;
+}
+
+/* Ang Pop-up Box (Nakalutang sa itaas ng link) */
+.popup-box {
+    visibility: hidden;
+    opacity: 0;
+    width: 320px;
+    background-color: white;
+    color: var(--text-dark);
+    text-align: left;
+    border-radius: 12px;
+    padding: 25px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 150%; /* Nilagay sa itaas ng link */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Initial position para sa animation */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Hindi istorbo sa mouse movement */
+    line-height: 1.6;
+    border-bottom: 5px solid var(--accent-green);
+}
+
+/* Little triangle pointer */
+.popup-box::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Popup Box Header/Title style */
+.popup-box strong {
+    display: block;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* Hover Effect - Dito lalabas ang popup */
+.popup-item:hover .popup-box {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Smooth slide up */
+}
+
+.popup-item:hover a {
+    color: var(--accent-green);
+    text-decoration: underline;
+}
+
+/* --- Socials & P --- */
+
+footer p {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+.socials i {
+    font-size: 35px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.socials i:hover {
+    transform: scale(1.2);
+    color: var(--accent-green);
+}
+
+.highlight-card {
+    border: 2px solid #78A454 !important;
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(120, 164, 84, 0.3);
+    transition: all 0.5s ease;
+}
+
+/* Modal Background */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    gap: 30px;              
+    align-items: flex-start; 
+    overflow-y: auto;    
+    max-height: 90vh;    
+}
+
+.item-detail-content {
+    width: 50% !important; 
+    max-width: 600px !important; 
+    display: flex !important; 
+    gap: 20px;
+    align-items: flex-start;
+    text-align: start !important;
+    margin: 2% auto !important; 
+    position: relative;
+    z-index: 1001; 
+}
+.item-detail-content > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-detail-content > div:last-child {
+    flex: 1.2; 
+}
+
+.close-button {
+    position: absolute;
+    right: 20px; top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #888;
+}
+
+       .expiry-modal {
+    display: none; 
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85) !important; 
+    z-index: 1000000 !important;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content-alert {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border-top: 8px solid #78A454;
+}
+
+.exclamation-icon {
+    font-size: 50px;
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+ /* The "Green Light" Highlight effect */
+        .highlight-card {
+            border: 2px solid #6B9E45 !important;
+            box-shadow: 0 0 20px rgba(107, 158, 69, 0.6) !important;
+            transform: scale(1.02);
+            transition: all 0.5s ease;
+        }
+
+        /* Modal specific styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 900px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideUp 0.4s ease-out;
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-button {
+            position: absolute;
+            right: 25px; top: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+        }
+        .status-badge-published {
+            background-color: #8dbb69;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            float: right;
+        }
+        .contact-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid #6B9E45;
+            margin-top: 20px;
+        }
+        .info-header {
+            border-bottom: 2px solid #6B9E45;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 200px;
+    align-items: center;
+    width: 100%;
+    margin-top: 30px;
+    padding: 10px 0;
+}
+
+.pag-btn-large {
+    background-color: #83b873; 
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.pag-btn-large:hover:not(:disabled) {
+    background-color: #5D8252;
+}
+
+.pag-btn-large:disabled {
+    background-color: #c2d6c6;
+    cursor: not-allowed;
+}
+
+.page-indicator {
+    color: #666;
+    font-size: 0.9rem;
+}

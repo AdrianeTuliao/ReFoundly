@@ -1,0 +1,538 @@
+/* Using your specific Color Variables */
+:root {
+    --primary-green: #6B9E45;
+    --accent-green: #94D85D;
+    --dark-green: #5a853a;
+    --bg-gray: #f9f9f9;
+    --text-dark: #333;
+}
+
+html, body {
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+}
+
+
+/* Header & Nav */
+.navbar {
+    background: linear-gradient(90deg, #5D8252 0%, #7B9672 50%, #A2B499 100%);
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.7rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 1.7rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover {
+    color:#d1d1d1; 
+    }
+
+footer { 
+    background: linear-gradient(90deg, #5D8252 0%, #7B9672 50%, #A2B499 100%);
+    color: white; 
+    padding: 40px 0 20px; 
+    text-align: center; 
+    font-family: sans-serif;
+}
+
+.search-section {
+    background: linear-gradient(90deg, #5D8252 0%, #7B9672 50%, #A2B499 100%);
+    padding: 15px 40px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Header & Nav */
+.navbar {
+    background: linear-gradient(90deg, #5D8252 0%, #7B9672 50%, #A2B499 100%);
+    padding: 0.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+.navbar h1 { color: white; margin: 0; font-size: 1.5rem; }
+
+.nav-icons {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 1.5rem;
+}
+
+.nav-icons i { cursor: pointer; transition: 0.3s; }
+.nav-icons i:hover {
+    color:#d1d1d1; 
+    }
+
+.icons-link {
+    text-decoration: none; 
+    color: inherit;        
+    cursor: pointer;  
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 1.7rem;     
+}
+
+.icons-link:hover {
+    color: var(--accent-green);        
+}
+
+/* --- Burger Menu beside Notifications --- */
+
+.burger-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    cursor: pointer;
+    font-size: 1.7rem; 
+    color: white;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.hamburger:hover {
+    color: var(--accent-green);
+}
+
+/* The Dropdown Menu */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 55px; /* Adjust base sa kapal ng navbar */
+    right: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+html, body {
+    overflow-x: hidden;
+    font-size: 90%;
+    
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+}
+
+/* Condensed Card Styles */
+.card {
+    font-size: 13px; 
+    border: 1px solid #eee;
+    font-family: sans-serif;
+    color: black;
+    background: white;
+    border-radius: 6px; 
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto; 
+}
+
+
+.card:hover {
+    /* Subtle lift, proportional to its smaller size */
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.card-img { 
+    height: 110px; 
+    background: #ddd; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    object-fit: contain;
+    font-size: 11px;
+    font-style: italic; 
+    color: #888; 
+    padding: 10px;
+}
+
+.card-body { 
+    padding: 10px 12px; 
+}
+
+.badge {
+    background: var(--accent-green);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.badge {
+    align-self: flex-start;
+    width: fit-content;
+    font-family: sans-serif;
+    background-color: #D97706;
+    color: white;
+    padding: 3px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.item-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    overflow: hidden;
+    height: 100%;
+}
+
+.item-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+    width: 100%;
+    max-width: 280px;
+}
+/* =========================
+   REFINED NOTIFICATION SYSTEM 
+   ========================= */
+
+.notif-dropdown { 
+    display: none; 
+    position: absolute; 
+    right: 0; 
+    top: 55px; 
+    width: 340px; 
+    background: white; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+    z-index: 1000; 
+    display: flex; 
+    flex-direction: column;
+    max-height: 480px; 
+    overflow: hidden; 
+}
+
+.notif-header-modern { 
+    padding: 16px; 
+    border-bottom: 1px solid #f0f0f0; 
+    flex-shrink: 0; 
+}
+
+.notif-title-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 12px; 
+}
+
+.notif-title-row span { 
+    font-size: 1.2rem; 
+    font-weight: 700; 
+    color: #1c1e21; 
+}
+
+/* Tab Pills */
+.notif-tabs { 
+    display: flex; 
+    gap: 8px; 
+}
+
+.tab-pill { 
+    background: #f0f2f5; 
+    border: none; 
+    padding: 6px 16px; 
+    border-radius: 18px; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: #65676b; 
+    cursor: pointer; 
+    transition: 0.2s;
+}
+
+.tab-pill.active { 
+    background: #e7f3ff; 
+    color: #1877f2; 
+}
+
+.notif-scroll-area { 
+    flex-grow: 1; 
+    overflow-y: auto; 
+    scrollbar-width: thin;
+    max-height: 350px;
+}
+
+.notif-item-modern { 
+    padding: 12px 16px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    cursor: pointer; 
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.unread-bg { 
+    background: #f0f7ef; 
+}
+
+.unread-dot-small { 
+    width: 9px; 
+    height: 9px; 
+    background: #1877f2; 
+    border-radius: 50%; 
+    margin-left: auto; 
+}
+
+.notif-footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 15px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+}
+
+.notif-footer button {
+    background: none;
+    border: none;
+    color: #7aa340;
+    font-weight: bold;
+    cursor: pointer;
+}
+.notif-footer button:hover {
+    text-decoration: underline;
+}
+
+.clear-notifs-btn { background: none; border: none; color: #7aa340; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+
+.notif-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#notifCount {
+    position: absolute;
+    top: -8px;     
+    right: -10px;   
+    background-color: #ff4d4f !important; 
+    color: white !important;
+    font-size: 10px;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #6B9E45; 
+    z-index: 1001; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 25px; 
+    padding-right: 20px; /
+}
+
+.notif-badge {
+    position: absolute;
+    top: -5px;      
+    right: -8px;   
+    background-color: #ff4d4f; 
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #7B9672; 
+    z-index: 10;
+}
+
+.top-nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-right: 30px; 
+}
+
+/* PAGINATION STYLING - SYNCED WITH ADMIN */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+
+}
+
+.page-arrow { 
+    background: transparent;
+    border: none;
+    color: #555;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* This is that nice soft green hover you have on the admin side */
+.page-arrow:hover:not(:disabled) {
+    background-color: rgba(122, 163, 64, 0.1); 
+    color: #7aa340;
+}
+
+.page-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.page-num {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 600;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* --- REFOUNDLY GREEN POPUP TOAST SYSTEM --- */
+.refoundly-toast-container {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.refoundly-toast {
+    pointer-events: auto;
+    background: #ffffff;
+    border-left: 6px solid #7aa340; /* Signature ReFoundly Green */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 320px;
+    max-width: 420px;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease;
+    opacity: 0;
+}
+
+.refoundly-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.refoundly-toast-icon {
+    width: 42px;
+    height: 42px;
+    background-color: #f0f7e8; /* Soft green tint */
+    color: #7aa340; /* Primary Green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.refoundly-toast-content {
+    flex-grow: 1;
+}
+
+.refoundly-toast-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 3px 0;
+}
+
+.refoundly-toast-body {
+    font-size: 0.85rem;
+    color: #555555;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.refoundly-toast-close {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.refoundly-toast-close:hover {
+    color: #333;
+}

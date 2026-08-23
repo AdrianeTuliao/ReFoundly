@@ -1,0 +1,397 @@
+/* =========================
+   GLOBAL ADMIN SHELL
+   ========================= */
+
+/* RESET */
+* {
+    box-sizing: border-box;
+    font-family: 'Public Sans', sans-serif;
+}
+
+
+
+/* BACKGROUND */
+body {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    min-height: 100vh;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #f5f5f0;
+    opacity: 1; 
+}
+
+/* LAYOUT */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    color: #5D8252;
+
+   background: rgba(255, 255, 255, 0.7);
+    
+    /* This is the magic: it blurs the park image behind the sidebar */
+    backdrop-filter: blur(10px);
+    
+    
+    /* Add a very thin border on the right to define the edge */
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    
+}
+
+.logo {
+    padding: 25px 20px; 
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    justify-content: start; 
+    gap: 0px;           
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #5D8252;
+}
+
+.sidebar-logo-img {
+    width: 50px;
+    height: auto;
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.644));
+    opacity: 50%;
+}
+
+.logo span {
+    letter-spacing: 0.2px; 
+}
+
+.sidebar nav a {
+    display: block;
+    padding: 14px 20px;
+    color: #5D8252;
+    text-decoration: none;
+}
+
+.sidebar nav a.active,
+.sidebar nav a:hover {
+    background: #7B9672;
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    /* Makes the hover box only as wide as the text + padding */
+    display: inline-block; 
+    width: 229px; 
+    
+    /* Adjust padding to control the "squareness" */
+    padding: 8px 16px; 
+    
+    /* Adds space so it doesn't touch the edges of the sidebar */
+    margin: 5px 10px; 
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 20px;
+}
+
+.sidebar-footer a {
+    color: #5D8252;
+    text-decoration: none;
+}
+
+/* TOP NAV */
+.top-nav {
+    height: 60px;
+    background: transparent;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.admin-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #cbd5e1;
+    border-radius: 50%;
+}
+
+.avatar-link {
+    display: inline-block;
+}
+
+/* CONTENT WRAPPER (STRUCTURAL ONLY) */
+.content-wrapper {
+    padding: 30px;
+    width: 100%;
+}
+
+/* Action Buttons */
+.btn-approve { background-color: #5D8252; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+.btn-deny { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+.btn-resolve { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+.btn-view { 
+    background-color: #495057; /* Darker gray for better contrast */
+    color: #ffffff !important;  /* Force white text */
+    padding: 6px 12px; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    margin-right: 5px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+/* Status Badges */
+.badge.pending-approval { background-color: #ffc107; color: #333; }
+.badge.published { background-color: #007bff; color: white; }
+.badge.resolved { background-color: #5D8252; color: white; }
+.badge.denied { background-color: #495057; color: white; }
+
+/* Pagination */
+.pagination-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; padding: 10px; }
+.page-arrow { cursor: pointer; background: none; border: none; font-size: 1.2rem; color: #5d9e52; }
+.page-arrow:disabled { color: #ccc; cursor: default; }
+
+/* =========================
+   NOTIFICATION SYSTEM 
+   ========================= */
+
+.notif-wrapper { 
+    position: relative; 
+    display: inline-block; 
+}
+
+.notif-badge { 
+    position: absolute; 
+    top: -5px; 
+    right: -5px; 
+    background: #ff4d4f; 
+    color: white; 
+    border-radius: 50%; 
+    padding: 2px 6px; 
+    font-size: 10px; 
+    font-weight: bold;
+    display: none; /* Managed by JS */
+}
+
+/* Dropdown Container: The Flexbox Shell */
+.notif-dropdown { 
+    display: none; 
+    position: absolute; 
+    right: 0; 
+    top: 40px; 
+    width: 320px; 
+    background: white; 
+    border-radius: 12px; 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
+    z-index: 1000; 
+    
+    /* Crucial: Column layout to separate Header, Body, and Footer */
+    flex-direction: column;
+    max-height: 480px; 
+    overflow: hidden; 
+}
+
+/* Static Header */
+.notif-header-modern { 
+    padding: 16px; 
+    border-bottom: 1px solid #f0f0f0; 
+    flex-shrink: 0;
+}
+
+.notif-title-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 12px; 
+}
+
+.notif-title-row span { 
+    font-size: 1.2rem; 
+    font-weight: 700; 
+    color: #1c1e21; 
+}
+
+.notif-tabs { 
+    display: flex; 
+    gap: 8px; 
+}
+
+.tab-pill { 
+    background: #f0f2f5; 
+    border: none; 
+    padding: 6px 16px; 
+    border-radius: 18px; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: #65676b; 
+    cursor: pointer; 
+}
+
+.tab-pill.active { 
+    background: #e7f3ff; 
+    color: #1877f2; 
+}
+
+/* Scrollable Body: This grows to fill space but scrolls content */
+.notif-scroll-area { 
+    flex-grow: 1; 
+    overflow-y: auto; 
+    scrollbar-width: thin;
+}
+
+.notif-item-modern { 
+    padding: 12px 16px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    cursor: pointer; 
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.notif-item-modern:hover { 
+    background: #f9f9f9; 
+}
+
+.unread-bg { 
+    background: #f0f7ef; 
+}
+
+.unread-dot-small { 
+    width: 8px; 
+    height: 8px; 
+    background: #1877f2; 
+    border-radius: 50%; 
+    margin-left: auto; 
+}
+
+/* Static Footer: Stays pinned at the bottom */
+.notif-footer { 
+    padding: 12px; 
+    border-top: 1px solid #f0f0f0; 
+    text-align: center; 
+    flex-shrink: 0;
+    background: white;
+}
+
+.notif-footer button { 
+    width: 100%; 
+    background: #f0f2f5; 
+    border: none; 
+    color: #050505; 
+    font-weight: 600; 
+    cursor: pointer; 
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.notif-footer button:hover {
+    background: #e4e6eb;
+}
+
+/* Animations */
+.content-wrapper { opacity: 0; transition: opacity 0.5s ease; }
+.content-wrapper.fade-in { opacity: 1; }
+
+/* The highlighting effect */
+.highlight-glow {
+    outline: 3px solid #7aa340 !important;
+    box-shadow: 0 0 20px rgba(122, 163, 64, 0.6);
+    transition: all 0.3s ease;
+    z-index: 10;
+    position: relative;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 10px rgba(122, 163, 64, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(122, 163, 64, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(122, 163, 64, 0.4); }
+}
+
+.highlight-glow {
+    animation: pulse-green 2s infinite;
+}
+
+.history-header-modern { padding: 24px 20px 15px 20px; border-bottom: 1px solid #eee; }
+.history-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.history-title-row h2 { font-size: 1.5rem; font-weight: 700; color: #1c1e21; margin: 0; }
+.btn-delete-all {     background: #fff1f0;
+    color: #ff4d4f;
+    border: 1px solid #ffccc7;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s; }
+
+.history-tabs { display: flex; gap: 8px; }
+.tab-pill {
+    background: #f0f2f5; border: none; padding: 8px 16px; 
+    border-radius: 20px; font-weight: 600; color: #65676b; 
+    cursor: pointer; transition: 0.2s;
+}
+.tab-pill.active { background: #e7f3ff; color: #1877f2; }
+.tab-pill:hover:not(.active) { background: #e4e6eb; }
+
+/* The unread blue dot */
+.unread-dot { width: 12px; height: 12px; background: #1877f2; border-radius: 50%; margin-left: auto; }
+
+.notif-header-modern { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+.notif-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.notif-title-row span { font-size: 1.2rem; font-weight: 700; color: #1c1e21; }
+.clear-notifs-btn { background: none; border: none; color: #7aa340; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+
+.notif-tabs { display: flex; gap: 8px; margin-bottom: 5px; }
+.tab-pill { 
+    background: #f0f2f5; border: none; padding: 6px 12px; 
+    border-radius: 18px; font-size: 0.85rem; font-weight: 600; 
+    color: #65676b; cursor: pointer; 
+}
+.tab-pill.active { background: #e7f3ff; color: #1877f2; }
+
+.notif-scroll-area { max-height: 350px; overflow-y: auto; }
+.notif-item-modern { 
+    padding: 12px 16px; display: flex; align-items: center; 
+    gap: 12px; cursor: pointer; transition: background 0.2s; 
+}
+.notif-item-modern:hover { background: #f2f2f2; }
+.unread-bg { background: #f0f7ef; }
+.unread-dot-small { width: 8px; height: 8px; background: #1877f2; border-radius: 50%; margin-left: auto; }
+
+.notif-footer { padding: 10px; border-top: 1px solid #f0f0f0; text-align: center; }
+.notif-footer button { 
+    width: 100%; background: none; border: none; color: #7aa340; 
+    font-weight: 600; cursor: pointer; padding: 5px;
+}

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly - Account</title>
+    <link rel="stylesheet" href="user_acc.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+    <main class="container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Account</span>
+        </nav>
+
+        <section class="account-card">
+            <div class="sidebar">
+                <div class="avatar-large"></div>
+                <h2 id="user-fullname">John Doe</h2>
+                <p id="user-email">johndoe@gmail.com</p>
+            </div>
+
+            <div class="content">
+    <h3 class="section-header">Personal Information</h3>
+    
+    <form id="account-form">
+        <div class="info-grid">
+            <div class="info-box">
+                <label for="input-name">Full name</label>
+                <input type="text" id="input-name" name="name" disabled required>
+            </div>
+
+            <div class="info-box">
+                <label for="input-email">Email</label>
+                <input type="email" id="input-email" name="email" disabled required>
+            </div>
+
+            <div class="info-box">
+                <label for="input-contact">Contact Number</label>
+                <input type="text" id="input-contact" name="contact_number" disabled placeholder="e.g. 09123456789">
+            </div>
+
+            <div class="info-box">
+                <label for="input-dob">Date of Birth</label>
+                <input type="date" id="input-dob" name="dob" disabled>
+            </div>
+
+            <div class="info-box">
+                <label>Password</label>
+                <a href="#" class="change-pw">Change Password</a>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" id="edit-btn" class="primary-edit-btn">Edit</button>
+            <button type="submit" id="save-btn" class="primary-edit-btn" style="display: none; background-color: #6B9E45;">Save Changes</button>
+            <button type="button" id="cancel-btn" style="display: none; margin-left: 10px; padding: 10px 20px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Email Verification Modal -->
+<div id="otp-modal" class="expiry-modal" style="display: none;">
+    <div class="modal-content-alert">
+        <i class="fa-solid fa-envelope exclamation-icon" style="color: #6B9E45;"></i>
+        <h3 style="margin: 10px 0;">Verify New Email</h3>
+        <p style="font-size: 0.9rem; color: #666;">We sent a 6-digit verification code to your new email address. Please enter it below:</p>
+        <input type="text" id="otp-input" maxlength="6" style="width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border: 1px solid #ccc; border-radius: 6px; margin: 15px 0;" placeholder="123456">
+        <div>
+            <button id="verify-otp-btn" class="primary-edit-btn">Verify & Save</button>
+            <button id="close-otp-btn" style="margin-left: 10px; padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="password-modal" class="expiry-modal" style="display: none;">
+    <div class="modal-content-alert" style="max-width: 420px; text-align: center;">
+        
+        <!-- SUCCESS STATE CONTAINER (hidden by default) -->
+        <div id="password-success-container" style="display: none; padding: 20px 10px;">
+            <div style="width: 60px; height: 60px; background-color: #E8F5E9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto;">
+                <i class="fa-solid fa-check" style="font-size: 30px; color: #4CAF50;"></i>
+            </div>
+            <h3 style="color: #2E7D32; margin-bottom: 8px;">Password Updated!</h3>
+            <p style="color: #666; font-size: 0.9rem;">Redirecting to log in page...</p>
+        </div>
+
+        <!-- FORM CONTAINER -->
+        <div id="password-form-container">
+            <h3 style="margin-bottom: 15px; text-align: center;">Change Password</h3>
+            
+            <!-- Inline Error Banner -->
+            <div id="password-error-msg" style="display: none; color: #d9534f; background-color: #fdf7f7; border: 1px solid #d9534f; border-radius: 6px; padding: 10px; font-size: 0.85rem; margin-bottom: 15px; text-align: left;"></div>
+
+            <form id="changePasswordForm" style="text-align: left;">
+                <!-- Current Password -->
+                <div style="margin-bottom: 12px;">
+                    <label for="currentPassword" style="font-size: 0.85rem; font-weight: bold;">Current Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="currentPassword" name="currentPassword" required 
+                               style="width: 100%; padding: 8px 35px 8px 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
+                        <i class="fa-solid fa-eye toggle-password" data-target="currentPassword" 
+                           style="position: absolute; right: 10px; cursor: pointer; color: #777;"></i>
+                    </div>
+                </div>
+
+                <!-- New Password -->
+                <div style="margin-bottom: 12px;">
+                    <label for="newPassword" style="font-size: 0.85rem; font-weight: bold;">New Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="newPassword" name="newPassword" required 
+                               style="width: 100%; padding: 8px 35px 8px 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
+                        <i class="fa-solid fa-eye toggle-password" data-target="newPassword" 
+                           style="position: absolute; right: 10px; cursor: pointer; color: #777;"></i>
+                    </div>
+                    <small style="font-size: 0.75rem; color: #666; display: block; margin-top: 4px;">
+                        Must be 8+ chars, include uppercase, lowercase, number & special char (@$!%*?&).
+                    </small>
+                </div>
+
+                <!-- Confirm New Password -->
+                <div style="margin-bottom: 15px;">
+                    <label for="confirmNewPassword" style="font-size: 0.85rem; font-weight: bold;">Confirm New Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" required 
+                               style="width: 100%; padding: 8px 35px 8px 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
+                        <i class="fa-solid fa-eye toggle-password" data-target="confirmNewPassword" 
+                           style="position: absolute; right: 10px; cursor: pointer; color: #777;"></i>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 15px;">
+                    <button type="submit" class="primary-edit-btn" style="background-color: #6B9E45;">Update Password</button>
+                    <button type="button" id="close-password-btn" style="margin-left: 10px; padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>© 2026 Digital Lost & Found Portal</p>
+    </footer>
+    <script src="user_acc.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="notifications.js"></script>
+</body>
+</html>
