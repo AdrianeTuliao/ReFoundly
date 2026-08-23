@@ -1,3 +1,4 @@
+/*--Imports & Dependencies--*/
 require('dotenv').config(); 
 const express = require('express');
 const session = require('express-session');
@@ -12,8 +13,10 @@ const csrf = require('csurf');
 const cookieParser = require('cookie-parser');
 const adminUsersRoute = require("./Routes/adminUsers.js");
 
+/*--App Initialization--*/
 const app = express();
 
+/*--CORS & Body Parser Setup--*/
 const cors = require('cors');
 app.use(cors({
     origin: 'http://127.0.0.1:5500', 
@@ -22,7 +25,7 @@ app.use(cors({
 
 app.use(express.json());
 
-/* DATABASE CONNECTION */
+/*--Database Connection--*/
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'refoundly_app',
@@ -30,12 +33,14 @@ const db = mysql.createConnection({
     database: process.env.DB_NAME || 'refoundly_db'
 });
 
+/*--File Upload Configuration (Multer)--*/
 const storage = multer.diskStorage({
     destination: './User/uploads/',
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage: storage });
 
+/*--Connect To Database--*/
 db.connect(err => {
     if (err) {
         console.error('Database connection failed:', err.stack);
@@ -44,7 +49,7 @@ db.connect(err => {
     console.log('Connected to ReFoundly Database');
 });
 
-/* --- CLEANED AUDIT LOG HELPER --- */
+/*--Audit Log Helper--*/
 function createAuditLog(req, action, details, guestEmail = null) { 
     const userId = req.session.userId || null;
     const adminId = req.session.admin ? req.session.admin.id : null;
@@ -73,7 +78,7 @@ function createAuditLog(req, action, details, guestEmail = null) {
     });
 }
 
-/* MIDDLEWARE */
+/*--Middleware--*/
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -99,6 +104,7 @@ app.use((req, res, next) => {
     next();
 });
 
+/*--Rate Limiters--*/
 const burstLimiter = rateLimit({
     windowMs: 3 * 1000, 
     max: 3, 
@@ -130,7 +136,7 @@ const bruteForceLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-/* SESSION CONFIGURATION */
+/*--Session Configuration--*/
 app.use(session({
     secret: process.env.SESSION_SECRET || 'refoundly_secure_key_2026',
     resave: true,
@@ -146,13 +152,14 @@ app.use(session({
     }
 }));
 
-/* --- CSRF PROTECTION SETUP --- */
+/*--CSRF Protection Setup--*/
 const csrfProtection = csrf({ cookie: true });
 
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
+/*--Auth Middleware: requireUser--*/
 function requireUser(req, res, next) {
     if (req.session && req.session.userId) {
         // 🟢 Binago: 'status' column lang ang kukunin mula sa DB
@@ -184,6 +191,7 @@ function requireUser(req, res, next) {
     }
 }
 
+/*--Auth Middleware: requireAdmin--*/
 function requireAdmin(req, res, next) {
     if (req.session && req.session.admin) {
         // 🟢 Binago: 'status' column lang ang kukunin para sa Admin
@@ -215,7 +223,7 @@ function requireAdmin(req, res, next) {
     }
 }
 
-/* --- API ROUTES --- */
+/*--API Routes--*/
 app.get('/api/get-session-info', (req, res) => {
     if (req.session.userId) {
         res.json({ success: true, userId: req.session.userId });
@@ -224,7 +232,7 @@ app.get('/api/get-session-info', (req, res) => {
     }
 });
 
-/* USER LOGOUT */
+/*--User Logout--*/
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) return res.status(500).json({ success: false });
@@ -233,6 +241,7 @@ app.post('/logout', (req, res) => {
     });
 });
 
+/*--Get Current User--*/
 app.get('/user/me', requireUser, (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authorized" });
     const query = "SELECT name, email, contact_number, dob FROM users WHERE id = ?";
@@ -242,6 +251,7 @@ app.get('/user/me', requireUser, (req, res) => {
     });
 });
 
+/*--Email Transporter Setup (Nodemailer)--*/
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -266,7 +276,7 @@ transporter.verify(function (error, success) {
   }
 });
 
-/* --- REAL GMAIL OTP FOR REGISTRATION --- */
+/*--User Registration (OTP)--*/
 app.post('/register', async (req, res) => {
     const { name, username, email, password, contact_number, dob } = req.body; 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -315,7 +325,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-/* --- OPTIMIZED GMAIL OTP FOR LOGIN --- */
+/*--User Login (OTP)--*/
 app.post('/login', burstLimiter, bruteForceLimiter, (req, res) => {
     const { email, password, isTrustedDevice } = req.body;
 
@@ -403,7 +413,7 @@ const userStatus = user.status ? user.status.toString().toLowerCase() : '';
     });
 });
 
-/* --- FORGOT PASSWORD: SEND OTP --- */
+/*--Forgot Password: Send OTP--*/
 app.post('/api/forgot-password', (req, res) => {
     const { email } = req.body;
 
@@ -442,7 +452,7 @@ app.post('/api/forgot-password', (req, res) => {
     });
 });
 
-/* --- FORGOT PASSWORD: VERIFY & UPDATE --- */
+/*--Forgot Password: Verify & Update--*/
 app.post('/api/reset-password', async (req, res) => {
     const { otp, newPassword } = req.body;
 
@@ -467,6 +477,7 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
+/*--Verify Registration OTP--*/
 app.post('/verify-registration', (req, res) => {
     const { otp } = req.body;
 
@@ -487,6 +498,7 @@ app.post('/verify-registration', (req, res) => {
     }
 });
 
+/*--Verify Login OTP--*/
 app.post('/verify-otp', burstLimiter, (req, res) => {
     if (req.body.otp === req.session.tempOTP) {
 
@@ -510,7 +522,7 @@ app.post('/verify-otp', burstLimiter, (req, res) => {
     }
 });
 
-/* ADMIN AUTHENTICATION */
+/*--Admin Login--*/
 app.post('/admin/login', (req, res) => {
     const { email, password } = req.body;
     const sql = 'SELECT * FROM admins WHERE email = ?';
@@ -569,7 +581,7 @@ app.post('/admin/login', (req, res) => {
     });
 });
 
-/* --- GET USER NOTIFICATIONS --- */
+/*--Get User Notifications--*/
 app.get('/api/user/notifications', requireUser, (req, res) => {
     const userId = req.session.userId;
     const sql = "SELECT * FROM user_notifications WHERE user_id = ? ORDER BY created_at DESC";
@@ -583,7 +595,7 @@ app.get('/api/user/notifications', requireUser, (req, res) => {
     });
 });
 
-/* --- MARK NOTIFICATION AS READ --- */
+/*--Mark Notification As Read--*/
 app.post('/api/user/notifications/read/:id', requireUser, (req, res) => {
     const notifId = req.params.id;
     const userId = req.session.userId; 
@@ -604,7 +616,7 @@ app.post('/api/user/notifications/read/:id', requireUser, (req, res) => {
     });
 });
 
-/* ADMIN LOGOUT */
+/*--Admin Logout--*/
 app.post('/admin/logout', (req, res) => {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     
@@ -622,7 +634,7 @@ app.post('/admin/logout', (req, res) => {
     });
 });
 
-/* --- UNIFIED ADMIN SESSION CHECK --- */
+/*--Admin Session Check--*/
 app.get('/admin/me', requireAdmin, (req, res) => {
     const sql = 'SELECT id, name, email, contact_number FROM admins WHERE id = ?';
     db.query(sql, [req.session.admin.id], (err, results) => {
@@ -633,6 +645,7 @@ app.get('/admin/me', requireAdmin, (req, res) => {
     });
 });
 
+/*--Submit Item Report--*/
 app.post('/submit-report', requireUser, upload.single('image'), async (req, res) => {
     try {
         const currentUserId = req.session.userId;
@@ -674,6 +687,7 @@ app.post('/submit-report', requireUser, upload.single('image'), async (req, res)
     }
 });
 
+/*--Get User Report History--*/
 app.get('/api/user-history', requireUser, (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate, TIME_FORMAT(incident_time, '%h:%i %p') as formattedTime 
                  FROM items WHERE user_id = ? ORDER BY created_at DESC`;
@@ -683,9 +697,7 @@ app.get('/api/user-history', requireUser, (req, res) => {
     });
 });
 
-/**
- * PUBLIC & DASHBOARD API
- */
+/*--Published Items (Public)--*/
 app.get('/api/items/published', (req, res) => {
     const sql = `
         SELECT *, 
@@ -714,6 +726,7 @@ app.get('/api/items/published', (req, res) => {
     });
 });
 
+/*--Lost Items (Public)--*/
 app.get('/api/items/lost', (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate, TIME_FORMAT(incident_time, '%h:%i %p') as formattedTime
                  FROM items WHERE status = 'Published' AND report_type = 'Lost' ORDER BY created_at DESC`;
@@ -723,6 +736,7 @@ app.get('/api/items/lost', (req, res) => {
     });
 });
 
+/*--Found Items (Public)--*/
 app.get('/api/items/found', (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate, TIME_FORMAT(incident_time, '%h:%i %p') as formattedTime
                  FROM items WHERE status = 'Published' AND report_type = 'Found' ORDER BY created_at DESC`;
@@ -732,6 +746,7 @@ app.get('/api/items/found', (req, res) => {
     });
 });
 
+/*--All Items (Admin)--*/
 app.get('/api/admin/items', requireAdmin, (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate FROM items ORDER BY id DESC`;
     db.query(sql, (err, results) => {
@@ -740,8 +755,7 @@ app.get('/api/admin/items', requireAdmin, (req, res) => {
     });
 });
 
-/* ADMIN STATUS UPDATE ROUTE (With Matching Logic) */
-/* ADMIN STATUS UPDATE ROUTE (English Notifications) */
+/*--Admin: Update Item Status & Match Notifications--*/
 app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
     const { itemId, newStatus } = req.body;
 
@@ -796,6 +810,7 @@ app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
     });
 });
 
+/*--Admin: Get Audit Logs--*/
 app.get('/api/admin/audit_logs', requireAdmin, (req, res) => {
     const sql = `
         SELECT 
@@ -814,9 +829,9 @@ app.get('/api/admin/audit_logs', requireAdmin, (req, res) => {
     });
 });
 
-/* ADMIN USER MANAGEMENT ROUTES */
+/*--Admin User Management Routes--*/
 app.use("/api/admin-users", requireAdmin, adminUsersRoute);
-/* STATIC FILES & DASHBOARD PAGES */
+/*--Static Files & Dashboard Pages--*/
 app.get('/dashboard.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'dashboard.html')));
 app.get('/user_acc.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'user_acc.html')));
 app.get('/AdHome.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'Admin', 'AdHome.html')));
@@ -826,6 +841,7 @@ app.use(express.static(path.join(__dirname, 'User')));
 app.use(express.static(path.join(__dirname, 'Admin')));
 app.use('/uploads', express.static(path.join(__dirname, 'User', 'uploads')));
 
+/*--Admin: Dashboard Stats--*/
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
     const sql = `
         SELECT 
@@ -842,6 +858,7 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     });
 });
 
+/*--Admin: Recent Activity--*/
 app.get('/api/admin/recent-activity', requireAdmin, (req, res) => {
     const sql = `SELECT id, item_name, category, status, report_type, brand, incident_time,
                  DATE_FORMAT(incident_date, '%b. %d, %Y') as formattedDate 
@@ -854,6 +871,7 @@ app.get('/api/admin/recent-activity', requireAdmin, (req, res) => {
     });
 });
 
+/*--Admin: Analytics--*/
 app.get('/api/admin/analytics', requireAdmin, (req, res) => {
     const { category, range } = req.query;
 
@@ -918,6 +936,7 @@ app.get('/api/admin/analytics', requireAdmin, (req, res) => {
     });
 });
 
+/*--Admin: Add Admin Account--*/
 app.post('/api/admin-users/add', requireAdmin, csrfProtection, async (req, res) => {
     const { name, email, contact_number, password } = req.body;
     
@@ -940,7 +959,7 @@ app.post('/api/admin-users/add', requireAdmin, csrfProtection, async (req, res) 
     }
 });
 
-/* --- DIRECT PROFILE UPDATE (Name, Contact, DoB) --- */
+/*--Update User Profile--*/
 app.put('/api/user/update-profile', requireUser, (req, res) => {
     const userId = req.session.userId;
     const { name, email, contact_number, dob } = req.body;
@@ -956,7 +975,7 @@ app.put('/api/user/update-profile', requireUser, (req, res) => {
     });
 });
 
-// GET Active Items
+/*--Admin: Get Active Items--*/
 app.get('/api/items/active', requireAdmin, (req, res) => {
     const sql = "SELECT * FROM items WHERE (is_archived = 0 OR is_archived IS NULL) ORDER BY id DESC";
     db.query(sql, (err, results) => {
@@ -965,7 +984,7 @@ app.get('/api/items/active', requireAdmin, (req, res) => {
     });
 });
 
-// GET Archived Items
+/*--Get Archived Items--*/
 app.get('/api/items/archived', (req, res) => {
     const query = "SELECT *, DATE_FORMAT(archived_at, '%b %d, %Y') as archivedDate FROM items WHERE is_archived = 1 ORDER BY archived_at DESC, created_at DESC";
     
@@ -978,7 +997,7 @@ app.get('/api/items/archived', (req, res) => {
     });
 });
 
-// PUT Archive Item Action (MANUAL ROUTE)
+/*--Archive Item--*/
 app.put('/api/items/:id/archive', requireAdmin, (req, res) => {
     const sql = "UPDATE items SET is_archived = 1, archived_at = NOW() WHERE id = ?";
     db.query(sql, [req.params.id], (err) => {
@@ -990,7 +1009,7 @@ app.put('/api/items/:id/archive', requireAdmin, (req, res) => {
     });
 });
 
-// GET Dynamic Item by ID
+/*--Get Item By ID--*/
 app.get('/api/items/:id', (req, res) => {
     const itemId = req.params.id;
 
@@ -1015,7 +1034,7 @@ app.get('/api/items/:id', (req, res) => {
     });
 });
 
-// PUT Unarchive / Restore Item Action
+/*--Unarchive Item--*/
 app.put('/api/items/:id/unarchive', requireAdmin, (req, res) => {
     const sql = "UPDATE items SET is_archived = 0, archived_at = NULL WHERE id = ?";
     db.query(sql, [req.params.id], (err) => {
@@ -1027,7 +1046,7 @@ app.put('/api/items/:id/unarchive', requireAdmin, (req, res) => {
     });
 });
 
-// PUT Update Status (For Resolve Action)
+/*--Update Item Status (Resolve)--*/
 app.put('/api/items/:id/status', requireAdmin, (req, res) => {
     const { status } = req.body;
     const sql = "UPDATE items SET status = ? WHERE id = ?";
@@ -1037,7 +1056,7 @@ app.put('/api/items/:id/status', requireAdmin, (req, res) => {
     });
 });
 
-/* --- REQUEST EMAIL CHANGE OTP --- */
+/*--Request Email Change OTP--*/
 app.post('/api/user/request-email-change', requireUser, async (req, res) => {
     const { newEmail } = req.body;
 
@@ -1090,7 +1109,7 @@ app.post('/api/user/request-email-change', requireUser, async (req, res) => {
     });
 });
 
-/* --- VERIFY EMAIL CHANGE OTP --- */
+/*--Verify Email Change OTP--*/
 app.post('/api/user/verify-email-change', requireUser, (req, res) => {
     const { otp, newEmail } = req.body;
     const sessionOtp = req.session.emailOtp;
@@ -1116,6 +1135,7 @@ app.post('/api/user/verify-email-change', requireUser, (req, res) => {
     });
 });
 
+/*--Change Password--*/
 app.post('/api/user/change-password', requireUser, async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -1164,7 +1184,7 @@ app.post('/api/user/change-password', requireUser, async (req, res) => {
   }
 });
 
-/* GLOBAL ERROR HANDLER (Iwas HTML response sa server errors) */
+/*--Global Error Handler--*/
 app.use((err, req, res, next) => {
     console.error("❌ Express Server Error:", err.stack || err.message);
     res.status(500).json({
@@ -1173,7 +1193,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-/* --- PROTECTED ROUTES --- */
+/*--Protected Page Routes--*/
 app.get('/dashboard.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'dashboard.html')));
 app.get('/report.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'report.html')));
 app.get('/user_acc.html', requireUser, (req, res) => res.sendFile(path.join(__dirname, 'User', 'user_acc.html')));
@@ -1186,10 +1206,11 @@ app.get('/AdReport.html', requireAdmin, (req, res) => res.sendFile(path.join(__d
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'User', 'index.html')));
 app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'User', 'index.html')));
 
-/* --- STATIC FILES MIDDLEWARE --- */
+/*--Static Files Middleware--*/
 app.use(express.static(path.join(__dirname, 'User')));
 app.use('/uploads', express.static(path.join(__dirname, 'User', 'uploads')));
 
+/*--Start Server--*/
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Server is running on port ${PORT}`);
