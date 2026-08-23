@@ -176,7 +176,7 @@ async function updateNotificationsUI() {
                 .replace(/'/g, "&#039;");
 
             return `
-                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleNotifClick(${n.id})">
+                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleNotifClick(${n.id}, ${n.item_id || 'null'})">
                     <div class="notif-icon-circle" style="background: #7aa340; width:35px; height:35px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                         <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
                     </div>
@@ -200,12 +200,30 @@ function switchNotifTab(type) {
     updateNotificationsUI();
 }
 
-async function handleNotifClick(id) {
-    await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
-    window.location.href = 'history.html'; 
+async function handleNotifClick(id, itemId) {
+    try {
+        await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
+    } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+    }
+    if (!itemId) {
+        window.location.href = 'history.html';
+        return;
+    }
+    try {
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+            const item = await res.json();
+            const dbType = (item.report_type || "").toLowerCase().trim();
+            finalRedirect(itemId, dbType);
+        } else {
+            window.location.href = 'history.html';
+        }
+    } catch (err) {
+        console.error("Could not resolve matched item:", err);
+        window.location.href = 'history.html';
+    }
 }
-
-
 
 // 6. Navigation & UI Helpers
 window.finalRedirect = function(id, type) {

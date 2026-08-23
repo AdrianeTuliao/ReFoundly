@@ -1,12 +1,12 @@
 // --- GLOBAL USER NOTIFICATION ENGINE ---
 let currentNotifTab = 'all';
 
-// 1. Toast Storage & State Setup
+// Toast Storage & State Setup
 if (!window.shownToastIds) {
     window.shownToastIds = new Set(JSON.parse(sessionStorage.getItem('shownNotifToasts') || '[]'));
 }
 
-// 2. Global ReFoundly Toast Function
+// Global ReFoundly Toast Function
 function showRefoundlyToast(title, message, iconClass = 'fa-solid fa-bell') {
     let container = document.getElementById('refoundly-toast-container');
     
@@ -40,7 +40,7 @@ function showRefoundlyToast(title, message, iconClass = 'fa-solid fa-bell') {
     }, 5000);
 }
 
-// 3. Match Popup Checker
+// Match Popup Checker
 function checkAndShowMatchPopups(notifications) {
     if (!Array.isArray(notifications)) return;
 
@@ -49,8 +49,8 @@ function checkAndShowMatchPopups(notifications) {
     unreadNotifs.forEach(n => {
         if (!window.shownToastIds.has(n.id)) {
             showRefoundlyToast(
-                "Bagong Notification!",
-                n.message || n.text || "May bagong update sa ReFoundly account mo.",
+                "New Notification!",
+                n.message || n.text || "You have a new update on your ReFoundly account.",
                 "fa-solid fa-bell"
             );
 
@@ -60,7 +60,7 @@ function checkAndShowMatchPopups(notifications) {
     });
 }
 
-// 4. Update Notifications UI
+// Update Notifications UI
 async function updateNotificationsUI() {
     const list = document.getElementById("notifList");
     const badge = document.getElementById("notifBadge");
@@ -71,7 +71,7 @@ async function updateNotificationsUI() {
         
         const data = await res.json();
 
-        // Mag-trigger ng Popup Toast Alert kung may unread notif
+        // Trigger Popup Toast Alert for unread notifications
         if (Array.isArray(data)) {
             checkAndShowMatchPopups(data);
         }
@@ -96,21 +96,19 @@ async function updateNotificationsUI() {
         }
 
         list.innerHTML = displayList.map(n => {
-            const isRead = n.is_read == 1 || n.is_read === true || n.read === true;
-            const date = n.created_at 
-                ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : 'Recent';
+            const safeMessage = n.message || '';
+            const date = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
 
             return `
-                <div class="notif-item-modern ${isRead ? '' : 'unread-bg'}" onclick="handleGlobalNotifClick(${n.id})">
-                    <div class="notif-icon-circle" style="background: ${isRead ? '#f0f2f5' : '#7aa340'}; width:35px; height:35px; border-radius:50%; color:${isRead ? '#65676b' : 'white'}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleGlobalNotifClick(${n.id}, ${n.item_id || 'null'})">
+                    <div class="notif-icon-circle" style="background: #7aa340; width:35px; height:35px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                         <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
                     </div>
                     <div style="flex-grow:1;">
-                        <div style="font-size:0.85rem; color:#1c1e21; font-weight:${isRead ? '400' : '700'}">${n.message || n.text}</div>
+                        <div style="font-size:0.85rem; color:#1c1e21; font-weight:${n.is_read ? '600' : '700'}">${safeMessage}</div>
                         <div style="font-size:0.75rem; color:#65676b;">${date}</div>
                     </div>
-                    ${!isRead ? '<div class="unread-dot-small" style="width:8px; height:8px; background:#7aa340; border-radius:50%;"></div>' : ''}
+                    ${!n.is_read ? '<div class="unread-dot-small"></div>' : ''}
                 </div>
             `;
         }).join('');
@@ -119,12 +117,36 @@ async function updateNotificationsUI() {
     }
 }
 
-// 5. Click & Tab Helpers
-async function handleGlobalNotifClick(id) {
+// Click & Tab Helpers
+async function handleGlobalNotifClick(id, itemId) {
     try {
         await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
         await updateNotificationsUI(); 
-        window.location.href = 'history.html'; 
+        if (!itemId) {
+            window.location.href = 'history.html';
+            return;
+        }
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+            const item = await res.json();
+            const dbType = (item.report_type || "").toLowerCase().trim();
+
+            // 🟢 FIX: don't depend on `finalRedirect` — it's only defined in
+            // dashboard.js, which isn't loaded on every page (history.html,
+            // lost.html, found.html, etc). Calling it there threw a
+            // ReferenceError that got swallowed by the catch below, which
+            // silently redirected to history.html instead — making a real
+            // match look like it pointed back at your own post.
+            if (typeof finalRedirect === 'function') {
+                finalRedirect(itemId, dbType);
+            } else {
+                window.location.href = dbType === 'lost'
+                    ? `lost.html?open=${itemId}`
+                    : `found.html?open=${itemId}`;
+            }
+        } else {
+            window.location.href = 'history.html';
+        }
     } catch (err) {
         console.error("Could not mark notification as read", err);
         window.location.href = 'history.html';

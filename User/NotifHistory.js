@@ -114,15 +114,14 @@ async function renderFullHistory() {
         const messageContent = n.message || n.text || "Notification updated";
         const timeContent = formatNiceDate(n.created_at || n.time);
         
-        const targetId = n.item_id || n.itemId;
-        const targetUrl = targetId ? `history.html?id=${targetId}` : '#';
+        const targetId = n.item_id || n.itemId || null;
 
         const iconBg = isRead ? '#f0f2f5' : '#7aa340';
         const iconColor = isRead ? '#65676b' : '#ffffff';
 
         return `
             <div class="notif-list-item ${isRead ? '' : 'unread'}" 
-                 onclick="handleNotifClick(${n.id}, '${targetUrl}')">
+                 onclick="handleNotifClick(${n.id}, ${targetId ?? 'null'})">
                 <div class="icon-box" style="background: ${iconBg}; color: ${iconColor};">
                     <i class="fa-solid fa-bell"></i>
                 </div>
@@ -137,19 +136,36 @@ async function renderFullHistory() {
 }
 
 // Notification Click Handler
-async function handleNotifClick(notifId, url) {
-    if (url === '#') return;
-
+async function handleNotifClick(notifId, itemId) {
     try {
-        await fetch(`/api/notifications/read/${notifId}`, { method: 'POST' });
-        
+        // 🟢 FIX: correct route is /api/user/notifications/read/:id
+        await fetch(`/api/user/notifications/read/${notifId}`, { method: 'POST' });
+
         const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || [];
         const updated = notifications.map(n => n.id === notifId ? { ...n, is_read: 1 } : n);
         localStorage.setItem('refoundly_user_private', JSON.stringify(updated));
-
-        window.location.href = url;
     } catch (err) {
-        console.error("Navigation error:", err);
-        window.location.href = url; 
+        console.error("Failed to mark notification as read:", err);
+    }
+
+    // No linked item (e.g. a general/system notice) -> just go to history
+    if (!itemId) {
+        window.location.href = 'history.html';
+        return;
+    }
+    try {
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+            const item = await res.json();
+            const type = (item.report_type || "").toLowerCase().trim();
+            window.location.href = type === 'lost'
+                ? `lost.html?open=${itemId}`
+                : `found.html?open=${itemId}`;
+        } else {
+            window.location.href = 'history.html';
+        }
+    } catch (err) {
+        console.error("Could not resolve matched item:", err);
+        window.location.href = 'history.html';
     }
 }

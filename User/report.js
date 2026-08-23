@@ -132,7 +132,7 @@ document.getElementById('mainForm').addEventListener('submit', async function(ev
         formData.set('itemName', sanitizedItemName);
         formData.set('description', sanitizedDesc);
 
-        // 🟢 BINAGO: Isinama ang Accept header para piliting JSON response ang ibalik
+        // Include Accept header to force a JSON response
         const headers = {
             'Accept': 'application/json'
         };
@@ -144,10 +144,11 @@ document.getElementById('mainForm').addEventListener('submit', async function(ev
             headers: headers
         });
 
-        // 🟢 BINAGO: Sini-check muna kung JSON ang content bago mag-.json() para iwas Unexpected token '<' error
+        // Check content type before parsing, to avoid "Unexpected token '<'" errors
+        // when the server returns an HTML error page instead of JSON
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
-            throw new Error("Expired na ang session o may server error. Mag-login ulit bago subukan uli.");
+            throw new Error("Your session has expired or a server error occurred. Please log in again and try again.");
         }
 
         const result = await response.json();
@@ -191,12 +192,10 @@ window.onload = async () => {
                 const fullName = user.name.trim();
                 
                 if (fullName.includes(',')) {
-                    // Kapag nakasulat sa DB nang: "Dela Cruz, Juan"
                     const parts = fullName.split(',');
                     document.getElementsByName('lastName')[0].value = parts[0].trim();
                     document.getElementsByName('firstName')[0].value = parts[1].trim();
                 } else if (fullName.includes(' ')) {
-                    // Kapag nakasulat sa DB nang: "Juan Dela Cruz"
                     const lastSpaceIndex = fullName.lastIndexOf(' ');
                     document.getElementsByName('firstName')[0].value = fullName.substring(0, lastSpaceIndex);
                     document.getElementsByName('lastName')[0].value = fullName.substring(lastSpaceIndex + 1);
@@ -232,12 +231,11 @@ function checkSession() {
 }
 setInterval(checkSession, 10000);
 
-// Burahin ang pangalawang showSuccessToast() sa dulo at gamitin ito:
 function showSuccessToast() {
     if (typeof showRefoundlyToast === 'function') {
         showRefoundlyToast(
             "Report Submitted!", 
-            "Na-post na ang report mo! Bibigyan ka namin ng notification kapag may natagpuang match.", 
+            "Your report has been posted! We'll notify you if a possible match is found.", 
             "fa-solid fa-circle-check"
         );
         setTimeout(() => { window.location.href = "/dashboard.html"; }, 2500);

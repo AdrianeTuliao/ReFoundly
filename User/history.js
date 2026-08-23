@@ -1,4 +1,4 @@
-   document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
         const grid = document.getElementById("history-grid");
         const paginationContainer = document.getElementById("pagination-container");
         const searchInput = document.getElementById("history-search");
@@ -179,49 +179,3 @@ fetch('/api/user-history')
     .catch(() => console.warn("Server connection offline."));
 }
 setInterval(checkSession, 60000);
-
-listContainer.innerHTML = paginatedItems.map(n => {
-        const isRead = n.is_read == 1 || n.read === true; //[cite: 45]
-        const messageContent = n.message || n.text || "Notification updated"; //[cite: 45]
-        const timeContent = formatNiceDate(n.created_at || n.time); //[cite: 45]
-        
-        const targetId = n.item_id || n.itemId; //[cite: 45]
-        const targetUrl = targetId ? `history.html?id=${targetId}` : '#'; //[cite: 45]
-
-        const iconBg = isRead ? '#f0f2f5' : '#7aa340'; //[cite: 45]
-        const iconColor = isRead ? '#65676b' : '#ffffff'; //[cite: 45]
-
-        return `
-            <div class="notif-list-item ${isRead ? '' : 'unread'}" 
-                 onclick="handleHistoryNotifClick(${n.id}, '${targetUrl}')">
-                <div class="icon-box" style="background: ${iconBg}; color: ${iconColor};">
-                    <i class="fa-solid fa-bell"></i>
-                </div>
-                <div class="notif-info">
-                    <p style="font-weight: ${isRead ? '400' : '600'}">${messageContent}</p>
-                    <span><i class="far fa-clock"></i> ${timeContent}</span>
-                </div>
-                ${!isRead ? '<div class="unread-dot" style="width: 10px; height: 10px; background: #7aa340; border-radius: 50%; margin-left: auto;"></div>' : ''}
-            </div>
-        `; //[cite: 45]
-    }).join('');
-
-// Renamed handler specifically for History Page item clicks
-async function handleHistoryNotifClick(notifId, url) {
-    try {
-        await fetch(`/api/user/notifications/read/${notifId}`, { method: 'POST' }); // Ensure endpoint matches global API route
-        
-        const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || []; //[cite: 45]
-        const updated = notifications.map(n => n.id === notifId ? { ...n, is_read: 1 } : n); //[cite: 45]
-        localStorage.setItem('refoundly_user_private', JSON.stringify(updated)); //[cite: 45]
-
-        if (url !== '#') {
-            window.location.href = url; //[cite: 45]
-        } else {
-            renderFullHistory();
-        }
-    } catch (err) {
-        console.error("Navigation error:", err); //[cite: 45]
-        if (url !== '#') window.location.href = url; //[cite: 45]
-    }
-}

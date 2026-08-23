@@ -162,7 +162,7 @@ app.get('/api/csrf-token', csrfProtection, (req, res) => {
 /*--Auth Middleware: requireUser--*/
 function requireUser(req, res, next) {
     if (req.session && req.session.userId) {
-        // 🟢 Binago: 'status' column lang ang kukunin mula sa DB
+        // Only fetch the 'status' column from the DB
         db.query('SELECT status FROM users WHERE id = ?', [req.session.userId], (err, results) => {
             if (err || results.length === 0) {
                 req.session.destroy();
@@ -194,7 +194,7 @@ function requireUser(req, res, next) {
 /*--Auth Middleware: requireAdmin--*/
 function requireAdmin(req, res, next) {
     if (req.session && req.session.admin) {
-        // 🟢 Binago: 'status' column lang ang kukunin para sa Admin
+        // Only fetch the 'status' column for Admin
         db.query('SELECT status FROM admins WHERE id = ?', [req.session.admin.id], (err, results) => {
             if (err || results.length === 0) {
                 req.session.destroy();
@@ -790,13 +790,13 @@ app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
                         if (!matchErr && matches && matches.length > 0) {
                             
                             // 🟢 ENGLISH NOTIFICATION FOR NEWLY APPROVED REPORT
-                            const notifForNew = `A matching ${oppositeType.toLowerCase()} item was found in ${approvedItem.location}! Check match updates.`;
+                            const notifForNew = `Possible item match! A ${oppositeType.toLowerCase()} item was found in ${approvedItem.location}. Check match updates.`;
                             db.query(`INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?)`, 
                                 [approvedItem.user_id, notifForNew, matches[0].id]);
 
                             // 🟢 ENGLISH NOTIFICATION FOR EXISTING MATCH POST OWNERS
                             matches.forEach(match => {
-                                const notifForExisting = `A new ${approvedItem.report_type.toLowerCase()} report in ${approvedItem.location} (${approvedItem.item_name}) might match your post!`;
+                                const notifForExisting = `Possible item match! A new ${approvedItem.report_type.toLowerCase()} report in ${approvedItem.location} (${approvedItem.item_name}) might match your post.`;
                                 db.query(`INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?)`, 
                                     [match.user_id, notifForExisting, approvedItem.id]);
                             });
