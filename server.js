@@ -343,7 +343,7 @@ const userStatus = user.status ? user.status.toString().toLowerCase() : '';
         if (isSuspended) {
             createAuditLog(req, 'SECURITY_LOGIN_FAILURE', { reason: 'Account suspended' }, email);
             
-            // 🟢 I-parse ang suspend_reasons mula sa DB
+            // parse suspend_reasons in DB
             let parsedReasons = [];
             try {
                 parsedReasons = user.suspend_reasons ? JSON.parse(user.suspend_reasons) : [];
@@ -351,7 +351,7 @@ const userStatus = user.status ? user.status.toString().toLowerCase() : '';
                 parsedReasons = user.suspend_reasons ? [user.suspend_reasons] : [];
             }
 
-            // 🟢 IPASA ANG suspend_reasons AT suspended_until SA FRONTEND
+            // pass suspen_reasons and suspend_until in front end
             return res.json({ 
                 success: false, 
                 isSuspended: true,
