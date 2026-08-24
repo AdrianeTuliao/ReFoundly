@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://127.0.0.1:7545 http://127.0.0.1:5000 http://localhost:7545 http://localhost:5000 https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: *;">
+    <title>ReFoundly | Lost & Found</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll">All</button>
+                <button class="tab-pill" id="tabUnread">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+            <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <header class="hero">
+        <h2>Lost Something? Found Something?</h2>
+        <p>Browse lost items or report one to help reconnect owners with their belongings.</p>
+        <div class="hero-actions">
+            <a href="found.html" class="btn-main">Browse Found Items</a>
+            <a href="lost.html" class="btn-main">Browse Lost Items</a>
+            <a href="report.html" class="btn-main">Report Found/Lost Items</a>
+        </div>
+    </header>
+
+    <section class="search-container">
+        <div class="search-group">
+            <label><strong>Search for an Item</strong></label>
+            <div class="custom-dropdown">
+                <input type="text" placeholder="Select category" id="categoryInput">
+                <ul class="dropdown-menu" id="categoryList">
+                    <li>Wallet</li><li>Gadgets</li>
+                    <li>Accessories</li><li>Clothing</li><li>ID</li><li>Documents</li>
+                    <li>Books</li><li>School Supplies</li><li>Tools</li><li>Others</li>
+                </ul>
+            </div>
+        </div>
+        <div class="search-group">
+            <label><strong>Location</strong></label>
+            <div class="custom-dropdown">
+                <input type="text" placeholder="Enter or search location..." id="locationInput" autocomplete="off">
+                <ul class="dropdown-menu" id="locationList">
+                    <li>Bacayao Norte</li>
+                    <li>Bacayao Sur</li>
+                    <li>Barangay I (T. Bugallon)</li>
+                    <li>Barangay II (Nueva)</li>
+                    <li>Barangay IV (Zamora)</li>
+                    <li>Bolosan</li>
+                    <li>Bonuan Binloc</li>
+                    <li>Bonuan Boquig</li>
+                    <li>Bonuan Gueset</li>
+                    <li>Calmay</li>
+                    <li>Carael</li>
+                    <li>Caranglaan</li>
+                    <li>Herrero</li>
+                    <li>Lasip Chico</li>
+                    <li>Lasip Grande</li>
+                    <li>Lomboy</li>
+                    <li>Lucao</li>
+                    <li>Malued</li>
+                    <li>Mamalingling</li>
+                    <li>Mangin</li>
+                    <li>Mayombo</li>
+                    <li>Pantal</li>
+                    <li>Poblacion Oeste</li>
+                    <li>Pogo Chico</li>
+                    <li>Pogo Grande</li>
+                    <li>Pugaro Suit</li>
+                    <li>Salapingao</li>
+                    <li>Salisay</li>
+                    <li>Tambac</li>
+                    <li>Tapuac</li>
+                    <li>Tebeng</li>
+                </ul>
+            </div>
+        </div>
+        <div class="search-group">
+            <input type="text" placeholder="Search item name...">
+        </div>
+        <button class="btn-main1" style="padding: 12px 40px;">Search</button>
+    </section>
+
+    <div class="content-wrapper">
+        <section class="how-it-works">
+    <div class="how-it-works-header">
+        <span>HOW IT WORKS</span>
+        <h2>Find What You've Lost, Step by Step</h2>
+        <p>ReFoundly makes reporting and recovering lost items simple and convenient.</p>
+    </div>
+
+    <div class="steps-container">
+
+        <div class="step-card">
+            <div class="step-top">
+                <div class="step-icon">
+                     <i class="fas fa-clipboard-list"></i>
+                </div>
+                <span class="step-number">01</span>
+            </div>
+
+            <h3>Login & Report Your Item</h3>
+            <p>
+                Sign in to your account and provide the necessary details to report a lost or found item.
+            </p>
+        </div>
+
+        <div class="step-connector">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+
+        <div class="step-card">
+            <div class="step-top">
+                <div class="step-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <span class="step-number">02</span>
+            </div>
+
+            <h3>Browse or Search Lost Items</h3>
+            <p>
+                Browse reported items or search for an item that matches what you have lost.
+            </p>
+        </div>
+
+        <div class="step-connector">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+
+        <div class="step-card featured-step">
+            <div class="step-top">
+                <div class="step-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <span class="step-number">03</span>
+            </div>
+
+            <h3>Reconnect Items with Owners</h3>
+            <p>
+                Receive updates about potential matches and help return
+                lost items to their rightful owners.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+        <h4>Recent Lost and Found Items</h4>
+        <div class="grid"></div>
+
+        <div class="pagination-container">
+            <button class="btn-pagination" id="prevBtn">Previous</button>
+            <span class="page-info" id="pageInfo">Page 1 of 1</span>
+            <button class="btn-pagination" id="nextBtn">Next</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+<script src="dashboard.js"></script>
+<script src="auth-check.js"></script>
+<script src="notifications.js"></script>
+</body>
+</html>
