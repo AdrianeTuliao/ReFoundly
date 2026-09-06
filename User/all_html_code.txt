@@ -1,0 +1,2260 @@
+﻿=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\dashboard.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://127.0.0.1:7545 http://127.0.0.1:5000 http://localhost:7545 http://localhost:5000 https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: *;">
+    <title>ReFoundly | Lost & Found</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll">All</button>
+                <button class="tab-pill" id="tabUnread">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+            <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <header class="hero">
+        <h2>Lost Something? Found Something?</h2>
+        <p>Browse lost items or report one to help reconnect owners with their belongings.</p>
+        <div class="hero-actions">
+            <a href="found.html" class="btn-main">Browse Found Items</a>
+            <a href="lost.html" class="btn-main">Browse Lost Items</a>
+            <a href="report.html" class="btn-main">Report Found/Lost Items</a>
+        </div>
+    </header>
+
+    <section class="search-container">
+        <div class="search-group">
+            <label><strong>Search for an Item</strong></label>
+            <div class="custom-dropdown">
+                <input type="text" placeholder="Select category" id="categoryInput">
+                <ul class="dropdown-menu" id="categoryList">
+                    <li>Wallet</li><li>Gadgets</li>
+                    <li>Accessories</li><li>Clothing</li><li>ID</li><li>Documents</li>
+                    <li>Books</li><li>School Supplies</li><li>Tools</li><li>Others</li>
+                </ul>
+            </div>
+        </div>
+        <div class="search-group">
+            <label><strong>Location</strong></label>
+            <div class="custom-dropdown">
+                <input type="text" placeholder="Enter or search location..." id="locationInput" autocomplete="off">
+                <ul class="dropdown-menu" id="locationList">
+                    <li>Bacayao Norte</li>
+                    <li>Bacayao Sur</li>
+                    <li>Barangay I (T. Bugallon)</li>
+                    <li>Barangay II (Nueva)</li>
+                    <li>Barangay IV (Zamora)</li>
+                    <li>Bolosan</li>
+                    <li>Bonuan Binloc</li>
+                    <li>Bonuan Boquig</li>
+                    <li>Bonuan Gueset</li>
+                    <li>Calmay</li>
+                    <li>Carael</li>
+                    <li>Caranglaan</li>
+                    <li>Herrero</li>
+                    <li>Lasip Chico</li>
+                    <li>Lasip Grande</li>
+                    <li>Lomboy</li>
+                    <li>Lucao</li>
+                    <li>Malued</li>
+                    <li>Mamalingling</li>
+                    <li>Mangin</li>
+                    <li>Mayombo</li>
+                    <li>Pantal</li>
+                    <li>Poblacion Oeste</li>
+                    <li>Pogo Chico</li>
+                    <li>Pogo Grande</li>
+                    <li>Pugaro Suit</li>
+                    <li>Salapingao</li>
+                    <li>Salisay</li>
+                    <li>Tambac</li>
+                    <li>Tapuac</li>
+                    <li>Tebeng</li>
+                </ul>
+            </div>
+        </div>
+        <div class="search-group">
+            <input type="text" placeholder="Search item name...">
+        </div>
+        <button class="btn-main1" style="padding: 12px 40px;">Search</button>
+    </section>
+
+    <div class="content-wrapper">
+        <section class="how-it-works">
+    <div class="how-it-works-header">
+        <span>HOW IT WORKS</span>
+        <h2>Find What You've Lost, Step by Step</h2>
+        <p>ReFoundly makes reporting and recovering lost items simple and convenient.</p>
+    </div>
+
+    <div class="steps-container">
+
+        <div class="step-card">
+            <div class="step-top">
+                <div class="step-icon">
+                     <i class="fas fa-clipboard-list"></i>
+                </div>
+                <span class="step-number">01</span>
+            </div>
+
+            <h3>Login & Report Your Item</h3>
+            <p>
+                Sign in to your account and provide the necessary details to report a lost or found item.
+            </p>
+        </div>
+
+        <div class="step-connector">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+
+        <div class="step-card">
+            <div class="step-top">
+                <div class="step-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <span class="step-number">02</span>
+            </div>
+
+            <h3>Browse or Search Lost Items</h3>
+            <p>
+                Browse reported items or search for an item that matches what you have lost.
+            </p>
+        </div>
+
+        <div class="step-connector">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+
+        <div class="step-card featured-step">
+            <div class="step-top">
+                <div class="step-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <span class="step-number">03</span>
+            </div>
+
+            <h3>Reconnect Items with Owners</h3>
+            <p>
+                Receive updates about potential matches and help return
+                lost items to their rightful owners.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+        <h4>Recent Lost and Found Items</h4>
+        <div class="grid"></div>
+
+        <div class="pagination-container">
+            <button class="btn-pagination" id="prevBtn">Previous</button>
+            <span class="page-info" id="pageInfo">Page 1 of 1</span>
+            <button class="btn-pagination" id="nextBtn">Next</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>Â© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+<script src="dashboard.js"></script>
+<script src="auth-check.js"></script>
+<script src="notifications.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\found.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Found Items</title>
+    <link rel="stylesheet" href="found.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <main class="container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Found Items</span>
+        </nav>
+
+        <section class="search-section">
+            <div class="search-bar-pill">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search in Found Items">
+            </div>
+        </section>
+
+        <div class="items-grid"></div>
+
+        <div class="pagination">
+            <button class="pag-btn">&lt;</button>
+            <button class="pag-btn active">1</button>
+            <button class="pag-btn">2</button>
+            <button class="pag-btn">3</button>
+            <span>..</span>
+            <button class="pag-btn">10</button>
+            <button class="pag-btn">&gt;</button>
+        </div>
+    </main>
+
+    <div id="itemModal" class="modal">
+    <div class="modal-content item-detail-content"> 
+        <span class="close-button" id="closeModalBtn">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+    <footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>Â© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+    <script src="found.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="notifications.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\history.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | History</title>
+    <link rel="stylesheet" href="history.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Essential Functional Styles only */
+        .items-grid {
+            transition: opacity 0.3s ease;
+        }
+
+        .pag-btn.active {
+            background-color: #6B9E45 !important;
+            color: white !important;
+        }
+
+        /* Smooth fade for filtering */
+        .grid-fade {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <main class="main-wrapper container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>History</span>
+        </nav>
+
+        <section class="search-section">
+            <div class="search-bar-pill">
+                <i class="fas fa-search"></i>
+                <input type="text" id="history-search" placeholder="Search in History">
+            </div>
+        </section>
+
+        <div id="history-grid" class="items-grid">
+            <p style="grid-column: 1/-1; text-align: center; opacity: 0.5;">Loading your history...</p>
+        </div>
+
+        <div class="pagination" id="pagination-container"></div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners.
+                </span>
+            </div>
+            | <div class="popup-item"><a href="#">Contact</a></div>
+            | <div class="popup-item"><a href="#">Privacy Policy</a></div>
+            | <div class="popup-item"><a href="#">Terms</a></div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>Â© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+    <script src="history.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="notifications.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\index.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Login & Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <div class="container" id="container">
+        <div class="form-container sign-up">
+            <form>
+                <h1>Sign Up</h1>
+                <input type="text" name="name" placeholder="Full Name (LastN, FirstN)" required>
+                <span class="error-msg" id="name-error"></span>
+                <input type="text" name="username" placeholder="Username" maxlength="20" required>
+                <span class="error-msg" id="username-error"></span>
+                <input type="email" name="email" placeholder="Email" maxlength="30" required>
+                <span class="error-msg" id="email-error"></span>
+                <input type="text" name="contact_number" placeholder="Contact Number" maxlength="11" required>
+                <div class="dob-container" style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <p>Date of Birth</p>
+    <select id="dob-month" name="dob_month" required style="flex: 1.5; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px;">
+        <option value="" disabled selected>Month</option>
+        </select>
+    <select id="dob-day" name="dob_day" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px;">
+        <option value="" disabled selected>Day</option>
+        </select>
+    <select id="dob-year" name="dob_year" required style="flex: 1.2; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px;">
+        <option value="" disabled selected>Year</option>
+        </select>
+</div>
+                <div class="password-container">
+                    <input type="password" name="password" id="regPassword" placeholder="Password" maxlength="20" required>
+                    <i class="fa-regular fa-eye toggle-password" data-target="regPassword"></i>
+                </div>
+                <span class="error-msg" id="password-error"></span>
+                <div class="password-container">
+                    <input type="password" name="confirm_password" id="regConfirmPassword" placeholder="Confirm Password" maxlength="20" required>
+                    <i class="fa-regular fa-eye toggle-password" data-target="regConfirmPassword"></i>
+                </div>
+                <span class="error-msg" id="confirm-error"></span>
+                <button type="submit">Sign Up</button>
+                <p>Already have an account? <span class="link-btn" id="login">Login</span></p>
+                <div class="terms-check-container" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin: 15px 0; font-size: 13px;">
+    <input type="checkbox" id="terms-checkbox" required style="width: 16px; height: 16px; cursor: pointer; accent-color: #7aa340;">
+    <label for="terms-checkbox" style="cursor: pointer; color: #555;">
+        I agree to the <span id="open-terms" style="color: #7aa340; font-weight: bold; text-decoration: underline;">Terms and Conditions</span>
+    </label>
+</div>
+                
+            </form>
+        </div>
+
+
+        <div class="form-container sign-in">   
+            <form id="loginForm"> 
+                <h1>Login</h1>
+                <br><br><br><br> <input type="email" name="email" placeholder="Email" required>
+                <div class="password-container">
+                    <input type="password" name="password" id="loginPassword" placeholder="Password" required>
+                    <i class="fa-regular fa-eye toggle-password" data-target="loginPassword"></i>
+                </div>
+                <a href="#" class="forgot-password" id="forgot-password-link">Forgot Your Password?</a>
+                <div id="login-error" style="color: #d9534f; margin-top: 10px; font-size: 14px; text-align: center;"></div>
+                <button type="submit">Login</button>
+                <p>Don't have an account? <span class="link-btn" id="register">Sign up</span></p>
+            </form>
+        </div>
+
+        
+
+        <div class="form-container forgot-password-box" id="forgot-password-section" style="display:none;">
+            <form onsubmit="event.preventDefault();">
+                <h1>Reset Password</h1>
+                <p style="font-size: 13px; margin: 10px 0 20px; color: #666; text-align: center;">
+                    Enter your email to receive a security code.
+                </p>
+                <input type="email" id="resetEmail" placeholder="Email Address" required>
+                <button type="button" onclick="requestPasswordReset()">Send Security Code</button>
+
+                <div id="otpSection" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; width: 100%;">
+                    <div id="reset-msg" style="font-size: 13px; margin-bottom: 15px; text-align: center; padding: 10px; border-radius: 5px; display: none; font-weight: 500;"></div>
+                    <input type="text" id="resetOTP" placeholder="6-Digit Code" maxlength="6">
+                    <div class="password-container" style="width: 100%; position: relative;">
+                        <input type="password" id="newPassword" name="new_password" placeholder="New Password" required>
+                        <i class="fa-regular fa-eye toggle-password" data-target="newPassword"></i>
+                    </div>
+                    <button type="button" onclick="verifyAndReset()" style="background-color: #7aa340; margin-top: 10px;">Update Password</button>
+                </div>
+                <p><span class="link-btn" id="back-to-login" style="cursor:pointer; color:#7aa340; font-weight:600;">Back to Login</span></p>
+            </form>
+        </div>
+
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <h1 class="brand-title">ReFoundly</h1>
+                    <div class="feature-box shade-1">
+                        <h3>Smart Matching</h3>
+                        <p>Automatically connects lost and found items using categories, locations, and keywords.</p>
+                    </div>
+                    <div class="feature-box shade-2">
+                        <h3>Secure Verification</h3>
+                        <p>Ensures only verified users can post items and contact owners.</p>
+                    </div>
+                    <div class="feature-box shade-3">
+                        <h3>Friendly Environment</h3>
+                        <p>Simple layout so anyone can report, search, and recover lost items.</p>
+                    </div>
+                </div>
+
+                <div class="toggle-panel toggle-right">
+                    <div class="text-content">
+                        <h1 class="welcome-title">Welcome to <span class="green-text">ReFoundly</span></h1>
+                        <p class="welcome-desc">A friendly digital platform where you can report, search, and recover lost items.</p>
+                    </div>
+                    <div class="logo-area">
+                        <img src="ReLogo.png" alt="ReFoundly Handshake Logo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="otp-overlay" class="otp-overlay" style="display: none;">
+        <div class="otp-box">
+            <h3 id="otp-title">Verify Your Email</h3> 
+            <p>We sent a 6-digit code to your email.</p>
+            <input type="text" id="otp-input" placeholder="000000" maxlength="6">
+            <button id="verify-btn">Verify OTP</button>
+            <button id="cancel-otp" class="btn-link">Cancel</button>
+        </div>
+    </div>
+
+    <div id="terms-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+    <div class="modal-content" style="background:white; padding:25px; border-radius:15px; width:90%; max-width:450px; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h2 style="color: #7aa340; margin-bottom: 15px;">Terms & Conditions</h2>
+        <div style="text-align: left; font-size: 14px; color: #444; margin-bottom: 20px; line-height: 1.6;">
+            <p><strong>1. Be Honest:</strong> To help lost items find their way home, please ensure all information you provide is true and accurate.</p>
+            <p><strong>2. Safe & Private:</strong> Your personal details are kept strictly private and are protected by high-level digital security.</p>
+            <p><strong>3. Age Rule:</strong> You must be at least 15 years old to use this service alone. If you are younger, please ask a parent or guardian to help you.</p>
+            <p><strong>4. Play Fair:</strong> We are a community! Please be respectful and kind when messaging other users about lost or found items.</p>
+            </div>
+        <button id="agree-btn" style="background:#7aa340; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">I Agree & Continue</button>
+    </div>
+</div>
+
+<!-- SUSPENSION REASON MODAL -->
+<div id="suspension-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <i class="fa-solid fa-user-slash modal-icon"></i>
+        <h3>Account Suspended</h3>
+        <p class="sub-text">Your account access has been temporarily restricted.</p>
+
+        <div class="reason-box">
+            <!-- Duration Section -->
+            <div id="suspension-duration-container" class="modal-duration-divider">
+                <strong>DURATION:</strong>
+                <p id="suspension-duration-text" style="color: #d9534f; font-weight: 600;">Permanent / Indefinite</p>
+            </div>
+
+            <!-- Reason Section -->
+            <strong>REASON:</strong>
+            <p id="suspension-reason-text">Loading reason...</p>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" id="close-suspension-btn" onclick="closeSuspensionModal()">Close</button>
+            <a href="mailto:support@refoundly.com" class="btn-support">Contact Support</a>
+        </div>
+    </div>
+</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\item-details.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details | ReFoundly</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Specific Styles for Detail Page */
+        .detail-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .detail-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #eee;
+        }
+        .info-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #78A454;
+            padding-bottom: 5px;
+        }
+        .data-row {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .data-row strong { color: #555; }
+        .contact-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #78A454;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: #78A454;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .chat-owner-section {
+    margin-top: 20px;
+}
+
+.chat-user-btn {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 18px;
+
+    background: #6B9E45;
+    color: white;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    transition: 0.2s ease;
+}
+
+.chat-user-btn:hover {
+    background: #5a853a;
+    transform: translateY(-1px);
+}
+
+.chat-user-btn:disabled {
+    background: #bdbdbd;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.chat-owner-message {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="detail-container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="itemName" style="margin:0;">Loading Item...</h2>
+                <div id="itemStatus"></div>
+            </div>
+
+            <div class="detail-grid" id="itemContent">
+                </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button class="btn-main" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('id');
+
+        async function fetchDetails() {
+            if (!itemId) return;
+
+            try {
+                const response = await fetch(`/api/items/${itemId}`);
+                
+                // NEW: Check if the response is actually JSON
+                const contentType = response.headers.get("content-type");
+                if (!response.ok || !contentType || !contentType.includes("application/json")) {
+                    const errorBody = await response.text();
+                    console.error("Server returned non-JSON response:", errorBody);
+                    throw new Error("Server error: Check console for HTML response");
+                }
+
+                const item = await response.json();
+
+                setupChatButton(item);
+
+                // ... (Your existing mapping logic below)
+                document.getElementById('itemName').innerText = item.item_name;
+                document.getElementById('itemStatus').innerHTML = `<span class="status-pill">${item.status}</span>`;
+                
+                const contentDiv = document.getElementById('itemContent');
+                contentDiv.innerHTML = `
+                    <div class="image-area">
+                        <img class="detail-image" src="${item.image_path || 'placeholder.png'}" alt="Item Image">
+                        <p style="margin-top:10px; color:#666; font-style:italic;">
+                            Report Type: <strong>${item.report_type}</strong>
+                        </p>
+                    </div>
+                    <div class="info-area">
+                        <div class="info-section">
+                            <h3>Item Information</h3>
+                            <div class="data-row"><strong>Category:</strong> ${item.category}</div>
+                            <div class="data-row"><strong>Brand:</strong> ${item.brand || 'N/A'}</div>
+                            <div class="data-row"><strong>Location:</strong> ${item.location}</div>
+                            <div class="data-row"><strong>Date:</strong> ${item.incident_date}</div>
+                            <div class="data-row"><strong>Time:</strong> ${item.incident_time || 'Not specified'}</div>
+                        </div>
+                        <div class="info-section" style="margin-top:20px;">
+                            <h3>Description</h3>
+                            <p style="font-size:14px; line-height:1.6;">${item.description || 'No additional details provided.'}</p>
+                        </div>
+                        <div class="contact-box">
+
+    <h3>
+        Contact Finder/Owner
+    </h3>
+
+    <div class="data-row">
+        <strong>Name:</strong>
+        ${item.contact_firstname}
+        ${item.contact_lastname}
+    </div>
+
+    <div class="data-row">
+        <strong>Phone:</strong>
+        ${item.contact_phone}
+    </div>
+
+    <div class="data-row">
+        <strong>Email:</strong>
+        ${item.contact_email}
+    </div>
+
+</div>
+
+<div class="chat-owner-section">
+
+    <button
+        id="chatUserBtn"
+        class="chat-user-btn"
+        type="button">
+
+        <i class="fas fa-comments"></i>
+
+        Chat with User
+
+    </button>
+
+    <p
+        id="chatUserMessage"
+        class="chat-owner-message">
+    </p>
+
+</div>
+                `;
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                document.getElementById('itemName').innerText = "Item Not Found";
+                document.getElementById('itemContent').innerHTML = `<p style="color:red;">Error: ${error.message}. Check if /api/items/${itemId} exists.</p>`;
+            }
+        }
+
+        fetchDetails();
+
+        function checkSession() {
+    fetch('/user/me')
+        .then(response => {
+            if (response.status === 401) {
+                const modal = document.getElementById('session-alert');
+                if (modal) {
+                    modal.style.setProperty('display', 'flex', 'important');
+                }
+            }
+        })
+        .catch(err => {
+            console.log("Connection lost or session check failed.");
+        });
+}
+
+async function setupChatButton(item) {
+
+    const button =
+        document.getElementById("chatUserBtn");
+
+    const message =
+        document.getElementById("chatUserMessage");
+
+
+    if (!button) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/get-session-info",
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            button.disabled = true;
+
+            button.innerHTML = `
+                <i class="fas fa-lock"></i>
+                Login Required
+            `;
+
+            return;
+        }
+
+
+        const currentUserId =
+            Number(data.userId);
+
+
+        const itemOwnerId =
+            Number(item.user_id);
+
+
+        /*
+            IMPORTANT:
+
+            If the current user owns this item,
+            they cannot chat with themselves.
+        */
+
+        if (
+            currentUserId ===
+            itemOwnerId
+        ) {
+
+            button.disabled = true;
+
+            button.innerHTML = `
+                <i class="fas fa-user"></i>
+                Your Post
+            `;
+
+            message.textContent =
+                "You cannot chat with yourself about your own post.";
+
+            return;
+        }
+
+
+        /*
+            Item must be published.
+        */
+
+        if (
+            item.status !==
+            "Published"
+        ) {
+
+            button.disabled = true;
+
+            button.innerHTML = `
+                <i class="fas fa-lock"></i>
+                Chat Unavailable
+            `;
+
+            message.textContent =
+                "Chat is unavailable for this item.";
+
+            return;
+        }
+
+
+        /*
+            Everything is okay.
+        */
+
+        button.disabled = false;
+
+        button.innerHTML = `
+            <i class="fas fa-comments"></i>
+            Chat with User
+        `;
+
+
+        button.onclick =
+            async () => {
+
+                button.disabled = true;
+
+                button.innerHTML = `
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Opening Chat...
+                `;
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/conversations/start",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+
+                                    "Accept":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        itemId:
+                                            item.id
+                                    })
+                            }
+                        );
+
+
+                    const result =
+                        await response.json();
+
+
+                    if (
+                        !response.ok ||
+                        !result.success
+                    ) {
+
+                        alert(
+                            result.message ||
+                            "Unable to start chat."
+                        );
+
+                        button.disabled = false;
+
+                        button.innerHTML = `
+                            <i class="fas fa-comments"></i>
+                            Chat with User
+                        `;
+
+                        return;
+                    }
+
+
+                    /*
+                        Conversation created
+                        or existing conversation found.
+                    */
+
+                    window.location.href =
+                        `message.html?itemId=${encodeURIComponent(item.id)}`;
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Chat start error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to connect to messaging."
+                    );
+
+                    button.disabled = false;
+
+                    button.innerHTML = `
+                        <i class="fas fa-comments"></i>
+                        Chat with User
+                    `;
+                }
+            };
+
+
+    } catch (error) {
+
+        console.error(
+            "Chat button setup error:",
+            error
+        );
+
+        button.disabled = true;
+
+        button.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            Chat Unavailable
+        `;
+    }
+}
+setInterval(checkSession, 5000);
+    </script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\lost.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Lost Items</title>
+    <link rel="stylesheet" href="lost.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <main class="container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Lost Items</span>
+        </nav>
+
+        <section class="search-section">
+            <div class="search-bar-pill">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search in Lost Items">
+            </div>
+        </section>
+
+        <div class="items-grid"></div>
+
+        <div class="pagination">
+            <button class="pag-btn">&lt;</button>
+            <button class="pag-btn active">1</button>
+            <button class="pag-btn">2</button>
+            <button class="pag-btn">3</button>
+            <span>..</span>
+            <button class="pag-btn">10</button>
+            <button class="pag-btn">&gt;</button>
+        </div>
+    </main>
+
+    <div id="itemModal" class="modal">
+    <div class="modal-content item-detail-content"> 
+        <span class="close-button" id="closeModalBtn">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+    <footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>Â© 2026 Digital Lost & Found Portal</p>
+    </footer>
+
+   <script src="lost.js"></script>
+   <script src="auth-check.js"></script>
+   <script src="notifications.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\message.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Messages</title>
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="message.css">
+</head>
+
+<body>
+
+<nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+
+        <a href="message.html" class="icons-link active-link">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+
+        <div class="notif-wrapper">
+            <i class="fa-solid fa-bell" id="notifBell" style="cursor:pointer;font-size:1.5rem;"></i>
+            <span id="notifBadge" class="notif-badge">0</span>
+
+            <div id="notifDropdown" class="notif-dropdown">
+                <div class="notif-header-modern">
+                    <div class="notif-title-row">
+                        <span>Notifications</span>
+                        <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+                    </div>
+
+                    <div class="notif-tabs">
+                        <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                        <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+                    </div>
+                </div>
+
+                <div id="notifList" class="notif-scroll-area"></div>
+
+                <div class="notif-footer">
+                    <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger">
+                <i class="fas fa-bars"></i>
+            </label>
+
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+    </div>
+</nav>
+
+<main class="container">
+
+    <nav class="breadcrumb">
+        <a href="dashboard.html">Home</a> &gt; <span>Messages</span>
+    </nav>
+
+    <div class="messaging-wrapper">
+
+        <!-- INBOX -->
+        <aside class="inbox-sidebar">
+
+            <div class="sidebar-header-box">
+                <h3>Inbox</h3>
+            </div>
+
+            <div class="search-inbox">
+                <div class="search-bar-pill-small">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="chatSearch" placeholder="Search chats...">
+                </div>
+            </div>
+
+            <div class="chat-list" id="chatList">
+                <div class="empty-chat-list">
+                    <i class="fas fa-comments"></i>
+                    <p>No conversations yet.</p>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- CHAT -->
+        <section class="chat-view">
+
+            <header class="chat-view-header">
+                <div id="itemFloatingCard" class="item-floating-card"></div>
+
+                <div class="current-user" id="currentUser">
+                    <div class="chat-avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div>
+                        <h4 id="currentUserName">Select a conversation</h4>
+                        <small id="currentItemName"></small>
+                    </div>
+                </div>
+            </header>
+
+            <div class="chat-body" id="chatBody">
+                <div class="no-chat-selected">
+                    <i class="fas fa-comments"></i>
+                    <h3>Your Messages</h3>
+                    <p>Select a conversation to start chatting.</p>
+                </div>
+            </div>
+
+            <div class="chat-footer" id="chatFooter" style="display:none;">
+                <input type="text" id="messageInput" maxlength="2000" placeholder="Write a message...">
+                <button class="send-btn" id="sendBtn" type="button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+        </section>
+
+    </div>
+</main>
+
+<footer>
+    <div class="footer-links">
+
+        <div class="popup-item">
+            <a href="#">About</a>
+            <span class="popup-box">
+                <strong>About ReFoundly</strong><br>
+                ReFoundly is a digital portal dedicated to connecting lost possessions with their rightful owners.
+            </span>
+        </div>
+
+        |
+
+        <div class="popup-item">
+            <a href="#">Contact</a>
+            <span class="popup-box">
+                <strong>Contact Us</strong><br>
+                <i class="fas fa-envelope"></i> Email: refoundly@gmail.com<br>
+                <i class="fas fa-phone"></i> Phone: +63 912 345 6789
+            </span>
+        </div>
+
+        |
+
+        <div class="popup-item">
+            <a href="#">Privacy Policy</a>
+            <span class="popup-box">
+                <strong>Privacy Policy</strong><br>
+                We take your security seriously and use your information only for ReFoundly services.
+            </span>
+        </div>
+
+        |
+
+        <div class="popup-item">
+            <a href="#">Terms</a>
+            <span class="popup-box">
+                <strong>Terms of Use</strong><br>
+                Users must provide truthful information and use ReFoundly responsibly.
+            </span>
+        </div>
+
+    </div>
+
+    <div class="socials">
+        <i class="fab fa-facebook"></i>
+        <i class="fab fa-instagram"></i>
+        <i class="fab fa-linkedin"></i>
+    </div>
+
+    <p>Â© 2026 Digital Lost & Found Portal</p>
+</footer>
+
+<script src="message.js"></script>
+<script src="auth-check.js"></script>
+<script src="notifications.js"></script>
+
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\NotifHistory.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | ReFoundly</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; overflow-y: auto; }
+        
+        .history-container {
+            max-width: 850px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .notif-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notif-header-section {
+            padding: 25px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-top h2 { margin: 0; font-size: 1.6rem; color: #333; }
+
+        .btn-clear-history {
+            background: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-clear-history:hover { background: #ff4d4f; color: white; }
+
+        .notif-tabs { display: flex; gap: 10px; }
+
+        #historyList {
+            min-height: 200px;
+            padding-top: 10px; 
+        }
+
+        .notif-list-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid #f9f9f9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notif-list-item:hover { background: #f9f9f9; }
+        .notif-list-item.unread { background: #f7faf6; border-left: 4px solid #7aa340; }
+
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            background: #f0f2f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        .notif-info p { margin: 0; color: #333; font-size: 1rem; line-height: 1.4; }
+        .notif-info span { font-size: 0.85rem; color: #999; margin-top: 5px; display: block; }
+
+     /* PAGINATION STYLING */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 5px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.page-arrow { 
+    background: transparent;
+    border: none;
+    color: #555;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-arrow:hover:not(:disabled) {
+    background-color: rgba(122, 163, 64, 0.1); 
+    color: #7aa340;
+}
+
+.page-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.page-num {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 600;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Persistent Highlight for the Navbar Bell on History Page */
+.notif-wrapper.nav-active i {
+    color: #ffffff !important; /* Your specific brand green */
+}
+
+.notif-wrapper.nav-active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px; /* Adjust based on your navbar height */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(122, 163, 64, 0.5);
+}
+
+/* Ensure the wrapper is relative so the dot positions correctly */
+.notif-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.breadcrumb {
+    max-width: 850px;
+    margin: 20px auto -30px auto; /* Pulls it closer to the card */
+    padding: 0 20px;
+    color: #888;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.breadcrumb a {
+    color: var(--primary-green); 
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+    color: var(--accent-green);
+}
+
+.breadcrumb span {
+    color: #555;
+    margin-left: 5px;
+}
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link"><i class="fas fa-comment-dots"></i></a>
+        <div class="notif-wrapper nav-active">
+            <i class="fa-solid fa-bell" style="color: white; font-size: 1.5rem;"></i>
+        </div>
+        <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a> 
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Found Items</span>
+        </nav>
+
+
+<div class="history-container">
+    <div class="notif-card">
+        <div class="notif-header-section">
+            <div class="header-top">
+                <h2>Notification History</h2>
+                <button class="btn-clear-history" onclick="clearNotifs()">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="updateFilter('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="updateFilter('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="historyList">
+            </div>
+
+        <div class="pagination-controls" id="pagination-container">
+            <button class="page-arrow" id="prevBtn" onclick="movePage(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="page-num" id="pageCounter">Page 1 of 1</span>
+            <button class="page-arrow" id="nextBtn" onclick="movePage(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="NotifHistory.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\report.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly - Report Item</title>
+    <link rel="stylesheet" href="report.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+</head>
+<body>
+
+     <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <main class="container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Report Lost/Found Items</span>
+        </nav>
+
+        <section class="form-card">
+            <form id="mainForm" enctype="multipart/form-data">
+                
+                <div class="form-row">
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>What was Lost<span>*</span></label>
+                            <small>(Wallet, Smartphone, T-shirt, etc.)</small>
+                            <input type="text" id="itemName" name="itemName" placeholder="Enter item name" maxlength="30" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Category<span>*</span></label>
+                            <small>(Wallet, Gadgets, Clothing, etc.)</small>
+                            <select name="category" required>
+                                <option value="" disabled selected>Select Category...</option>
+                                <option value="wallet">Wallet</option>
+                                <option value="gadgets">Gadgets</option>
+                                <option value="accessories">Accessories</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="id">ID</option>
+                                <option value="documents">Documents</option>
+                                <option value="books">Books</option>
+                                <option value="school_supplies">School Supplies</option>
+                                <option value="tools">Tools</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Brand<span>*</span></label>
+                            <small>(Gucci, Samsung, Lacoste, etc.)</small>
+                            <input type="text" name="brand" placeholder="Optional" maxlength="30">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Date Lost<span>*</span></label>
+                            <small>Approximate date of when the item was lost.</small>
+                            <input type="date" name="incidentDate" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Time Lost<span>*</span></label>
+                            <small>Approximate time of day the item was lost.</small>
+                            <input type="time" name="incidentTime" required>
+                        </div>
+                    </div>
+
+                    <div class="form-column">
+                        <div class="input-group">
+    <label>Upload Image</label>
+    <small>(This image will display on the Website.)</small>
+    
+    <div class="image-upload-box" id="uploadBox">
+        <!-- Default State (Empty) -->
+        <div class="upload-placeholder" id="uploadPlaceholder" onclick="document.getElementById('file-upload').click()">
+            <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
+            <p>Insert Image</p>
+        </div>
+
+        <!-- Preview State (Hidden by default) -->
+        <div class="upload-preview-container" id="previewContainer" style="display: none;">
+            <img id="imagePreview" src="" alt="Selected Preview">
+            <div class="preview-overlay">
+                <button type="button" class="overlay-btn view-btn" id="viewImageBtn" title="View Image">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button type="button" class="overlay-btn remove-btn" id="removeImageBtn" title="Remove Image">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <input type="file" id="file-upload" name="image" accept="image/png, image/jpeg, image/jpg" />
+    </div>
+</div>
+
+<!-- Simple Lightbox Modal for Viewing Full Image -->
+<div id="imageModal" class="image-modal" style="display: none;">
+    <span class="modal-close" id="closeModal">&times;</span>
+    <img class="modal-content" id="modalImg">
+</div>
+
+                        <div class="input-group">
+                            <label>Additional Information</label>
+                            <small>Description of your lost items and any relevant details (e.g landmarks, specific location, etc.  ).</small>
+                            <textarea name="description" rows="6" maxlength="250" style="resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-column">
+                        <h3>Location Information</h3>
+                        <div class="input-group">
+                            <label>Where Lost<span>*</span></label>
+    <small>Select the Barangay/Location.</small>
+    <select name="location" id="locationSelect" required>
+        <option value="" disabled selected>Select Barangay...</option>
+        <option value="Bacayao Norte">Bacayao Norte</option>
+<option value="Bacayao Sur">Bacayao Sur</option>
+<option value="Barangay I">Barangay I</option>
+<option value="Barangay II">Barangay II</option>
+<option value="Barangay IV">Barangay IV</option>
+<option value="Bolosan">Bolosan</option>
+<option value="Bonuan Binloc">Bonuan Binloc</option>
+<option value="Bonuan Boquig">Bonuan Boquig</option>
+<option value="Bonuan Gueset">Bonuan Gueset</option>
+<option value="Calmay">Calmay</option>
+<option value="Carael">Carael</option>
+<option value="Caranglaan">Caranglaan</option>
+<option value="Herrero">Herrero</option>
+<option value="Lasip Chico">Lasip Chico</option>
+<option value="Lasip Grande">Lasip Grande</option>
+<option value="Lomboy">Lomboy</option>
+<option value="Lucao">Lucao</option>
+<option value="Malued">Malued</option>
+<option value="Mamalingling">Mamalingling</option>
+<option value="Mangin">Mangin</option>
+<option value="Mayombo">Mayombo</option>
+<option value="Pantal">Pantal</option>
+<option value="Poblacion Oeste">Poblacion Oeste</option>
+<option value="Pogo Chico">Pogo Chico</option>
+<option value="Pogo Grande">Pogo Grande</option>
+<option value="Pugaro Suit">Pugaro Suit</option>
+<option value="Salapingao">Salapingao</option>
+<option value="Salisay">Salisay</option>
+<option value="Tambac">Tambac</option>
+<option value="Tapuac">Tapuac</option>
+<option value="Tebeng">Tebeng</option>
+    </select>
+                        </div>
+                    </div>
+
+                    <div class="form-column">
+                        <h3>What are you reporting?</h3>
+                        <div class="report-selection">
+                            <div class="checkbox-group">
+                                <input type="radio" name="reportType" value="Lost" id="lost" required>
+                                <label for="lost"><strong>I Lost an Item</strong><br><small>I am trying to find something I lost.</small></label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="radio" name="reportType" value="Found" id="found">
+                                <label for="found"><strong>I Found an Item</strong><br><small>I want to report an item I found.</small></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="separator">
+
+                <h3>Contact Information</h3>
+                <div class="form-row">
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>First Name<span>*</span></label>
+                            <input type="text" name="firstName" maxlength="50" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Phone Number<span>*</span></label>
+                            <input type="tel" name="contactPhone" id="phoneNumber" pattern="[0-9]{11}" maxlength="11" required>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="input-group">
+                            <label>Last Name<span>*</span></label>
+                            <input type="text" name="lastName" maxlength="50" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Email<span>*</span></label>
+                            <input type="email" name="contactEmail" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="submit-section">
+                    <button type="submit" id="btnSubmit" class="btn-main">Submit Report</button>
+                    <p id="chainStatus" style="margin-top: 10px; font-weight: bold; display: none;"></p>
+                </div>
+            </form>
+        </section>
+    </main>
+
+     <footer>
+    <div class="footer-links">
+        <div class="popup-item">
+            <a href="#">About</a>
+            <span class="popup-box">
+                <strong>About ReFoundly</strong><br>
+                ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners within our community. Our mission is to foster a culture of honesty and cooperation by providing a streamlined, transparent, and reliable platform for reporting and recovering items.
+            </span>
+        </div>
+        | 
+        <div class="popup-item">
+            <a href="#">Contact</a>
+            <span class="popup-box">
+                <strong>Contact Us</strong><br>
+                Do you have questions, suggestions, or need assistance with your account? You can reach our dedicated support team through our official channels:<br>
+                <i class="fas fa-envelope"></i> Email: refoundly@gmail.com<br>
+                <i class="fas fa-phone"></i> Phone: +63 912 345 6789<br>
+            </span>
+        </div>
+        | 
+        <div class="popup-item">
+            <a href="#">Privacy Policy</a>
+            <span class="popup-box">
+                <strong>Privacy Policy</strong><br>
+                We take your security seriously. All personal information providedâ€”such as names and contact detailsâ€”is used strictly for verification purposes and to facilitate the safe return of items. We do not sell, trade, or share your data with third parties without your explicit consent.
+            </span>
+        </div>
+        | 
+        <div class="popup-item">
+            <a href="#">Terms</a>
+            <span class="popup-box">
+                <strong>Terms of Use</strong><br>
+                By using this portal, you agree to provide only truthful and accurate information. Any form of deception, including fraudulent claims to items that do not belong to you, is strictly prohibited. Misuse of the platform will result in a permanent account ban and potential legal action.
+            </span>
+        </div>
+    </div>
+
+    <div class="socials">
+        <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+    </div>
+    <p>Â© 2026 Digital Lost & Found Portal</p>
+</footer>
+
+    <script src="report.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="notifications.js"></script>
+
+
+    <div id="custom-toast" class="toast-hidden">
+    <div class="toast-content">
+        <div class="toast-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="toast-message">
+            <span class="toast-title">Success!</span>
+            <p class="toast-body">Report successfully submitted.</p>
+        </div>
+    </div>
+    <div class="toast-progress"></div>
+</div>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\user_acc.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly - Account</title>
+    <link rel="stylesheet" href="user_acc.css">
+    <link rel="stylesheet" href="GlobalU.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+    <h1>ReFoundly</h1>
+    <div class="nav-icons">
+        <a href="message.html" class="icons-link active-link"><i class="fas fa-comment-dots"></i></a>
+        
+       <div class="notif-wrapper">
+    <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.5rem;"></i>
+    <span id="notifBadge" class="notif-badge">0</span>
+
+    <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header-modern">
+            <div class="notif-title-row">
+                <span>Notifications</span>
+                <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+            </div>
+            <div class="notif-tabs">
+                <button class="tab-pill active" id="tabAll" onclick="switchNotifTab('all')">All</button>
+                <button class="tab-pill" id="tabUnread" onclick="switchNotifTab('unread')">Unread</button>
+            </div>
+        </div>
+
+        <div id="notifList" class="notif-scroll-area">
+            </div>
+
+        <div class="notif-footer">
+             <button onclick="window.location.href='NotifHistory.html'">See previous notifications</button>
+        </div>
+    </div>
+</div>
+         <div class="burger-container">
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="hamburger"><i class="fas fa-bars"></i></label>
+            <div class="nav-menu">
+                <a href="user_acc.html"><i class="fas fa-user-circle"></i> Account</a>
+                <a href="history.html"><i class="fas fa-history"></i> History</a>
+                <a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+    <main class="container">
+        <nav class="breadcrumb">
+            <a href="dashboard.html">Home</a> &gt; <span>Account</span>
+        </nav>
+
+        <section class="account-card">
+            <div class="sidebar">
+                <div class="avatar-large"></div>
+                <h2 id="user-fullname">John Doe</h2>
+                <p id="user-email">johndoe@gmail.com</p>
+            </div>
+
+            <div class="content">
+    <h3 class="section-header">Personal Information</h3>
+    
+    <form id="account-form">
+        <div class="info-grid">
+            <div class="info-box">
+                <label for="input-name">Full name</label>
+                <input type="text" id="input-name" name="name" disabled required>
+            </div>
+
+            <div class="info-box">
+                <label for="input-email">Email</label>
+                <input type="email" id="input-email" name="email" disabled required>
+            </div>
+
+            <div class="info-box">
+                <label for="input-contact">Contact Number</label>
+                <input type="text" id="input-contact" name="contact_number" disabled placeholder="e.g. 09123456789">
+            </div>
+
+            <div class="info-box">
+                <label for="input-dob">Date of Birth</label>
+                <input type="date" id="input-dob" name="dob" disabled>
+            </div>
+
+            <div class="info-box">
+                <label>Password</label>
+                <a href="#" class="change-pw">Change Password</a>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" id="edit-btn" class="primary-edit-btn">Edit</button>
+            <button type="submit" id="save-btn" class="primary-edit-btn" style="display: none; background-color: #6B9E45;">Save Changes</button>
+            <button type="button" id="cancel-btn" style="display: none; margin-left: 10px; padding: 10px 20px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Email Verification Modal -->
+<div id="otp-modal" class="expiry-modal" style="display: none;">
+    <div class="modal-content-alert">
+        <i class="fa-solid fa-envelope exclamation-icon" style="color: #6B9E45;"></i>
+        <h3 style="margin: 10px 0;">Verify New Email</h3>
+        <p style="font-size: 0.9rem; color: #666;">We sent a 6-digit verification code to your new email address. Please enter it below:</p>
+        <input type="text" id="otp-input" maxlength="6" style="width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border: 1px solid #ccc; border-radius: 6px; margin: 15px 0;" placeholder="123456">
+        <div>
+            <button id="verify-otp-btn" class="primary-edit-btn">Verify & Save</button>
+            <button id="close-otp-btn" style="margin-left: 10px; padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="password-modal" class="expiry-modal" style="display: none;">
+    <div class="modal-content-alert" style="max-width: 420px; text-align: center;">
+        
+        <!-- SUCCESS STATE CONTAINER (hidden by default) -->
+        <div id="password-success-container" style="display: none; padding: 20px 10px;">
+            <div style="width: 60px; height: 60px; background-color: #E8F5E9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto;">
+                <i class="fa-solid fa-check" style="font-size: 30px; color: #4CAF50;"></i>
+            </div>
+            <h3 style="color: #2E7D32; margin-bottom: 8px;">Password Updated!</h3>
+            <p style="color: #666; font-size: 0.9rem;">Redirecting to log in page...</p>
+        </div>
+
+        <!-- FORM CONTAINER -->
+        <div id="password-form-container">
+            <h3 style="margin-bottom: 15px; text-align: center;">Change Password</h3>
+            
+            <!-- Inline Error Banner -->
+            <div id="password-error-msg" style="display: none; color: #d9534f; background-color: #fdf7f7; border: 1px solid #d9534f; border-radius: 6px; padding: 10px; font-size: 0.85rem; margin-bottom: 15px; text-align: left;"></div>
+
+            <form id="changePasswordForm" style="text-align: left;">
+                <!-- Current Password -->
+                <div style="margin-bottom: 12px;">
+                    <label for="currentPassword" style="font-size: 0.85rem; font-weight: bold;">Current Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="currentPassword" name="currentPassword" required 
+                               style="width: 100%; padding: 8px 35px 8px 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
+                        <i class="fa-solid fa-eye toggle-password" data-target="currentPassword" 
+                           style="position: absolute; right: 10px; cursor: pointer; color: #777;"></i>
+                    </div>
+                </div>
+
+                <!-- New Password -->
+                <div style="margin-bottom: 12px;">
+                    <label for="newPassword" style="font-size: 0.85rem; font-weight: bold;">New Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="newPassword" name="newPassword" required 
+                               style="width: 100%; padding: 8px 35px 8px 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
+                        <i class="fa-solid fa-eye toggle-password" data-target="newPassword" 
+                           style="position: absolute; right: 10px; cursor: pointer; color: #777;"></i>
+                    </div>
+                    <small style="font-size: 0.75rem; color: #666; display: block; margin-top: 4px;">
+                        Must be 8+ chars, include uppercase, lowercase, number & special char (@$!%*?&).
+                    </small>
+                </div>
+
+                <!-- Confirm New Password -->
+                <div style="margin-bottom: 15px;">
+                    <label for="confirmNewPassword" style="font-size: 0.85rem; font-weight: bold;">Confirm New Password</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" required 
+                               style="width: 100%; padding: 8px 35px 8px 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
+                        <i class="fa-solid fa-eye toggle-password" data-target="confirmNewPassword" 
+                           style="position: absolute; right: 10px; cursor: pointer; color: #777;"></i>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 15px;">
+                    <button type="submit" class="primary-edit-btn" style="background-color: #6B9E45;">Update Password</button>
+                    <button type="button" id="close-password-btn" style="margin-left: 10px; padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <div class="popup-item">
+                <a href="#">About</a>
+                <span class="popup-box">
+                    <strong>About ReFoundly</strong><br>
+                    ReFoundly is a premier digital portal dedicated to bridging the gap between lost possessions and their rightful owners...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Contact</a>
+                <span class="popup-box">
+                    <strong>Contact Us</strong><br>
+                    Email: refoundly@gmail.com<br>
+                    Phone: +63 912 345 6789
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Privacy Policy</a>
+                <span class="popup-box">
+                    <strong>Privacy Policy</strong><br>
+                    We take your security seriously...
+                </span>
+            </div>
+            | 
+            <div class="popup-item">
+                <a href="#">Terms</a>
+                <span class="popup-box">
+                    <strong>Terms of Use</strong><br>
+                    By using this portal, you agree to provide only truthful information...
+                </span>
+            </div>
+        </div>
+        <div class="socials">
+            <i class="fab fa-facebook"></i> &nbsp; <i class="fab fa-instagram"></i> &nbsp; <i class="fab fa-linkedin"></i>
+        </div>
+        <p>Â© 2026 Digital Lost & Found Portal</p>
+    </footer>
+    <script src="user_acc.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="notifications.js"></script>
+</body>
+</html>
+
+

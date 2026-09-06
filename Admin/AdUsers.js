@@ -101,14 +101,28 @@ function renderTable(data) {
         actionCell.appendChild(createButton(`<i class="fa-solid fa-eye"></i>`, "btn-view", () => viewUser(user.id)));
         
         // 2. Suspend / Unsuspend Button Logic
-        if (isSuspended) {
-            const unsuspendBtn = createButton(`Unsuspend`, "btn-activate", () => handleUnsuspend(user.id, user.role));
-            unsuspendBtn.style.backgroundColor = "#5D8252";
-            unsuspendBtn.style.color = "white";
-            actionCell.appendChild(unsuspendBtn);
-        } else if (!isDeactivated) {
-            actionCell.appendChild(createButton(`Suspend`, "btn-delete", () => openSuspendModal(user.id, user.name, user.role)));
-        }
+        if (user.role !== "admin") {
+    if (isSuspended) {
+        const unsuspendBtn = createButton(
+            `Unsuspend`,
+            "btn-activate",
+            () => handleUnsuspend(user.id, user.role)
+        );
+
+        unsuspendBtn.style.backgroundColor = "#5D8252";
+        unsuspendBtn.style.color = "white";
+        actionCell.appendChild(unsuspendBtn);
+
+    } else if (!isDeactivated) {
+        actionCell.appendChild(
+            createButton(
+                `Suspend`,
+                "btn-delete",
+                () => openSuspendModal(user.id, user.name, user.role)
+            )
+        );
+    }
+}
         
         // 3. Deactivate / Reactivate Toggle
         if (!isSuspended) {

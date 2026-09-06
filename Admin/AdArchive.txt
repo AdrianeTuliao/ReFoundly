@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Archived Reports</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html" class="active"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper fade-in">
+                <div class="page-header">
+                    <h1>Archived Reports</h1>
+                    <!-- BUTTON TO GO BACK TO MAIN PAGE -->
+                    <button class="btn-archive" onclick="window.location.href='AdReport.html'">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Main Reports
+                    </button>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search archived items...">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Posted By</th> 
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date Archived</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody"></tbody>
+                    </table>
+
+                    <div class="pagination-controls">
+                        <button class="page-arrow" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span class="page-num" id="pageDisplay">Page 1 of 1</span>
+                        <button class="page-arrow" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Details Modal -->
+        <div id="itemModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalItemName">Archived Item Details</h2>
+                    <span id="closeItemModal" class="close-btn">&times;</span>
+                </div>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+    <script src="AdArchive.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>

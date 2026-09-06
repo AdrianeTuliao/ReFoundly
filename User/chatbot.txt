@@ -1,0 +1,95 @@
+/* chatbot.css - Compact Version for Smaller Screens */
+:root { 
+    --primary: #5D8252; 
+    --bg: #f9fbfd; 
+    --white: #ffffff; 
+    --text-dark: #1e293b;
+}
+
+#chatbot-launcher {
+    width: 45px; height: 45px; /* Slightly smaller launcher */
+    border-radius: 50%;
+    background-color: var(--primary);
+    position: fixed; bottom: 20px; right: 20px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; cursor: grab; 
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: breathing-pulse 2s infinite;
+}
+
+#chatbot-container {
+    position: fixed;
+    width: 310px; /* Reduced from 310px */
+    height: 420px; /* Reduced from 480px */
+    max-height: 80vh;
+    background: var(--white);
+    display: none;
+    flex-direction: column;
+    border-radius: 12px;
+    z-index: 3000;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    font-family: sans-serif;
+}
+
+.chat-header-modern {
+    background: var(--primary);
+    color: white;
+    padding: 12px 10px; /* Slimmer header */
+    text-align: center;
+}
+
+.agent-profiles h3 { margin: 5px 0 0 0; font-size: 15px; font-weight: 600; }
+.agent-profiles p { margin: 2px 0 0 0; font-size: 11px; opacity: 0.9; }
+
+#chat-messages { 
+    flex: 1; padding: 12px 10px; overflow-y: auto; background: var(--bg); 
+    display: flex; flex-direction: column; gap: 8px; 
+}
+
+.bot-icon {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--primary);
+    display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+}
+.bot-icon img { width: 14px; height: auto; }
+
+.msg { padding: 8px 12px; font-size: 12.5px; max-width: 85%; line-height: 1.4; }
+.bot-msg { border-radius: 10px 10px 10px 4px; }
+.user-msg { border-radius: 10px 10px 4px 10px; }
+
+.quick-replies { display: flex; gap: 5px; padding: 8px 10px; overflow-x: auto; }
+.reply-btn { 
+    border: 1px solid var(--primary); color: var(--primary); background: white; 
+    border-radius: 15px; padding: 4px 10px; font-size: 11px; cursor: pointer;
+}
+
+.modern-input-area { padding: 10px; display: flex; gap: 8px; border-top: 1px solid #eee; }
+.modern-input-area input { flex: 1; border: none; outline: none; font-size: 12.5px; }
+
+.send-btn {
+    background: var(--primary); width: 32px; height: 32px; 
+    border-radius: 50%; border: none; cursor: pointer;
+}
+
+/* Effects */
+@keyframes breathing-pulse {
+    0% { box-shadow: 0 4px 10px rgba(93, 130, 82, 0.4), 0 0 0 0px rgba(93, 130, 82, 0.4); }
+    70% { box-shadow: 0 4px 10px rgba(93, 130, 82, 0.4), 0 0 0 10px rgba(93, 130, 82, 0); }
+    100% { box-shadow: 0 4px 10px rgba(93, 130, 82, 0.4), 0 0 0 0px rgba(93, 130, 82, 0); }
+}
+#chatbot-launcher:active { transform: scale(0.92); box-shadow: inset 2px 3px 6px rgba(0,0,0,0.3); }
+
+/* 2. The Hover Lift */
+#chatbot-launcher:hover {
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* 3. The "Black on side" / Pressed Effect */
+#chatbot-launcher:active {
+    transform: scale(0.95);
+    /* Creates that deep inset/side shadow look when clicking */
+    box-shadow: inset 2px 4px 8px rgba(0, 0, 0, 0.3), 
+                0 2px 5px rgba(0, 0, 0, 0.2);
+}

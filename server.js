@@ -3,6 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
 
@@ -351,7 +353,7 @@ const userStatus = user.status ? user.status.toString().toLowerCase() : '';
                 parsedReasons = user.suspend_reasons ? [user.suspend_reasons] : [];
             }
 
-            // pass suspen_reasons and suspend_until in front end
+            // pass suspend_reasons and suspend_until in front end
             return res.json({ 
                 success: false, 
                 isSuspended: true,
@@ -1182,6 +1184,1025 @@ app.post('/api/user/change-password', requireUser, async (req, res) => {
     console.error('Password change error:', error);
     return res.status(500).json({ success: false, message: 'Server error.' });
   }
+});
+
+/*-- Messaging System --*/
+
+/*
+    START OR OPEN CONVERSATION
+    ---------------------------
+    Called when a user clicks "Chat with User"
+*/
+app.post('/api/conversations/start', requireUser, (req, res) => {
+    const currentUserId = req.session.userId;
+    const { itemId } = req.body;
+
+    if (!itemId) {
+        return res.status(400).json({
+            success: false,
+            message: "Item ID is required."
+        });
+    }
+
+    // Get the item and its owner
+    const itemSql = `
+        SELECT id, user_id, item_name, status, is_archived
+        FROM items
+        WHERE id = ?
+    `;
+
+    db.query(itemSql, [itemId], (err, items) => {
+        if (err) {
+            console.error("Start Conversation Item Error:", err);
+            return res.status(500).json({
+                success: false,
+                message: "Database error."
+            });
+        }
+
+        if (items.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found."
+            });
+        }
+
+        const item = items[0];
+
+        // Prevent chatting with yourself
+        if (Number(item.user_id) === Number(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: "You cannot start a conversation with yourself."
+            });
+        }
+
+        // Only allow conversations for published items
+        if (item.status !== 'Published') {
+            return res.status(403).json({
+                success: false,
+                message: "This item is not available for messaging."
+            });
+        }
+
+        // Do not allow archived items
+        if (item.is_archived === 1) {
+            return res.status(403).json({
+                success: false,
+                message: "This item has been archived."
+            });
+        }
+
+        const ownerId = item.user_id;
+
+        /*
+            Always store the smaller user ID as user_one_id.
+            This prevents:
+
+            User 1 -> User 5
+
+            from becoming a different conversation than:
+
+            User 5 -> User 1
+        */
+        const userOneId = Math.min(
+            Number(currentUserId),
+            Number(ownerId)
+        );
+
+        const userTwoId = Math.max(
+            Number(currentUserId),
+            Number(ownerId)
+        );
+
+        // Find existing conversation
+        const findSql = `
+            SELECT id
+            FROM conversations
+            WHERE item_id = ?
+              AND user_one_id = ?
+              AND user_two_id = ?
+            LIMIT 1
+        `;
+
+        db.query(
+            findSql,
+            [itemId, userOneId, userTwoId],
+            (findErr, conversations) => {
+
+                if (findErr) {
+                    console.error("Conversation Lookup Error:", findErr);
+
+                    return res.status(500).json({
+                        success: false,
+                        message: "Database error."
+                    });
+                }
+
+                // Existing conversation
+                if (conversations.length > 0) {
+                    return res.json({
+                        success: true,
+                        conversationId: conversations[0].id,
+                        existing: true
+                    });
+                }
+
+                // Create new conversation
+                const insertSql = `
+                    INSERT INTO conversations
+                    (
+                        item_id,
+                        user_one_id,
+                        user_two_id
+                    )
+                    VALUES (?, ?, ?)
+                `;
+
+                db.query(
+                    insertSql,
+                    [itemId, userOneId, userTwoId],
+                    (insertErr, result) => {
+
+                        if (insertErr) {
+                            console.error(
+                                "Create Conversation Error:",
+                                insertErr
+                            );
+
+                            return res.status(500).json({
+                                success: false,
+                                message: "Unable to create conversation."
+                            });
+                        }
+
+                        res.json({
+                            success: true,
+                            conversationId: result.insertId,
+                            existing: false
+                        });
+                    }
+                );
+            }
+        );
+    });
+});
+
+
+/*
+    GET USER'S CONVERSATIONS
+*/
+app.get('/api/conversations', requireUser, (req, res) => {
+
+    const currentUserId = req.session.userId;
+
+    const sql = `
+        SELECT
+            c.id AS conversation_id,
+            c.item_id,
+
+            i.item_name,
+            i.image_path,
+            i.report_type,
+
+            CASE
+                WHEN c.user_one_id = ? THEN c.user_two_id
+                ELSE c.user_one_id
+            END AS other_user_id,
+
+            u.name AS other_user_name,
+
+            (
+                SELECT m.message
+                FROM messages m
+                WHERE m.conversation_id = c.id
+                ORDER BY m.created_at DESC
+                LIMIT 1
+            ) AS last_message,
+
+            (
+                SELECT m.created_at
+                FROM messages m
+                WHERE m.conversation_id = c.id
+                ORDER BY m.created_at DESC
+                LIMIT 1
+            ) AS last_message_time,
+
+            (
+                SELECT COUNT(*)
+                FROM messages m
+                WHERE m.conversation_id = c.id
+                  AND m.sender_id != ?
+                  AND m.is_read = 0
+            ) AS unread_count
+
+        FROM conversations c
+
+        INNER JOIN items i
+            ON i.id = c.item_id
+
+        INNER JOIN users u
+            ON u.id =
+                CASE
+                    WHEN c.user_one_id = ? THEN c.user_two_id
+                    ELSE c.user_one_id
+                END
+
+        WHERE c.user_one_id = ?
+           OR c.user_two_id = ?
+
+        ORDER BY
+            COALESCE(c.updated_at, c.created_at) DESC
+    `;
+
+    const params = [
+        currentUserId,
+        currentUserId,
+        currentUserId,
+        currentUserId,
+        currentUserId
+    ];
+
+    db.query(sql, params, (err, results) => {
+
+        if (err) {
+            console.error("Conversation List Error:", err);
+
+            return res.status(500).json({
+                success: false,
+                message: "Failed to load conversations."
+            });
+        }
+
+        res.json({
+            success: true,
+            conversations: results
+        });
+    });
+});
+
+
+/*
+    GET ONE CONVERSATION
+*/
+app.get('/api/conversations/:conversationId', requireUser, (req, res) => {
+
+    const currentUserId = req.session.userId;
+    const conversationId = req.params.conversationId;
+
+    const sql = `
+        SELECT
+            c.id,
+            c.item_id,
+            i.item_name,
+            i.image_path,
+            i.report_type,
+
+            CASE
+                WHEN c.user_one_id = ? THEN c.user_two_id
+                ELSE c.user_one_id
+            END AS other_user_id,
+
+            u.name AS other_user_name
+
+        FROM conversations c
+
+        INNER JOIN items i
+            ON i.id = c.item_id
+
+        INNER JOIN users u
+            ON u.id =
+                CASE
+                    WHEN c.user_one_id = ? THEN c.user_two_id
+                    ELSE c.user_one_id
+                END
+
+        WHERE c.id = ?
+          AND (
+              c.user_one_id = ?
+              OR c.user_two_id = ?
+          )
+
+        LIMIT 1
+    `;
+
+    db.query(
+        sql,
+        [
+            currentUserId,
+            currentUserId,
+            conversationId,
+            currentUserId,
+            currentUserId
+        ],
+        (err, results) => {
+
+            if (err) {
+                console.error("Conversation Error:", err);
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Database error."
+                });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Conversation not found."
+                });
+            }
+
+            res.json({
+                success: true,
+                conversation: results[0]
+            });
+        }
+    );
+});
+
+
+/*
+    GET MESSAGES
+*/
+app.get(
+    '/api/conversations/:conversationId/messages',
+    requireUser,
+    (req, res) => {
+
+        const currentUserId = req.session.userId;
+        const conversationId = req.params.conversationId;
+
+        // Verify that user belongs to conversation
+        const accessSql = `
+            SELECT id
+            FROM conversations
+            WHERE id = ?
+              AND (
+                  user_one_id = ?
+                  OR user_two_id = ?
+              )
+            LIMIT 1
+        `;
+
+        db.query(
+            accessSql,
+            [
+                conversationId,
+                currentUserId,
+                currentUserId
+            ],
+            (accessErr, accessResults) => {
+
+                if (accessErr) {
+                    return res.status(500).json({
+                        success: false,
+                        message: "Database error."
+                    });
+                }
+
+                if (accessResults.length === 0) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "You do not have access to this conversation."
+                    });
+                }
+
+                const messageSql = `
+                    SELECT
+                        m.id,
+                        m.sender_id,
+                        m.message,
+                        m.is_read,
+                        m.created_at,
+                        u.name AS sender_name
+
+                    FROM messages m
+
+                    INNER JOIN users u
+                        ON u.id = m.sender_id
+
+                    WHERE m.conversation_id = ?
+
+                    ORDER BY m.created_at ASC
+                `;
+
+                db.query(
+                    messageSql,
+                    [conversationId],
+                    (msgErr, messages) => {
+
+                        if (msgErr) {
+                            console.error(
+                                "Messages Fetch Error:",
+                                msgErr
+                            );
+
+                            return res.status(500).json({
+                                success: false,
+                                message: "Failed to load messages."
+                            });
+                        }
+
+                        // Mark messages from other user as read
+                        db.query(
+                            `
+                            UPDATE messages
+                            SET is_read = 1
+                            WHERE conversation_id = ?
+                              AND sender_id != ?
+                        `,
+                            [
+                                conversationId,
+                                currentUserId
+                            ],
+                            () => {}
+                        );
+
+                        res.json({
+                            success: true,
+                            messages
+                        });
+                    }
+                );
+            }
+        );
+    }
+);
+
+
+/*
+    SEND MESSAGE
+*/
+app.post(
+    '/api/conversations/:conversationId/messages',
+    requireUser,
+    (req, res) => {
+
+        const currentUserId = req.session.userId;
+        const conversationId = req.params.conversationId;
+
+        const message =
+            typeof req.body.message === 'string'
+                ? req.body.message.trim()
+                : '';
+
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: "Message cannot be empty."
+            });
+        }
+
+        if (message.length > 2000) {
+            return res.status(400).json({
+                success: false,
+                message: "Message is too long."
+            });
+        }
+
+        // Verify conversation access
+        const accessSql = `
+            SELECT id
+            FROM conversations
+            WHERE id = ?
+              AND (
+                  user_one_id = ?
+                  OR user_two_id = ?
+              )
+            LIMIT 1
+        `;
+
+        db.query(
+            accessSql,
+            [
+                conversationId,
+                currentUserId,
+                currentUserId
+            ],
+            (accessErr, accessResults) => {
+
+                if (accessErr) {
+                    return res.status(500).json({
+                        success: false,
+                        message: "Database error."
+                    });
+                }
+
+                if (accessResults.length === 0) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "You do not have access to this conversation."
+                    });
+                }
+
+                const insertSql = `
+                    INSERT INTO messages
+                    (
+                        conversation_id,
+                        sender_id,
+                        message
+                    )
+                    VALUES (?, ?, ?)
+                `;
+
+                db.query(
+                    insertSql,
+                    [
+                        conversationId,
+                        currentUserId,
+                        message
+                    ],
+                    (insertErr, result) => {
+
+                        if (insertErr) {
+                            console.error(
+                                "Send Message Error:",
+                                insertErr
+                            );
+
+                            return res.status(500).json({
+                                success: false,
+                                message: "Failed to send message."
+                            });
+                        }
+
+                        // Update conversation timestamp
+                        db.query(
+                            `
+                            UPDATE conversations
+                            SET updated_at = NOW()
+                            WHERE id = ?
+                            `,
+                            [conversationId],
+                            () => {}
+                        );
+
+                        res.json({
+                            success: true,
+                            messageId: result.insertId
+                        });
+                    }
+                );
+            }
+        );
+    }
+);
+
+/* =========================================================
+   DEAL AGREEMENT (0/2 -> 2/2 mutual confirmation)
+   ========================================================= */
+
+/*
+    NOTIFY ADMIN — called once the frontend sees both parties agreed.
+    Logs to audit_logs (already shown on the Admin Audit Logs page)
+    and flips the conversation into admin_reviewing.
+*/
+app.post('/api/conversations/:conversationId/agreement/notify-admin', requireUser, (req, res) => {
+    const currentUserId = req.session.userId;
+    const conversationId = req.params.conversationId;
+
+    const sql = `
+        SELECT c.*, i.item_name, i.category, i.report_type,
+               ua.name AS user_one_name, ub.name AS user_two_name
+        FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        JOIN users ua ON ua.id = c.user_one_id
+        JOIN users ub ON ub.id = c.user_two_id
+        WHERE c.id = ? AND (c.user_one_id = ? OR c.user_two_id = ?)
+        LIMIT 1
+    `;
+
+    db.query(sql, [conversationId, currentUserId, currentUserId], (err, results) => {
+        if (err) {
+            console.error("Notify Admin Lookup Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: "Conversation not found." });
+        }
+
+        const c = results[0];
+        if (Number(c.user_one_agreed) + Number(c.user_two_agreed) < 2) {
+            return res.status(400).json({ success: false, message: "Both parties have not agreed yet." });
+        }
+
+        const details = JSON.stringify({
+            conversationId: c.id,
+            itemId: c.item_id,
+            itemName: c.item_name,
+            barangay: c.meetup_barangay,
+            userOne: c.user_one_name,
+            userTwo: c.user_two_name
+        });
+
+        db.query(
+            `INSERT INTO audit_logs (action, details) VALUES ('DEAL_AGREEMENT_READY', ?)`,
+            [details],
+            (logErr) => {
+                if (logErr) console.error("Audit log insert failed:", logErr);
+            }
+        );
+
+        db.query(
+            `UPDATE conversations SET agreement_status = 'admin_reviewing', admin_notified_at = NOW() WHERE id = ?`,
+            [conversationId],
+            (updateErr) => {
+                if (updateErr) {
+                    console.error("Notify Admin Update Error:", updateErr);
+                    return res.status(500).json({ success: false, message: "Database error." });
+                }
+                res.json({ success: true, status: 'admin_reviewing' });
+            }
+        );
+    });
+});
+
+/* =========================================================
+   GET AGREEMENT STATUS / SUBMIT AGREEMENT (kept version, with meetup date+time)
+   ========================================================= */
+
+/*
+    GET AGREEMENT STATUS
+*/
+app.get('/api/conversations/:conversationId/agreement', requireUser, (req, res) => {
+    const currentUserId = req.session.userId;
+    const conversationId = req.params.conversationId;
+
+    const sql = `
+        SELECT user_one_id, user_two_id, user_one_agreed, user_two_agreed,
+               agreement_status, meetup_barangay, meetup_date, meetup_time, transaction_report_path
+        FROM conversations
+        WHERE id = ? AND (user_one_id = ? OR user_two_id = ?)
+        LIMIT 1
+    `;
+
+    db.query(sql, [conversationId, currentUserId, currentUserId], (err, results) => {
+        if (err) {
+            console.error("Agreement Status Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: "Conversation not found." });
+        }
+
+        const c = results[0];
+        const isUserOne = Number(c.user_one_id) === Number(currentUserId);
+        const userAgreed = Boolean(isUserOne ? c.user_one_agreed : c.user_two_agreed);
+        const otherUserAgreed = Boolean(isUserOne ? c.user_two_agreed : c.user_one_agreed);
+        const totalAgreed = Number(c.user_one_agreed) + Number(c.user_two_agreed);
+
+        res.json({
+            success: true,
+            userAgreed,
+            otherUserAgreed,
+            totalAgreed,
+            status: c.agreement_status,
+            barangay: c.meetup_barangay,
+            meetupDate: c.meetup_date,
+            meetupTime: c.meetup_time,
+            transactionReportPath: c.transaction_report_path
+        });
+    });
+});
+
+/*
+    SUBMIT AGREEMENT (Agree button -> confirm modal)
+    Body: { agreed: true, barangay: "...", meetup_date: "YYYY-MM-DD", meetup_time: "HH:MM" }
+*/
+app.post('/api/conversations/:conversationId/agreement', requireUser, (req, res) => {
+    const currentUserId = req.session.userId;
+    const conversationId = req.params.conversationId;
+    const barangayInput = typeof req.body.barangay === 'string' ? req.body.barangay.trim() : '';
+    const meetupDateInput = req.body.meetup_date || req.body.date || null;
+    const meetupTimeInput = req.body.meetup_time || req.body.time || null;
+
+    const sql = `
+        SELECT user_one_id, user_two_id, user_one_agreed, user_two_agreed,
+               agreement_status, meetup_barangay, meetup_date, meetup_time
+        FROM conversations
+        WHERE id = ? AND (user_one_id = ? OR user_two_id = ?)
+        LIMIT 1
+    `;
+
+    db.query(sql, [conversationId, currentUserId, currentUserId], (err, results) => {
+        if (err) {
+            console.error("Agreement Submit Lookup Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: "Conversation not found." });
+        }
+
+        const c = results[0];
+        const isUserOne = Number(c.user_one_id) === Number(currentUserId);
+        const alreadyAgreed = Boolean(isUserOne ? c.user_one_agreed : c.user_two_agreed);
+
+        if (alreadyAgreed) {
+            return res.json({
+                success: true,
+                userAgreed: true,
+                otherUserAgreed: Boolean(isUserOne ? c.user_two_agreed : c.user_one_agreed),
+                totalAgreed: Number(c.user_one_agreed) + Number(c.user_two_agreed),
+                status: c.agreement_status
+            });
+        }
+
+        const finalBarangay = c.meetup_barangay || barangayInput;
+        const finalDate = c.meetup_date || meetupDateInput;
+        const finalTime = c.meetup_time || meetupTimeInput;
+
+        if (!finalBarangay) {
+            return res.status(400).json({
+                success: false,
+                message: "Please choose a barangay hall meetup location before agreeing."
+            });
+        }
+
+        const columnToSet = isUserOne ? 'user_one_agreed' : 'user_two_agreed';
+        const updateSql = `
+            UPDATE conversations
+            SET ${columnToSet} = 1,
+                meetup_barangay = ?,
+                meetup_date = ?,
+                meetup_time = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        `;
+
+        db.query(updateSql, [finalBarangay, finalDate, finalTime, conversationId], (updateErr) => {
+            if (updateErr) {
+                console.error("Agreement Submit Update Error:", updateErr);
+                return res.status(500).json({ success: false, message: "Database error." });
+            }
+
+            const newUserOneAgreed = isUserOne ? 1 : c.user_one_agreed;
+            const newUserTwoAgreed = isUserOne ? c.user_two_agreed : 1;
+            const totalAgreed = Number(newUserOneAgreed) + Number(newUserTwoAgreed);
+            const bothAgreed = totalAgreed >= 2;
+            const newStatus = bothAgreed ? 'both_agreed' : 'pending';
+
+            const finishUp = () => {
+                res.json({
+                    success: true,
+                    userAgreed: true,
+                    otherUserAgreed: bothAgreed,
+                    totalAgreed,
+                    status: newStatus,
+                    barangay: finalBarangay,
+                    meetupDate: finalDate,
+                    meetupTime: finalTime
+                });
+            };
+
+            if (bothAgreed) {
+                db.query(
+                    "UPDATE conversations SET agreement_status = 'both_agreed' WHERE id = ?",
+                    [conversationId],
+                    () => finishUp()
+                );
+            } else {
+                finishUp();
+            }
+        });
+    });
+});
+
+/* =========================================================
+   ADMIN: REVIEW + CONFIRM TRANSACTION (auto-generates the PDF)
+   ========================================================= */
+
+/*
+    LIST TRANSACTIONS AWAITING ADMIN REVIEW
+*/
+app.get('/api/admin/pending-transactions', requireAdmin, (req, res) => {
+    const sql = `
+        SELECT c.id AS conversation_id, c.item_id, c.meetup_barangay, c.meetup_date, c.meetup_time, 
+               c.agreement_status, c.admin_notified_at, c.transaction_report_path,
+               i.item_name, i.category, i.report_type, i.location, i.brand, i.image_path, i.user_id AS item_owner_id,
+               i.incident_date, i.incident_time, i.description,
+               ua.id AS user_one_id, ua.name AS user_one_name, ua.email AS user_one_email, ua.contact_number AS user_one_contact,
+               ub.id AS user_two_id, ub.name AS user_two_name, ub.email AS user_two_email, ub.contact_number AS user_two_contact
+        FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        JOIN users ua ON ua.id = c.user_one_id
+        JOIN users ub ON ub.id = c.user_two_id
+        WHERE c.agreement_status IN ('both_agreed', 'admin_reviewing', 'confirmed', 'disputed')
+        ORDER BY c.admin_notified_at IS NULL, c.admin_notified_at DESC
+    `;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Pending Transactions Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        res.json({ success: true, transactions: results });
+    });
+});
+
+/*
+    ADMIN: VIEW THE CHAT TRANSCRIPT FOR A CONVERSATION (read-only review)
+*/
+app.get('/api/admin/conversations/:conversationId/messages', requireAdmin, (req, res) => {
+    const conversationId = req.params.conversationId;
+
+    const sql = `
+        SELECT m.id, m.sender_id, m.message, m.image_path, m.created_at,
+               u.name AS sender_name
+        FROM messages m
+        JOIN users u ON u.id = m.sender_id
+        WHERE m.conversation_id = ?
+        ORDER BY m.created_at ASC
+    `;
+    db.query(sql, [conversationId], (err, results) => {
+        if (err) {
+            console.error("Admin Transcript Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        res.json({ success: true, messages: results });
+    });
+});
+
+/*
+    ADMIN: FLAG A TRANSACTION AS DISPUTED
+*/
+app.post('/api/admin/transactions/:conversationId/dispute', requireAdmin, (req, res) => {
+    const conversationId = req.params.conversationId;
+    const reason = (req.body.reason || '').trim() || 'No reason provided.';
+
+    const sql = `
+        SELECT c.*, i.item_name FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        WHERE c.id = ? LIMIT 1
+    `;
+    db.query(sql, [conversationId], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error." });
+        if (results.length === 0) return res.status(404).json({ success: false, message: "Conversation not found." });
+
+        const c = results[0];
+
+        db.query(
+            "UPDATE conversations SET agreement_status = 'disputed' WHERE id = ?",
+            [conversationId],
+            (updateErr) => {
+                if (updateErr) return res.status(500).json({ success: false, message: "Database error." });
+
+                const notifMsg = `Your ReFoundly transaction for "${c.item_name}" was flagged for admin review: ${reason}`;
+                db.query(
+                    `INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?), (?, ?, ?)`,
+                    [c.user_one_id, notifMsg, c.item_id, c.user_two_id, notifMsg, c.item_id],
+                    () => {}
+                );
+
+                db.query(
+                    `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_DISPUTED', ?)`,
+                    [JSON.stringify({ conversationId, itemId: c.item_id, reason })],
+                    () => {}
+                );
+
+                res.json({ success: true, status: 'disputed' });
+            }
+        );
+    });
+});
+
+/*
+    ADMIN CONFIRM -> auto-generate the transaction PDF, notify both users
+*/
+app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, res) => {
+    const conversationId = req.params.conversationId;
+    const adminId = req.session.admin.id;
+
+    const sql = `
+        SELECT c.*, i.item_name, i.category, i.report_type, i.location, i.user_id AS item_owner_id,
+               i.incident_date, i.incident_time, i.description, i.brand,
+               ua.name AS user_one_name, ua.contact_number AS user_one_contact,
+               ub.name AS user_two_name, ub.contact_number AS user_two_contact
+        FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        JOIN users ua ON ua.id = c.user_one_id
+        JOIN users ub ON ub.id = c.user_two_id
+        WHERE c.id = ?
+        LIMIT 1
+    `;
+
+    db.query(sql, [conversationId], (err, results) => {
+        if (err) {
+            console.error("Admin Confirm Lookup Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: "Conversation not found." });
+        }
+
+        const c = results[0];
+        if (Number(c.user_one_agreed) + Number(c.user_two_agreed) < 2) {
+            return res.status(400).json({ success: false, message: "Both parties have not agreed yet." });
+        }
+
+        const reportsDir = path.join(__dirname, 'User', 'uploads', 'reports');
+        if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+
+        const fileName = `transaction_${conversationId}_${Date.now()}.pdf`;
+        const filePath = path.join(reportsDir, fileName);
+        const publicPath = `/uploads/reports/${fileName}`;
+
+        try {
+            const doc = new PDFDocument({ margin: 50 });
+            const stream = fs.createWriteStream(filePath);
+            doc.pipe(stream);
+
+            doc.fontSize(18).fillColor('#5D8252').text('ReFoundly Transaction Report', { align: 'center' });
+            doc.moveDown();
+            doc.fontSize(10).fillColor('#555').text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+            doc.moveDown(2);
+
+            doc.fontSize(13).fillColor('#000').text('Item Details', { underline: true });
+            doc.moveDown(0.5);
+            doc.fontSize(11);
+            doc.text(`Item Name: ${c.item_name || 'N/A'}`);
+            doc.text(`Category: ${c.category || 'N/A'}`);
+            doc.text(`Report Type: ${c.report_type || 'N/A'}`);
+            doc.text(`Brand: ${c.brand || 'N/A'}`);
+            doc.text(`Location: ${c.location || 'N/A'}`);
+            doc.text(`Date: ${c.incident_date || 'N/A'}`);
+            doc.text(`Time: ${c.incident_time || 'N/A'}`);
+            doc.moveDown();
+            doc.text('Description:', { continued: false });
+            doc.text(c.description || 'N/A', { width: 480 });
+            doc.moveDown(1.5);
+
+            // Whoever posted the item is either the Finder (if they posted to
+            // "Found") or the Owner (if they posted to "Lost"). The other
+            // person in the conversation is the opposite role.
+            const posterIsUserOne = Number(c.item_owner_id) === Number(c.user_one_id);
+            const posterName = posterIsUserOne ? c.user_one_name : c.user_two_name;
+            const posterContact = posterIsUserOne ? c.user_one_contact : c.user_two_contact;
+            const otherName = posterIsUserOne ? c.user_two_name : c.user_one_name;
+            const otherContact = posterIsUserOne ? c.user_two_contact : c.user_one_contact;
+            const isFoundReport = (c.report_type || '').toLowerCase() === 'found';
+            const posterRole = isFoundReport ? 'Finder' : 'Owner (Lost the Item)';
+            const otherRole = isFoundReport ? 'Owner (Lost the Item)' : 'Finder';
+
+            doc.fontSize(13).text('Parties Involved', { underline: true });
+            doc.moveDown(0.5);
+            doc.fontSize(11);
+            doc.text(`${posterRole}: ${posterName || 'N/A'} (${posterContact || 'N/A'})`);
+            doc.text(`${otherRole}: ${otherName || 'N/A'} (${otherContact || 'N/A'})`);
+            doc.moveDown(1.5);
+
+            doc.fontSize(13).text('Meetup Details', { underline: true });
+            doc.moveDown(0.5);
+            doc.fontSize(11);
+            doc.text(`Barangay Hall: ${c.meetup_barangay || 'To be arranged'}`);
+            if (c.meetup_date) doc.text(`Scheduled Date: ${c.meetup_date}`);
+            if (c.meetup_time) doc.text(`Scheduled Time: ${c.meetup_time}`);
+            doc.moveDown(2);
+
+            doc.fontSize(10).fillColor('#777').text(
+                'Both parties confirmed in-app that they agree to settle this item at the location above. ' +
+                'This report was generated after admin verification and stands as confirmation that the ' +
+                'transaction is proceeding as described.',
+                { width: 480 }
+            );
+
+            doc.end();
+
+            stream.on('finish', () => {
+                db.query(
+                    `UPDATE conversations
+                     SET agreement_status = 'confirmed',
+                         transaction_report_path = ?,
+                         admin_confirmed_by = ?
+                     WHERE id = ?`,
+                    [publicPath, adminId, conversationId],
+                    (updateErr) => {
+                        if (updateErr) {
+                            console.error("Admin Confirm Update Error:", updateErr);
+                            return res.status(500).json({ success: false, message: "Database error." });
+                        }
+
+                        const notifMsg = `Your ReFoundly transaction for "${c.item_name}" has been confirmed. View the report in your chat.`;
+                        db.query(
+                            `INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?), (?, ?, ?)`,
+                            [c.user_one_id, notifMsg, c.item_id, c.user_two_id, notifMsg, c.item_id],
+                            () => {}
+                        );
+
+                        db.query(
+                            `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_CONFIRMED', ?)`,
+                            [JSON.stringify({ conversationId, itemId: c.item_id, reportPath: publicPath })],
+                            () => {}
+                        );
+
+                        res.json({ success: true, reportPath: publicPath });
+                    }
+                );
+            });
+        } catch (pdfErr) {
+            console.error("PDF Generation Error:", pdfErr);
+            res.status(500).json({ success: false, message: "Failed to generate PDF report." });
+        }
+    });
 });
 
 /*--Global Error Handler--*/

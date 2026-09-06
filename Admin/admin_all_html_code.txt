@@ -1,0 +1,1669 @@
+﻿=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdAccount.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Account</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdAccount.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdAnalytics.html" id="nav-analytics"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Manage Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                <h1>Account</h1>
+
+                <div class="account-card">
+                    <div class="profile-left">
+                        <div class="profile-avatar"></div>
+                        <h3>Admin</h3>
+                        <p id="admin-subtext"></p>
+                    </div>
+
+                    <div class="profile-right">
+                        <h2>Admin Information</h2>
+
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <label>Email</label>
+                                <p id="admin-email">Loading...</p>
+                                <a href="#" class="link">Edit</a>
+                            </div>
+
+                            <div class="info-box">
+                                <label>Contact Number</label>
+                                <p id="admin-contact">Loading...</p>
+                                <a href="javascript:void(0)" class="link" onclick="editContact()">Edit</a>
+                            </div>
+
+                            <div class="info-box">
+                                <label>Password</label>
+                                <p>â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</p>
+                                <a href="#" class="link">Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </section>
+        </main>
+    </div>
+
+    <script src="Adminscript.js"></script>
+    <script src="AdAccount.js"></script>
+
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdAnalytics.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="AdAnalytics.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Public+Sans:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html" class="active"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header-modern">
+                                <div class="notif-title-row">
+                                    <span>Notifications</span>
+                                    <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+                                </div>
+                                <div class="notif-tabs">
+                                    <button class="tab-pill active" id="tabAll">All</button>
+                                    <button class="tab-pill" id="tabUnread">Unread</button>
+                                </div>
+                            </div>
+                            <div id="notifList" class="notif-scroll-area"></div>
+                            <div class="notif-footer">
+                                <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                <div class="page-header">
+                    <h1>Data Insights</h1>
+                </div>
+
+                <div class="analytics-filters">
+                    <div class="filter-group">
+                        <label>Filter by Category:</label>
+                        <select id="categoryFilter" onchange="applyFilters()">
+                            <option value="all">All Categories</option>
+                            <option value="wallet">Wallet</option>
+                            <option value="gadgets">Gadgets</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="id">ID</option>
+                            <option value="documents">Documents</option>
+                            <option value="books">Books</option>
+                            <option value="school_supplies">School Supplies</option>
+                            <option value="tools">Tools</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range:</label>
+                        <select id="timeFilter" onchange="applyFilters()">
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="all">Year to Date</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container bar-chart-card">
+                        <h3>Top Reported Categories</h3>
+                        <div class="chart-box" style="height: 280px;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container location-card">
+                        <h3>Top Loss Hotspots</h3>
+                        <div class="chart-box" style="height: 280px;">
+                            <canvas id="locationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Monthly Activity Trends</h3>
+                        <div class="canvas-wrapper" style="height: 250px;">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-container resolution-card">
+                        <h3>Resolution Success Rate</h3>
+                        <div class="canvas-wrapper" style="height: 250px;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="AdAnalytics.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdArchive.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Archived Reports</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html" class="active"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper fade-in">
+                <div class="page-header">
+                    <h1>Archived Reports</h1>
+                    <!-- BUTTON TO GO BACK TO MAIN PAGE -->
+                    <button class="btn-archive" onclick="window.location.href='AdReport.html'">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Main Reports
+                    </button>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search archived items...">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Posted By</th> 
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date Archived</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody"></tbody>
+                    </table>
+
+                    <div class="pagination-controls">
+                        <button class="page-arrow" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span class="page-num" id="pageDisplay">Page 1 of 1</span>
+                        <button class="page-arrow" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Details Modal -->
+        <div id="itemModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalItemName">Archived Item Details</h2>
+                    <span id="closeItemModal" class="close-btn">&times;</span>
+                </div>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+    <script src="AdArchive.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdAuditLogs.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Audit Logs</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdHome.css"> 
+    <link rel="stylesheet" href="AdAuditLogs.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html" class="active"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+         <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+    <div class="notif-header-modern">
+        <div class="notif-title-row">
+            <span>Notifications</span>
+            <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+        </div>
+        <div class="notif-tabs">
+            <button class="tab-pill active" id="tabAll">All</button>
+            <button class="tab-pill" id="tabUnread">Unread</button>
+        </div>
+    </div>
+    <div id="notifList" class="notif-scroll-area">
+        </div>
+    <div class="notif-footer">
+        <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+    </div>
+</div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+           <section class="content-wrapper" id="audit-wrapper">
+                    <div class="audit-page-header">
+                        <h1 style="font-family: 'Montserrat', sans-serif;">Security Audit Logs</h1>
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="userSearch" placeholder="Search Users">
+                        </div>
+                    </div>
+
+    <div class="audit-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User / Admin</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody id="audit-log-body"></tbody>
+        </table>
+        
+        <div class="pagination">
+            <button id="prevPage" class="pag-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button id="nextPage" class="pag-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+        </main>
+    </div>
+
+    <script src="AdAuditLogs.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdBlockchain.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Blockchain Ledger</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdHome.css"> 
+    <link rel="stylesheet" href="AdBlockchain.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar"> 
+            <div class="logo">
+                <img src="ReLogo.png" alt="Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+                <a href="AdBlockchain.html"  class="active"><i class="fa-solid fa-link"></i> Blockchain Ledger</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+    <div class="notif-header-modern">
+        <div class="notif-title-row">
+            <span>Notifications</span>
+            <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+        </div>
+        <div class="notif-tabs">
+            <button class="tab-pill active" id="tabAll">All</button>
+            <button class="tab-pill" id="tabUnread">Unread</button>
+        </div>
+    </div>
+    <div id="notifList" class="notif-scroll-area">
+        </div>
+    <div class="notif-footer">
+        <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+    </div>
+</div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+
+            <section class="content-wrapper" id="blockchain-wrapper">
+                <div class="page-header">
+                        <h1 style="font-family: 'Montserrat', sans-serif;">Blockchain Ledger</h1>
+                </div>
+                
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="bcSearch" placeholder="0x... or Block #" onkeyup="filterLedger()">
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container blockchain-card">
+                        <h3>Smart Contract Activity</h3>
+                        <div class="table-container" style="overflow-x:auto;">
+                            <table style="width:100%; border-collapse: collapse; margin-top: 15px;">
+                                <thead>
+                                    <tr style="text-align: left; border-bottom: 2px solid var(--chart-primary);">
+                                        <th style="padding: 12px;">Timestamp / Block</th>
+                                        <th>Event Type</th>
+                                        <th>Transaction Hash</th>
+                                        <th>Details</th>
+                                        <th>Gas Used</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="blockchain-log-body">
+                                    </tbody>
+                            </table>
+                            <div class="pagination">
+            <button id="prevPage" class="pag-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button id="nextPage" class="pag-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+    <script src="AdBlockchain.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdHome.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Dashboard</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdHome.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+    <div class="notif-header-modern">
+        <div class="notif-title-row">
+            <span>Notifications</span>
+            <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+        </div>
+        <div class="notif-tabs">
+            <button class="tab-pill active" id="tabAll">All</button>
+            <button class="tab-pill" id="tabUnread">Unread</button>
+        </div>
+    </div>
+    <div id="notifList" class="notif-scroll-area">
+        </div>
+    <div class="notif-footer">
+        <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+    </div>
+</div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                <h1>Dashboard</h1>
+
+                <div class="summary-cards">
+                    <div class="card1">
+                        <div class="icon-box lost-bg"><i class="fa-solid fa-box-open"></i></div>
+                        <div><p style="font-family: 'Montserrat', sans-serif; font-weight: 500; margin-bottom: 5px;">Total Lost Items</p><h3 id="stat-lost">0</h3></div>
+                    </div>
+                    <div class="card2">
+                        <div class="icon-box found-bg"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        <div><p style="font-family: 'Montserrat', sans-serif; font-weight: 500; margin-bottom: 5px;">Total Found Items</p><h3 id="stat-found">0</h3></div>
+                    </div>
+                    <div class="card3">
+                        <div class="icon-box pending-bg"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div><p style="font-family: 'Montserrat', sans-serif; font-weight: 500; margin-bottom: 5px;">Pending Items</p><h3 id="stat-pending">0</h3></div>
+                    </div>
+                    <div class="card4">
+                        <div class="icon-box claimed-bg"><i class="fa-solid fa-check-double"></i></div>
+                        <div><p style="font-family: 'Montserrat', sans-serif; font-weight: 500; margin-bottom: 5px;">Claimed Items</p><h3 id="stat-claimed">0</h3></div>
+                    </div>
+                </div>
+
+                <div class="analytics-row">
+                    <div class="graph-card">
+                        <div class="graph-info">
+                            <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: -0.5px;">
+    Monthly Resolution Rate
+</h3>
+                            <p>Percentage of items successfully returned.</p>
+                            <h2 class="percentage-text" id="res-text-main">0%</h2>
+                        </div>
+                        <div class="visual-graph">
+                            <div class="progress-circle" id="res-circle" style="background: conic-gradient(#27ae60 0%, #e0e0e0 0%);">
+                                <span class="inner-number" id="res-text-inner">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="graph-card">
+                        <div class="graph-info">
+                            <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: -0.5px;">Item Status Overview</h3>
+                            <p>Distribution of all reported items.</p>
+                            <div class="legend">
+                                <div class="legend-item"><span class="dot lost"></span> Lost</div>
+                                <div class="legend-item"><span class="dot found"></span> Found</div>
+                                <div class="legend-item"><span class="dot pending"></span> Pending</div>
+                                <div class="legend-item"><span class="dot claimed"></span> Claimed</div>
+                            </div>
+                        </div>
+                        <div class="visual-bar-chart">
+                            <div class="bar-group">
+                                <div class="bar lost" id="bar-lost" style="height: 0%;"><span>0</span></div>
+                                <div class="bar found" id="bar-found" style="height: 0%;"><span>0</span></div>
+                                <div class="bar pending" id="bar-pending" style="height: 0%;"><span>0</span></div>
+                                <div class="bar claimed" id="bar-claimed" style="height: 0%;"><span>0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <h2>Recent Activity</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Time</th> 
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="AdHome.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdLogin.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFoundly | Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="AdCSS.css">
+</head>
+<body>
+
+    <div class="container" id="container">
+    <div class="form-container sign-in">
+        <form id="login-form">
+            <h1>Admin Login</h1>
+            <br><br><br><br>
+            <input type="email" id="email" placeholder="Email">
+            <div class="password-input">
+                <input type="password" id="password" placeholder="Password">
+            </div>
+            <div id="login-error" style="color: #d9534f; margin-top: 10px; font-size: 14px; text-align: center;"></div>
+
+            <button type="submit">Login</button>
+        </form> <!-- ðŸŸ¢ Naidagdag ang tamang closing tag dito -->
+    </div>
+
+    <div class="toggle-panel toggle-right">
+        <div class="text-content">
+            <h1 class="welcome-title"> <span class="green-text"> Welcome to ReFoundly</span></h1>
+            <p class="welcome-desc">A friendly digital platform where you can report, search, and recover lost items.</p>
+        </div>
+        
+        <div class="logo-area">
+            <img src="ReLogo.png" alt="ReFoundly Handshake Logo">
+        </div>
+    </div>
+</div>
+
+<div id="suspendedModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <i class="fa-solid fa-user-slash modal-icon"></i>
+        <h3>Account Suspended</h3>
+        <p class="sub-text">Your account access has been temporarily restricted.</p>
+
+        <div class="reason-box">
+            <strong>REASON:</strong>
+            <p id="modalReasonText">Loading reason...</p>
+        </div>
+
+        <div class="modal-actions">
+            <!-- ðŸŸ¢ Naidagdag ang type="button" -->
+            <button type="button" onclick="closeModal()">Close</button>
+            <a href="mailto:support@refoundly.com" class="btn-support">Contact Support</a>
+        </div>
+    </div>
+</div>
+
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdManage.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Items</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdManage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Action Buttons */
+        .btn-approve { background-color: #28a745; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-deny { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-resolve { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-view { background-color: #6c757d; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        
+        /* Status Badges */
+        .badge.pending-approval { background-color: #ffc107; color: #333; }
+        .badge.published { background-color: #007bff; color: white; }
+        .badge.resolved { background-color: #28a745; color: white; }
+        .badge.denied { background-color: #6c757d; color: white; }
+
+        /* Pagination Styling */
+        .pagination-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; padding: 10px; }
+        .page-arrow { cursor: pointer; background: none; border: none; font-size: 1.2rem; color: #5d9e52; }
+        .page-arrow:disabled { color: #ccc; cursor: default; }
+
+        /* Notification Styling */
+        .notif-wrapper { position: relative; display: inline-block; margin-right: 15px; }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; display: none; }
+        .notif-dropdown { display: none; position: absolute; right: 0; top: 35px; width: 300px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; max-height: 400px; overflow-y: auto; }
+        
+        .notif-header { padding: 10px 15px; font-weight: bold; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .clear-notifs { font-size: 0.7rem; color: #007bff; cursor: pointer; text-decoration: underline; }
+        
+        .notif-item { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.85rem; color: #444; cursor: pointer; transition: background 0.2s; }
+        .notif-item:hover { background-color: #f8f9fa; }
+        .notif-item.unread { background-color: #f0f7ef; border-left: 4px solid #5d9e52; }
+        .notif-item:last-child { border-bottom: none; }
+        
+        /* Fade in animation */
+        .content-wrapper { opacity: 0; transition: opacity 0.5s ease; }
+        .content-wrapper.fade-in { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                    <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="AdManage.html" class="active">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Items
+                </a>
+                <a href="AdReport.html">
+                    <i class="fa-solid fa-file-invoice"></i> Reports
+                </a>
+                <a href="AdUsers.html">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+                <a href="AdBlockchain.html"><i class="fa-solid fa-link"></i> Blockchain Ledger</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+               <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                        <i class="fa-solid fa-bell" onclick="toggleNotifs()" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <span class="clear-notifs" onclick="clearAllNotifs()">Clear All</span>
+                            </div>
+                            <div id="notifList">
+                                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+
+                <h1>Manage Items</h1>
+
+                <div class="filter-bar">
+                    <select id="categoryFilter">
+                        <option value="all">Category</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Gadget">Gadget</option>
+                        <option value="Bag">Bag</option>
+                    </select>
+
+                    <select id="statusFilter">
+                        <option value="all">Status</option>
+                        <option value="Lost">Lost</option>
+                        <option value="Found">Found</option>
+                    </select>
+
+                    <input type="text" id="searchInput" placeholder="Search Items" class="search-input">
+    <button class="btn-generate" id="clearBtn">Clear</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wallet</td>
+                                <td>Personal</td>
+                                <td><span class="badge resolved">Found</span></td>
+                                <td>Jan. 7, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Phone</td>
+                                <td>Gadget</td>
+                                <td><span class="badge pending">Lost</span></td>
+                                <td>Jan. 2, 2026</td>
+                                <td>
+                                    <button class="btn-view">Approve</button>
+                                    <button class="btn-archive-sm">Deny</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const wrapper = document.querySelector(".content-wrapper");
+
+            if (wrapper) {
+                setTimeout(() => {
+                    wrapper.classList.add("fade-in");
+                }, 100);
+            }
+
+            const navLinks = document.querySelectorAll('.sidebar nav a, .sidebar-footer a, .avatar-link');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.hostname === window.location.hostname) {
+                        e.preventDefault();
+                        const nextURL = link.href;
+
+                        if (wrapper) wrapper.classList.remove("fade-in");
+
+                        setTimeout(() => {
+                            window.location.href = nextURL;
+                        }, 500);
+                    }
+                });
+            });
+        });
+
+        // Filter and Search Functionality
+        document.addEventListener("DOMContentLoaded", () => {
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    function filterTable() {
+        const catValue = categoryFilter.value.toLowerCase();
+        const statValue = statusFilter.value.toLowerCase();
+        const searchValue = searchInput.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const itemText = row.cells[0].textContent.toLowerCase();
+            const catText = row.cells[1].textContent.toLowerCase();
+            const statText = row.cells[2].textContent.toLowerCase();
+            
+            // This combines all searchable text into one "haystack"
+            const allRowText = `${itemText} ${catText} ${statText}`;
+
+            // 1. Dropdown matches
+            const matchesCat = catValue === "all" || catText.includes(catValue);
+            const matchesStat = statValue === "all" || statText.includes(statValue);
+            
+            // 2. Search matches (Now checks the combined string)
+            const matchesSearch = allRowText.includes(searchValue);
+
+            if (matchesCat && matchesStat && matchesSearch) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    // Event Listeners
+    categoryFilter.addEventListener('change', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    searchInput.addEventListener('input', filterTable);
+
+    // Clear Button Logic
+    clearBtn.addEventListener('click', () => {
+        categoryFilter.value = "all";
+        statusFilter.value = "all";
+        searchInput.value = "";
+        filterTable();
+    });
+});
+    </script>
+
+    <script src="Adminscript.js"></script>
+
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdNotifHistory.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification History - ReFoundly</title>
+    <link rel="stylesheet" href="Global.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .history-card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; }
+        .history-header-modern { padding: 20px; border-bottom: 1px solid #eee; }
+        .history-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* Persistent Highlight for the Notification Icon */
+        .notif-wrapper.nav-active i {
+            color: #7aa340 !important;
+        }
+        .notif-wrapper.nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #7aa340;
+            border-radius: 50%;
+        }
+
+        .notif-row { 
+            padding: 20px; 
+            border-bottom: 1px solid #f0f0f0; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .notif-row:hover { background: #f9f9f9; }
+        .notif-icon-circle { 
+            width: 45px; height: 45px; border-radius: 50%; 
+            background: #7aa340; color: white; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+        .notif-content { flex-grow: 1; }
+        .notif-text { font-size: 0.95rem; color: #333; margin-bottom: 4px; }
+        .notif-time { font-size: 0.8rem; color: #888; }
+
+        /* PAGINATION STYLING */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.page-arrow { 
+    background: transparent;
+    border: none;
+    color: #555;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-arrow:hover:not(:disabled) {
+    background-color: rgba(122, 163, 64, 0.1); 
+    color: #7aa340;
+}
+
+.page-arrow:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.page-num {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 600;
+    min-width: 100px;
+    text-align: center;
+}
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+                <a href="AdBlockchain.html"><i class="fa-solid fa-link"></i> Blockchain Ledger</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+               <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper nav-active" style="position: relative;">
+                        <i class="fa-solid fa-bell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                 <h1>Notifications</h1>
+                <div class="history-card">
+                    <div class="history-header-modern">
+                        <div class="history-title-row">
+                            <h2>History</h2>
+                            <button onclick="clearLocalStorageHistory()" class="btn-delete-all" color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Clear All</button>
+                        </div>
+                        <div class="history-tabs">
+                            <button class="tab-pill active" id="tabAll" onclick="filterHistory('all')">All</button>
+                            <button class="tab-pill" id="tabUnread" onclick="filterHistory('unread')">Unread</button>
+                        </div>
+                    </div>
+                    <div id="fullHistoryList"></div>
+
+                    <div class="pagination-controls">
+        <button class="page-arrow" id="prevPage" onclick="changePage(-1)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span class="page-num" id="pageDisplay">Page 1 of 1</span>
+        <button class="page-arrow" id="nextPage" onclick="changePage(1)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="adNotifHistory.js"></script>  
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdReport.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage & Reports</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdReport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html" id="nav-analytics"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html" class="active"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+               <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+         <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header-modern">
+                                <div class="notif-title-row">
+                                    <span>Notifications</span>
+                                    <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+                                </div>
+                                <div class="notif-tabs">
+                                    <button class="tab-pill active" id="tabAll">All</button>
+                                    <button class="tab-pill" id="tabUnread">Unread</button>
+                                </div>
+                            </div>
+                            <div id="notifList" class="notif-scroll-area"></div>
+                            <div class="notif-footer">
+                                <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+
+            <section class="content-wrapper">
+                <div class="page-header">
+                    <h1>Reports</h1>
+                    <button id="archiveBtn" class="btn-archive" onclick="window.location.href='AdArchive.html'">Archived Items</button>
+                </div>
+
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="icon-box reports-bg"><i class="fa-solid fa-file-lines"></i></div>
+                        <div><p>Total Published</p><h3 id="active-count">0</h3></div>
+                    </div>
+                    <div class="card">
+                        <div class="icon-box pending-bg"><i class="fa-solid fa-clock"></i></div>
+                        <div><p>Pending Approval</p><h3 id="pending-count">0</h3></div>
+                    </div>
+                    <div class="card">
+                        <div class="icon-box resolved-bg"><i class="fa-solid fa-circle-check"></i></div>
+                        <div><p>Resolved</p><h3 id="resolved-count">0</h3></div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <select id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending Approval">Pending Approval</option>
+                        <option value="Published">Published</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search...">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Posted By</th> 
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody"></tbody>
+                    </table>
+
+                    <div class="pagination-controls">
+                        <button class="page-arrow" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span class="page-num" id="pageDisplay">Page 1 of 1</span>
+                        <button class="page-arrow" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div id="confirmModal" class="modal">
+            <div class="modal-content" style="width: 350px; text-align: center; padding: 0; border-radius: 12px; overflow: hidden;">
+                <div id="confirmHeader" style="padding: 15px; color: white; font-weight: bold;">
+                    <span id="confirmTitle">Confirm Action</span>
+                </div>
+                <div style="padding: 20px;">
+                    <p id="confirmMessage" style="margin-bottom: 20px; color: #444;"></p>
+                    <div style="display: flex; justify-content: center; gap: 10px;">
+                        <button id="confirmYes" style="padding: 8px 20px; border-radius: 5px; border: none; color: white; cursor: pointer;">Yes, Proceed</button>
+                        <button id="confirmCancel" style="padding: 8px 20px; border-radius: 5px; border: 1px solid #ddd; background: white; cursor: pointer;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="itemModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalItemName">Item Details</h2>
+                    <span id="closeItemModal" class="close-btn">&times;</span>
+                </div>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+    <script src="AdReport.js"></script>
+    <script src="Adminscript.js"></script>
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\AdUsers.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Users</title>
+    <link rel="stylesheet" href="Global.css">
+    <link rel="stylesheet" href="AdUsers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>     
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="ReLogo.png" alt="ReFoundly Logo" class="sidebar-logo-img">
+                <span>ReFoundly- Admin</span>
+            </div>
+            <nav>
+                <a href="AdHome.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="AdAnalytics.html" id="nav-analytics"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                <a href="AdReport.html"><i class="fa-solid fa-file-invoice"></i> Manage Reports</a>
+                <a href="AdUsers.html" class="active"><i class="fa-solid fa-users"></i> Users</a>
+                <a href="AdAuditLogs.html"><i class="fa-solid fa-shield-alt"></i> Audit Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <hr>
+                <a href="#AdLogin.html" id="logout-link">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+           <header class="top-nav">
+                <div class="admin-controls">
+                    <span>Admin</span>
+                    <div class="notif-wrapper">
+                       <i class="fa-solid fa-bell" id="notifBell" style="cursor: pointer; font-size: 1.2rem;"></i>
+                        <span id="notifBadge" class="notif-badge">0</span>
+
+                        <div id="notifDropdown" class="notif-dropdown">
+    <div class="notif-header-modern">
+        <div class="notif-title-row">
+            <span>Notifications</span>
+            <button class="clear-notifs-btn" id="clearNotifsBtn">Clear All</button>
+        </div>
+        <div class="notif-tabs">
+            <button class="tab-pill active" id="tabAll">All</button>
+            <button class="tab-pill" id="tabUnread">Unread</button>
+        </div>
+    </div>
+    <div id="notifList" class="notif-scroll-area">
+        </div>
+    <div class="notif-footer">
+        <button onclick="window.location.href='AdNotifHistory.html'">See previous notifications</button>
+    </div>
+</div>
+                    </div>
+                    <a href="AdAccount.html" class="avatar-link"><div class="user-avatar"></div></a>
+                </div>
+            </header>
+            
+            <section class="content-wrapper">
+                <h1>Users</h1>
+
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="userSearch" placeholder="Search Users">
+                    </div>
+
+                    <select id="roleFilter">
+                        <option value="all">Role (All)</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User</option>
+                    </select>
+
+                    <button class="btn-generate" id="openAddUserBtn">+ Add Admin</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+
+
+    <div id="suspendModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header-danger">
+            <h3>Suspend Account</h3>
+            <span class="close-x" onclick="closeSuspendModal()">&times;</span>
+        </div>
+
+        <div class="modal-body">
+            <div id="confirmView">
+    <p id="suspendUserName" style="font-size: 1.1rem; margin: 20px 0; text-align: center;"></p>
+    <div class="modal-actions" style="justify-content: center; gap: 20px;">
+        <button onclick="closeSuspendModal()" class="btn-secondary">Cancel</button>
+        <button id="confirmYes" onclick="goToReasons()" class="btn-danger">Yes</button>
+    </div>
+</div>
+            <div id="reasonView" style="display: none;">
+                <div class="reason-checklist">
+                    <p><strong>Please select the reason(s) for suspension:</strong></p>
+                    <label><input type="checkbox" name="reason" value="Fraudulent Reports"> Fraudulent Reports</label><br>
+                    <label><input type="checkbox" name="reason" value="Inappropriate Language"> Inappropriate Language</label><br>
+                    <label><input type="checkbox" name="reason" value="Spamming"> Spamming</label><br>
+                    <label><input type="checkbox" name="reason" value="Policy Violation"> General Policy Violation</label>
+                </div>
+                <div class="modal-actions">
+                    <button onclick="resetSuspendModal()" class="btn-secondary">Back</button>
+                    <button id="finalSuspendBtn"onclick="confirmSuspension()" class="btn-danger">Confirm Suspension</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toggleStatusModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header-deactivate" id="toggleModalHeader">
+            <h3 id="toggleModalTitle" style="margin: 0; font-size: 1.2rem;">Confirm Action</h3>
+            <span class="close-x-white" onclick="closeToggleModal()">&times;</span>
+        </div>
+
+        <div class="toggle-body-padding">
+            <p id="toggleModalMessage" style="font-size: 1.1rem; margin-bottom: 25px; color: #333;"></p>
+            
+            <div class="modal-actions" style="justify-content: center; gap: 20px; border-top: none; padding: 0;">
+                <button onclick="closeToggleModal()" class="btn-secondary">CANCEL</button>
+                <button id="confirmToggleBtn" class="btn-danger" style="background-color: #d9534f;">YES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="viewUserModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content view-card">
+        <div class="modal-header">
+            <h3 id="modalUserNameHeader">User Profile</h3>
+            <span class="close-x" onclick="closeViewModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <div class="profile-main">
+                <div class="view-image-container">
+                    <div class="view-avatar-circle"></div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-group">
+                        <p><strong>Full Name:</strong> <span id="viewName"></span></p>
+                        <p><strong>Email:</strong> <span id="viewEmail"></span></p>
+                        <p><strong>Role:</strong> <span id="viewRole"></span></p>
+                    </div>
+                    <div class="info-group">
+                        <p><strong>User ID:</strong> <span id="viewId"></span></p>
+                        <p><strong>Date Joined:</strong> <span id="viewDate"></span></p>
+                        <p><strong>Status:</strong> <span id="viewStatus"></span></p>
+                        <p><strong>Account Age:</strong> <span id="viewInactiveTime"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+    
+    <div id="addUserModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="border: 3px solid #7aa340; border-radius: 15px; padding: 20px; max-width: 450px; background: white;">
+        
+        <div class="modal-header1" style="border-bottom: none; display: flex; justify-content: center; position: relative;">
+            <h2 style="color: #5f842f; margin: 0; font-size: 2rem;">Create Admin</h2>
+            <span class="close-x" onclick="closeAddUserModal()" style="color: #999; position: absolute; right: 0; top: 0; font-size: 1.5rem; cursor: pointer;">&times;</span>
+        </div>
+
+        <form id="addUserForm" class="modal-body" style="padding: 10px 20px;">
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                
+                <input type="text" id="addName" name="name" placeholder="Full Name (LastN, FirstN)" required 
+                       style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                
+                <input type="email" id="addEmail" name="email" placeholder="Email (Gmail or Yahoo)" required
+                       style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                
+                <input type="tel" id="addContact" name="contact" placeholder="Contact Number" required
+                       style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                
+                <div style="position: relative;">
+                    <input type="password" id="addPassword" name="password" placeholder="Password" required
+                           style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                    <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('addPassword', this)" 
+                       style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888;"></i>
+                </div>
+
+                <div style="position: relative;">
+                    <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm Password" required
+                           style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                    <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)" 
+                       style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888;"></i>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 25px;">
+                <button type="submit" class="btn-generate" style="width: 100%; padding: 14px; background: #5D8252; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer;">Create Admin</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script src="AdUsers.js"></script>
+    <script src="Adminscript.js"></script>
+
+    <div id="custom-toast" class="toast-hidden">
+    <div class="toast-content">
+        <div class="toast-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="toast-message">
+            <span class="toast-title">Success!</span>
+            <p class="toast-body">Account created successfully.</p>
+        </div>
+    </div>
+    <div class="toast-progress"></div>
+</div>
+<!-- Unsuspend Modal (Theme Green) -->
+<div id="unsuspendModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="padding: 0 !important; overflow: hidden; width: 480px; border-radius: 12px; border: none;">
+        <div class="modal-header-theme">
+            <h3 style="margin: 0; font-size: 1.2rem; color: white;">Unsuspend Account</h3>
+            <span class="close-x-white" onclick="closeUnsuspendModal()">&times;</span>
+        </div>
+
+        <div style="padding: 30px; text-align: center;">
+            <p id="unsuspendModalMessage" style="font-size: 1.05rem; margin-bottom: 25px; color: #333;">
+                Are you sure you want to lift the suspension for this user?
+            </p>
+            
+            <div class="modal-actions" style="justify-content: center; gap: 15px; border-top: none; padding: 0;">
+                <button onclick="closeUnsuspendModal()" class="btn-secondary">Cancel</button>
+                <button id="confirmUnsuspendBtn" onclick="executeUnsuspend()" class="btn-theme-success">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\Admin\TestPage.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blockchain Integration Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .box { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { padding: 10px 15px; cursor: pointer; background: #5d9e52; color: white; border: none; border-radius: 4px; font-size: 1rem; }
+        button:hover { background: #4a8c40; }
+        #logs { background: #222; color: #0f0; padding: 15px; font-family: monospace; border-radius: 5px; list-style: none; }
+        h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <h1>ReFoundly x Blockchain Implementation</h1>
+
+    <div class="box">
+        <h3>Test 1: Blockchain Connection</h3>
+        <p>Status: <span id="status" style="font-weight:bold; color:orange;">Connecting...</span></p>
+        <button onclick="checkConnection()">Retry Connection</button>
+    </div>
+
+    <div class="box">
+        <h3>Test 2: Smart Contract Input</h3>
+        <input type="text" id="itemInput" placeholder="Enter Item Name (e.g., Lost iPhone)" style="padding: 10px; width: 250px;">
+        <button onclick="addReportToChain(document.getElementById('itemInput').value)">Mock User Submit</button>
+    </div>
+
+    <div class="box">
+        <h3>Test 3: On-Chain Verification</h3>
+        <p>Total Immutable Reports on Ledger: <strong id="chainCount" style="font-size: 1.5rem;">0</strong></p>
+        <button onclick="getTotalReports()">Verify Blockchain Data</button>
+    </div>
+
+    <div class="box">
+        <h3>Transaction Logs</h3>
+        <ul id="logs"></ul>
+    </div>
+
+    <script src="Blockchain.js"></script> 
+</body>
+</html>
+
+

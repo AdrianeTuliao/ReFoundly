@@ -97,8 +97,7 @@ let allItems = [];
                         <p><strong>Where Found:</strong> ${item.location}</p>
                         <p><strong>Status:</strong> <span class="status-found">Found</span></p>
                         <p><strong>Founder:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
-                        <p><strong>Contact:</strong> ${item.contact_phone}</p>
-                        <p><strong>Email:</strong> ${item.contact_email}</p>
+                        
                         <div class="post-time">
                             <small>Date Found: ${item.formattedDate}</small><br>
                             <small>Time Found: ${item.formattedTime || ''}</small>
@@ -178,12 +177,17 @@ let allItems = [];
                     <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
                     <h3 class="info-header" style="margin-top:30px;">Description</h3>
                     <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
-                    <div class="contact-box">
-                        <h4 style="margin-top:0;">Contact Founder</h4>
-                        <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
-                        <p><strong>Phone:</strong> ${item.contact_phone}</p>
-                        <p><strong>Email:</strong> ${item.contact_email}</p>
-                    </div>
+                <div class="contact-box">
+                    <h4 style="margin-top:0;">Contact Owner</h4>
+                    <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+            
+                    <button 
+                        class="chat-user-btn"
+                        onclick="event.stopPropagation(); chatWithUser(${item.user_id}, ${item.id})">
+                        <i class="fas fa-comment-dots"></i>
+                        Chat with User
+                    </button>
+                </div>
                    
                 </div>
             </div>
@@ -227,3 +231,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+function chatWithUser(userId, itemId) {
+    if (!userId) {
+        alert("Unable to identify this user.");
+        return;
+    }
+
+    window.location.href = `message.html?user=${encodeURIComponent(userId)}&item=${encodeURIComponent(itemId)}`;
+}

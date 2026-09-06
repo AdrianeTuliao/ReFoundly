@@ -1,0 +1,5735 @@
+﻿=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\auth-check.js ===
+function ensureModalExists() {
+    if (!document.getElementById('session-alert')) {
+        const style = `
+            <style>
+                #session-alert {
+                    display: none; position: fixed; top: 0; left: 0; 
+                    width: 100%; height: 100%; background: rgba(0,0,0,0.85); 
+                    z-index: 10000; justify-content: center; align-items: center;
+                }
+                .modal-content {
+                    background: white; padding: 40px; border-radius: 12px; 
+                    text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    max-width: 400px; font-family: sans-serif;
+                }
+                .modal-content h2 { color: #d9534f; margin-top:0; } /* Red for urgency! */
+                .modal-content button {
+                    background: #7aa340; color: white; border: none; 
+                    padding: 12px 25px; border-radius: 6px; cursor: pointer;
+                    font-weight: bold; margin-top: 20px; font-size: 16px;
+                }
+            </style>
+        `;
+        
+        const html = `
+            <div id="session-alert">
+                <div class="modal-content">
+                    <h2>Session Expired!</h2>
+                    <p style="color: #666;">For your security, you have been logged out of ReFoundly</p>
+                    <button onclick="window.location.href='/index.html'">Return to Login Now</button>
+                </div>
+            </div>
+        `;
+        
+        document.head.insertAdjacentHTML('beforeend', style);
+        document.body.insertAdjacentHTML('beforeend', html);
+    }
+}
+
+function checkSession() {
+    ensureModalExists(); 
+    
+    fetch('/user/me', { 
+        headers: { 'Accept': 'application/json' } 
+    })
+    .then(res => {
+        if (res.status === 401) {
+            console.log("Session expired! Showing modal...");
+            document.getElementById('session-alert').style.display = 'flex';
+        }
+    })
+    .catch(err => {
+        console.warn("Connection lost or session check failed!");
+    });
+}
+
+// Check every 10 seconds
+document.addEventListener('DOMContentLoaded', checkSession);
+setInterval(checkSession, 10000);
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\dashboard.js ===
+(() => {
+    let allItems = []; 
+    let filteredItems = []; 
+    let currentPage = 1;
+    const itemsPerPage = 3; 
+    let currentNotifTab = 'all';
+
+// 1. Setup Dropdown Search Logic
+function setupSearch(inputId, listId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    if (!input || !list) return;
+
+    const items = list.querySelectorAll('li');
+
+    input.addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        list.style.display = 'block'; 
+        items.forEach(item => {
+            let text = item.textContent.toLowerCase();
+            item.style.display = text.includes(filter) ? "block" : "none";
+        });
+    });
+
+    items.forEach(item => {
+        item.addEventListener('click', function() {
+            input.value = this.textContent;
+            list.style.display = 'none'; 
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !list.contains(e.target)) list.style.display = 'none';
+    });
+    
+    input.addEventListener('focus', () => list.style.display = 'block');
+}
+
+// 2. Load Data from API
+async function loadPublishedItems() {
+    try {
+        const response = await fetch('/api/items/published');
+        if (response.status === 401) return; 
+        allItems = await response.json(); 
+        filteredItems = [...allItems]; 
+        renderPage(1); 
+    } catch (error) {
+        console.error("Error loading items:", error);
+        const grid = document.querySelector(".grid");
+        if(grid) grid.innerHTML = "<p>Error connecting to the server.</p>";
+    }
+}
+
+// 3. Filter Logic
+function applyFilters() {
+    const category = document.getElementById('categoryInput').value.toLowerCase().trim();
+    const location = document.getElementById('locationInput').value.toLowerCase().trim();
+    const nameSearch = document.querySelector('.search-group input[placeholder="Search item name..."]')?.value.toLowerCase().trim() || "";
+
+    filteredItems = allItems.filter(item => {
+        // Kapag walang nilagay, O KAYA piliin ang "all" / "all categories", i-bypass ang filter
+        const matchCategory = !category || category === 'all' || category === 'all categories' || item.category.toLowerCase().includes(category);
+        
+        // Kapag walang nilagay, O KAYA piliin ang "all" / "all barangays", i-bypass ang filter
+        const matchLocation = !location || location === 'all' || location === 'all barangays' || item.location.toLowerCase().includes(location);
+        
+        const matchName = !nameSearch || item.item_name.toLowerCase().includes(nameSearch);
+        
+        return matchCategory && matchLocation && matchName;
+    });
+
+    currentPage = 1; 
+    renderPage(1);
+}
+
+// 4. Render Grid (CSP SECURE VERSION)
+function renderPage(page) {
+    const grid = document.querySelector(".grid");
+    if(!grid) return;
+    grid.innerHTML = ""; 
+
+    if (filteredItems.length === 0) {
+        grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 20px;'><h3>No items found.</h3></div>";
+        updatePaginationUI();
+        return;
+    }
+
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+    paginatedItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const tempDiv = document.createElement('div');
+        tempDiv.textContent = item.item_name; 
+        const safeItemName = tempDiv.innerHTML; 
+
+        const imageHtml = item.image_path 
+            ? `<img src="${item.image_path}" alt="Item" style="width:100%; height:200px; object-fit:cover;">`
+            : `<div class="card-img" style="height:200px; display:flex; align-items:center; justify-content:center; background:#eee;">No Image</div>`;
+
+        const dbType = (item.report_type || item.type || "").toLowerCase().trim();
+
+        card.innerHTML = `
+            ${imageHtml}
+            <div class="card-body">
+                <h4>${safeItemName}</h4> 
+                <span class="badge" style="background:#D97706; color:white; padding:2px 8px; border-radius:4px;">${item.category}</span>
+                <p style="font-size: 12px; color: #999; margin-top:10px;">Posted: ${item.formattedDate || 'Recent'}</p>
+                <button class="btn-main2 view-details-btn" style="width:100%; margin-top:15px; cursor: pointer;">View Details</button>
+            </div>
+        `;
+
+        card.querySelector('.view-details-btn').addEventListener('click', () => {
+            finalRedirect(item.id, dbType);
+        });
+
+        grid.appendChild(card);
+    });
+
+    updatePaginationUI();
+}
+
+// 5. Updated Notification Logic (Admin-Style)
+async function updateNotificationsUI() {
+    const list = document.getElementById("notifList");
+    const badge = document.getElementById("notifBadge");
+    if (!list) return;
+
+    try {
+        const res = await fetch('/api/user/notifications');
+
+        // 1. Check if the HTTP response is OK (prevents JSON syntax errors on HTML 404/500 responses)
+        if (!res.ok) {
+            console.warn(`Notifications fetch failed with status: ${res.status}`);
+            return;
+        }
+
+        const data = await res.json();
+
+        // 2. Validate that data is an array before processing
+        if (!Array.isArray(data)) {
+            console.error("Notifications response was not an array:", data);
+            return;
+        }
+
+        // Update Badge Count (Unread only)
+        const unreadCount = data.filter(n => !n.is_read).length;
+        if (badge) {
+            badge.innerText = unreadCount;
+            // Use 'flex' so the centering CSS works, 'none' to hide if 0
+            badge.style.display = unreadCount > 0 ? "flex" : "none";
+        }
+
+        // Filter list based on active tab
+        let displayList = currentNotifTab === 'unread' ? data.filter(n => !n.is_read) : data;
+
+        if (displayList.length === 0) {
+            list.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: #999; font-size: 0.85rem;">
+                No ${currentNotifTab === 'unread' ? 'unread' : ''} notifications
+            </div>`;
+            return;
+        }
+
+        list.innerHTML = displayList.map(n => {
+            const date = new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // 3. Escape the message content to prevent potential XSS issues
+            const safeMessage = (n.message || "Notification updated")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+            return `
+                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleNotifClick(${n.id}, ${n.item_id || 'null'})">
+                    <div class="notif-icon-circle" style="background: #7aa340; width:35px; height:35px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
+                    </div>
+                    <div style="flex-grow:1;">
+                        <div style="font-size:0.85rem; color:#1c1e21; font-weight:${n.is_read ? '600' : '700'}">${safeMessage}</div>
+                        <div style="font-size:0.75rem; color:#65676b;">${date}</div>
+                    </div>
+                    ${!n.is_read ? '<div class="unread-dot-small"></div>' : ''}
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error("Notification Load Error:", err);
+    }
+}
+
+function switchNotifTab(type) {
+    currentNotifTab = type;
+    document.getElementById('tabAll')?.classList.toggle('active', type === 'all');
+    document.getElementById('tabUnread')?.classList.toggle('active', type === 'unread');
+    updateNotificationsUI();
+}
+
+async function handleNotifClick(id, itemId) {
+    try {
+        await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
+    } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+    }
+    if (!itemId) {
+        window.location.href = 'history.html';
+        return;
+    }
+    try {
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+            const item = await res.json();
+            const dbType = (item.report_type || "").toLowerCase().trim();
+            finalRedirect(itemId, dbType);
+        } else {
+            window.location.href = 'history.html';
+        }
+    } catch (err) {
+        console.error("Could not resolve matched item:", err);
+        window.location.href = 'history.html';
+    }
+}
+
+// 6. Navigation & UI Helpers
+window.finalRedirect = function(id, type) {
+    const verifiedType = String(type || "").toLowerCase().trim();
+    if (verifiedType === "lost") {
+        window.location.href = "lost.html?open=" + id;
+    } else {
+        window.location.href = "found.html?open=" + id;
+    }
+};
+
+function updatePaginationUI() {
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const pageInfo = document.getElementById("pageInfo");
+    if(pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+    
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    
+    if(prevBtn) {
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.style.opacity = (currentPage === 1) ? "0.5" : "1";
+    }
+    if(nextBtn) {
+        nextBtn.disabled = (currentPage >= totalPages || totalPages === 0);
+        nextBtn.style.opacity = (nextBtn.disabled) ? "0.5" : "1";
+    }
+}
+
+function checkSession() {
+    fetch('/user/me', { headers: { 'Accept': 'application/json' } })
+    .then(response => {
+        if (response.status === 401) {
+            const modal = document.getElementById('session-alert');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+            const grid = document.querySelector(".grid");
+            if (grid) grid.innerHTML = "<h3>Session Expired. Please log in.</h3>";
+        }
+    })
+    .catch(() => console.warn("Server connection offline."));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // --- DROPDOWNS & DATA ---
+    // Only call setupSearch if the inputs exist (prevents errors on different pages)
+    if (document.getElementById('categoryInput')) setupSearch('categoryInput', 'categoryList');
+    if (document.getElementById('locationInput')) setupSearch('locationInput', 'locationList');
+    
+    // Load page-specific items
+    if (typeof loadPublishedItems === 'function') loadPublishedItems(); 
+    if (typeof loadFoundItems === 'function') loadFoundItems();
+
+    // --- NOTIFICATION INITIALIZATION ---
+    const bell = document.getElementById('notifBell');
+    const dropdown = document.getElementById('notifDropdown');
+    const markReadBtn = document.getElementById('markAllRead');
+
+    // CRITICAL: Explicitly hide dropdown on load to prevent auto-opening
+    if (dropdown) dropdown.style.display = "none";
+    
+    updateNotificationsUI(); // Initial count/load
+
+    // Toggle Dropdown
+    bell?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Check if it's currently hidden
+        const isHidden = dropdown.style.display === "none";
+        dropdown.style.display = isHidden ? "flex" : "none"; 
+        
+        // Refresh data only when opening
+        if (isHidden) updateNotificationsUI();
+    });
+
+    // Tab Listeners (Using your existing switchNotifTab function)
+    document.getElementById('tabAll')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof switchNotifTab === 'function') {
+            switchNotifTab('all');
+        } else {
+            // Fallback if switchNotifTab isn't global
+            currentNotifTab = 'all';
+            document.getElementById('tabAll').classList.add('active');
+            document.getElementById('tabUnread').classList.remove('active');
+            updateNotificationsUI();
+        }
+    });
+
+    document.getElementById('tabUnread')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof switchNotifTab === 'function') {
+            switchNotifTab('unread');
+        } else {
+            currentNotifTab = 'unread';
+            document.getElementById('tabUnread').classList.add('active');
+            document.getElementById('tabAll').classList.remove('active');
+            updateNotificationsUI();
+        }
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (dropdown && !dropdown.contains(e.target) && e.target !== bell) {
+            dropdown.style.display = "none";
+        }
+    });
+
+    // Mark All as Read
+    markReadBtn?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+            const res = await fetch('/api/user/notifications/read-all', { method: 'POST' });
+            if (res.ok) updateNotificationsUI();
+        } catch (err) {
+            console.error("Error marking read:", err);
+        }
+    });
+
+    // --- OTHER LISTENERS ---
+    // Pagination, Search, and Session checks...
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    prevBtn?.addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderPage ? renderPage(currentPage) : updateView();
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        }
+    });
+
+    nextBtn?.addEventListener("click", () => {
+        const totalItems = filteredItems ? filteredItems.length : allItems.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderPage ? renderPage(currentPage) : updateView();
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        }
+    });
+
+    const searchBtn = document.querySelector('.search-container .btn-main1');
+    if (searchBtn) searchBtn.addEventListener('click', applyFilters);
+
+    document.getElementById('retry-login-btn')?.addEventListener('click', () => {
+        window.location.href = '/index.html';
+    });
+
+    setInterval(checkSession, 60000);
+});
+
+})();
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\found.js ===
+let allItems = [];
+    let filteredItems = []; // Added to hold search results
+    let currentPage = 1;
+    const itemsPerPage = 4;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadFoundItems();
+
+        // --- SEARCH LOGIC ---
+        const searchInput = document.querySelector('.search-bar-pill input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                filteredItems = allItems.filter(item => 
+                    (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
+                    (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                    (item.location && item.location.toLowerCase().includes(searchTerm))
+                );
+
+                currentPage = 1; // Reset to page 1 on new search
+                renderItems();
+                renderPagination();
+            });
+        }
+        
+        window.onclick = (event) => {
+            const modal = document.getElementById("itemModal");
+            if (event.target == modal) closeModal();
+        }
+    });
+
+    async function loadFoundItems() {
+        try {
+            const response = await fetch('/api/items/found');
+            allItems = await response.json();
+            filteredItems = [...allItems]; // Initialize filteredItems with fetched data
+            
+            renderItems();
+            renderPagination();
+
+            // Highlight & Auto-open Logic
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemIdToOpen = urlParams.get('open');
+            if (itemIdToOpen) {
+                const itemIndex = allItems.findIndex(i => i.id == itemIdToOpen);
+                if (itemIndex !== -1) {
+                    currentPage = Math.ceil((itemIndex + 1) / itemsPerPage);
+                    updateView(); // Refreshes grid to the right page
+                    
+                    setTimeout(() => {
+                        const targetCard = document.querySelector(`[data-id="${itemIdToOpen}"]`);
+                        if (targetCard) {
+                            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetCard.classList.add('highlight-card');
+                        }
+                    }, 500);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching found items:", error);
+        }
+    }
+
+    function renderItems() {
+        const grid = document.querySelector(".items-grid");
+        grid.innerHTML = "";
+
+        // Check filteredItems instead of allItems
+        if (filteredItems.length === 0) {
+            grid.innerHTML = "<h3 style='grid-column: 1/-1; text-align:center;'>No items match your search.</h3>";
+            return;
+        }
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const paginatedItems = filteredItems.slice(start, end); 
+
+        paginatedItems.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.setAttribute('data-id', item.id);
+            card.onclick = () => openModal(item.id);
+
+            const imgHtml = item.image_path 
+                ? `<img src="${item.image_path}" style="width:100%; height:50px; object-fit:cover; border-radius: 8px 8px 0 0;">`
+                : `<div class="card-img-placeholder">No Image Provided</div>`;
+
+            card.innerHTML = `
+                ${imgHtml}
+                <div class="card-content">
+                    <h3>${item.item_name}</h3>
+                    <hr class="title-line">
+                    <span class="badge" style="background:#D97706; color:white; padding:2px 8px; border-radius:4px;">${item.category}</span>
+                    <div class="item-details">
+                        <p><strong>Description:</strong> ${item.description || 'No description'}</p>
+                        <p><strong>Where Found:</strong> ${item.location}</p>
+                        <p><strong>Status:</strong> <span class="status-found">Found</span></p>
+                        <p><strong>Founder:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                        <p><strong>Contact:</strong> ${item.contact_phone}</p>
+                        <p><strong>Email:</strong> ${item.contact_email}</p>
+                        <div class="post-time">
+                            <small>Date Found: ${item.formattedDate}</small><br>
+                            <small>Time Found: ${item.formattedTime || ''}</small>
+                        </div>
+                    </div>
+                    <input type="text" class="comment-input" placeholder="Leave a comment..." onclick="event.stopPropagation()">
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function renderPagination() {
+    const paginationContainer = document.querySelector(".pagination");
+    if (!paginationContainer) return;
+    
+    paginationContainer.innerHTML = "";
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+
+    // 1. Previous Button
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "pag-btn-large"; // New class for the green button style
+    prevBtn.textContent = "Previous";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        if(currentPage > 1) { currentPage--; updateView(); } 
+    };
+    paginationContainer.appendChild(prevBtn);
+
+    // 2. Page Indicator Text
+    const pageIndicator = document.createElement("span");
+    pageIndicator.className = "page-indicator";
+    pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+    paginationContainer.appendChild(pageIndicator);
+
+    // 3. Next Button
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "pag-btn-large";
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        if(currentPage < totalPages) { currentPage++; updateView(); } 
+    };
+    paginationContainer.appendChild(nextBtn);
+}
+
+    function updateView() {
+        renderItems();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openModal(id) {
+        const highlighted = document.querySelector('.highlight-card');
+        if (highlighted) highlighted.classList.remove('highlight-card');
+
+        const item = allItems.find(i => i.id === id);
+        if (!item) return;
+
+        const body = document.getElementById("modalBody");
+        body.innerHTML = `
+            <div style="display: flex; gap: 40px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <span class="status-badge-published">Published</span>
+                    <h1 style="margin-top: 0;">${item.item_name}</h1>
+                    <img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <p style="margin-top:15px; color:#666;">Report Type: <strong>${item.status || 'Found'}</strong></p>
+                </div>
+                <div style="flex: 1;">
+                    <h3 class="info-header">Item Information</h3>
+                    <p><strong>Category:</strong> ${item.category}</p>
+                    <p><strong>Brand:</strong> ${item.brand || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${item.location}</p>
+                    <p><strong>Date:</strong> ${item.formattedDate}</p>
+                    <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
+                    <h3 class="info-header" style="margin-top:30px;">Description</h3>
+                    <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
+                <div class="contact-box">
+                    <h4 style="margin-top:0;">Contact Owner</h4>
+                    <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                    <p><strong>Phone:</strong> ${item.contact_phone}</p>
+                    <p><strong>Email:</strong> ${item.contact_email}</p>
+
+                    <button 
+                        class="chat-user-btn"
+                        onclick="event.stopPropagation(); chatWithUser(${item.user_id}, ${item.id})">
+                        <i class="fas fa-comment-dots"></i>
+                        Chat with User
+                    </button>
+                </div>
+                   
+                </div>
+            </div>
+        `;
+        document.getElementById("itemModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("itemModal").style.display = "none";
+    }
+
+    function checkSession() {
+    fetch('/user/me', { headers: { 'Accept': 'application/json' } })
+    .then(response => {
+        if (response.status === 401) {
+            const modal = document.getElementById('session-alert');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+            const grid = document.querySelector(".grid");
+            if (grid) grid.innerHTML = "<h3>Session Expired. Please log in.</h3>";
+        }
+    })
+    .catch(() => console.warn("Server connection offline."));
+}
+setInterval(checkSession, 60000);
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Logic to close the modal
+    const closeBtn = document.getElementById("closeModalBtn");
+    const modal = document.getElementById("itemModal");
+
+    if (closeBtn && modal) {
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        // Also close if the user clicks outside the modal box
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    }
+});
+
+function chatWithUser(userId, itemId) {
+    if (!userId) {
+        alert("Unable to identify this user.");
+        return;
+    }
+
+    window.location.href = `message.html?user=${encodeURIComponent(userId)}&item=${encodeURIComponent(itemId)}`;
+}
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\history.js ===
+document.addEventListener("DOMContentLoaded", () => {
+        const grid = document.getElementById("history-grid");
+        const paginationContainer = document.getElementById("pagination-container");
+        const searchInput = document.getElementById("history-search");
+        const wrapper = document.querySelector(".main-wrapper");
+
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 4; 
+
+        if (wrapper) setTimeout(() => wrapper.classList.add("fade-in"), 100);
+
+        // Fetch Data
+        fetch('/api/user-history')
+            .then(res => res.json())
+            .then(data => {
+                allData = data;
+                filteredData = [...allData];
+                renderPage(1);
+            })
+            .catch(err => {
+                grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: red;'>Error loading history.</p>";
+            });
+
+        // Search Logic
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                grid.style.opacity = "0.5";
+                
+                filteredData = allData.filter(item => 
+                    (item.item_name || "").toLowerCase().includes(term) ||
+                    (item.category || "").toLowerCase().includes(term) ||
+                    (item.location || "").toLowerCase().includes(term)
+                );
+                
+                currentPage = 1;
+                renderPage(1);
+                setTimeout(() => { grid.style.opacity = "1"; }, 50);
+            });
+        }
+
+        function renderPage(page) {
+    currentPage = page;
+    grid.innerHTML = "";
+    const start = (page - 1) * itemsPerPage;
+    const pageData = filteredData.slice(start, start + itemsPerPage);
+
+    if (pageData.length === 0) {
+        grid.innerHTML = "<h3 style='grid-column: 1/-1; text-align: center; padding: 50px;'>No records found.</h3>";
+        paginationContainer.innerHTML = "";
+        return;
+    }
+
+    pageData.forEach(item => {
+        const statusClass = (item.report_type || "").toLowerCase() === 'found' ? 'status-found' : 'status-lost';
+        const card = document.createElement("div");
+        card.className = "item-card";
+        
+        // ADD THIS LINE: This allows the script to find the specific item
+        card.id = `item-${item.id}`; 
+        
+        card.innerHTML = `
+            <div class="card-img-container" style="background-image: url('${item.image_path || ''}');">
+                ${item.image_path ? '' : 'No Image Provided'}
+            </div>
+            <div class="card-content">
+                <h3>${item.item_name}</h3>
+                <hr class="title-line">
+                <span class="badge">${item.category}</span>
+                <div class="item-details">
+                    <p><strong>Description:</strong> ${item.description || 'No description'}</p>
+                    <p><strong>Where ${item.report_type}:</strong> ${item.location}</p>
+                    <p><strong>Status:</strong> <span class="${statusClass}">${item.status}</span></p>
+                    <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                    <p><strong>Phone:</strong> ${item.contact_phone}</p>
+                    <p><strong>Email:</strong> ${item.contact_email}</p>
+                    <div class="post-time">
+                        <span>Date: ${item.formattedDate}</span><br>
+                        <span>Time: ${item.formattedTime}</span>
+                    </div>
+                </div>
+                <input type="text" class="comment-input" placeholder="Add a note...">
+            </div>`;
+        grid.appendChild(card);
+    });
+
+    grid.classList.add("rise-up");
+    setupPagination();
+}
+
+function handleURLHighlight() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('id');
+
+    if (targetId) {
+        const itemIndex = allData.findIndex(item => String(item.id) === String(targetId));
+        
+        if (itemIndex !== -1) {
+            const targetPage = Math.floor(itemIndex / itemsPerPage) + 1;
+            if (currentPage !== targetPage) renderPage(targetPage);
+
+            setTimeout(() => {
+                const targetElement = document.getElementById(`item-${targetId}`);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetElement.classList.add('highlight-active');
+
+                    // Function to remove highlight
+                    const removeHighlight = () => {
+                        targetElement.classList.remove('highlight-active');
+                        targetElement.style.animation = "none";
+                        // Remove the listener so it doesn't keep running
+                        document.removeEventListener('click', removeHighlight);
+                    };
+
+                    // Add listener: remove light when user clicks anywhere
+                    // Use a tiny timeout so the click that opened the page doesn't trigger it
+                    setTimeout(() => {
+                        document.addEventListener('click', removeHighlight);
+                    }, 100);
+                }
+            }, 500);
+        }
+    }
+}
+
+// Update your Fetch Logic to call the highlight function
+fetch('/api/user-history')
+    .then(res => res.json())
+    .then(data => {
+        allData = data;
+        filteredData = [...allData];
+        renderPage(1);
+        handleURLHighlight(); // This triggers the effect on page load
+    })
+    .catch(err => {
+        grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: red;'>Error loading history.</p>";
+    });
+
+        function setupPagination() {
+            paginationContainer.innerHTML = "";
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (totalPages <= 1) return;
+
+            const prevBtn = document.createElement("button");
+            prevBtn.className = "pag-btn";
+            prevBtn.innerHTML = "<i class='fas fa-chevron-left'></i>";
+            prevBtn.onclick = () => { if(currentPage > 1) { renderPage(currentPage - 1); window.scrollTo(0,0); }};
+            paginationContainer.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement("button");
+                btn.className = `pag-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => { renderPage(i); window.scrollTo(0,0); };
+                paginationContainer.appendChild(btn);
+            }
+
+            const nextBtn = document.createElement("button");
+            nextBtn.className = "pag-btn";
+            nextBtn.innerHTML = "<i class='fas fa-chevron-right'></i>";
+            nextBtn.onclick = () => { if(currentPage < totalPages) { renderPage(currentPage + 1); window.scrollTo(0,0); }};
+            paginationContainer.appendChild(nextBtn);
+        }
+    });
+
+    function checkSession() {
+    fetch('/user/me', { headers: { 'Accept': 'application/json' } })
+    .then(response => {
+        if (response.status === 401) {
+            const modal = document.getElementById('session-alert');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+            const grid = document.querySelector(".grid");
+            if (grid) grid.innerHTML = "<h3>Session Expired. Please log in.</h3>";
+        }
+    })
+    .catch(() => console.warn("Server connection offline."));
+}
+setInterval(checkSession, 60000);
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\lost.js ===
+    let allItems = [];
+    let filteredItems = [];
+    let currentPage = 1;
+    const itemsPerPage = 4; // Number of items per page
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadLostItems();
+        
+        // --- SEARCH LOGIC ---
+        const searchInput = document.querySelector('.search-bar-pill input');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            // Filter by Name, Category, or Location
+            filteredItems = allItems.filter(item => 
+                (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
+                (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                (item.location && item.location.toLowerCase().includes(searchTerm))
+            );
+
+            currentPage = 1; // Reset to page 1 on new search
+            renderItems();
+            renderPagination();
+        });
+
+        window.onclick = (event) => {
+            const modal = document.getElementById("itemModal");
+            if (event.target == modal) closeModal();
+        }
+    });
+
+    async function loadLostItems() {
+        try {
+            const response = await fetch('/api/items/lost');
+            allItems = await response.json();
+            filteredItems = [...allItems]; // Initialize filteredItems with all data
+            
+            // Initial render
+            renderItems();
+            renderPagination();
+
+            // RESTORED: Check URL for item to highlight (Green Light effect)
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemIdToOpen = urlParams.get('open');
+            if (itemIdToOpen) {
+                // Find which page the item belongs to
+                const itemIndex = allItems.findIndex(i => i.id == itemIdToOpen);
+                if (itemIndex !== -1) {
+                    currentPage = Math.ceil((itemIndex + 1) / itemsPerPage);
+                    updateView(); // Refresh to correct page
+                    
+                    setTimeout(() => {
+                        const targetCard = document.querySelector(`[data-id="${itemIdToOpen}"]`);
+                        if (targetCard) {
+                            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetCard.classList.add('highlight-card');
+                        }
+                    }, 500);
+                }
+            }
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+    }
+
+    function renderItems() {
+        const grid = document.querySelector(".items-grid");
+        grid.innerHTML = "";
+
+        // Change: Check filteredItems instead of allItems
+        if (filteredItems.length === 0) {
+            grid.innerHTML = "<h3 style='grid-column: 1/-1; text-align:center;'>No items match your search.</h3>";
+            return;
+        }
+
+        // Pagination Logic: Slice the filtered array based on current page
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const paginatedItems = filteredItems.slice(start, end);
+
+        paginatedItems.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.setAttribute('data-id', item.id);
+            card.onclick = () => openModal(item.id);
+
+            const imgHtml = item.image_path     
+                ? `<img src="${item.image_path}" style="width:100%; height:50px; object-fit:cover; border-radius: 8px 8px 0 0;">`
+                : `<div class="card-img-placeholder">No Image Provided</div>`;
+
+            card.innerHTML = `
+                ${imgHtml}
+                <div class="card-content">
+                    <h3>${item.item_name}</h3>
+                    <hr class="title-line">
+                    <span class="badge" style="background:#D97706; color:white; padding:2px 8px; border-radius:4px;">${item.category}</span>
+                    <div class="item-details">
+                        <p><strong>Description:</strong> ${item.description || 'No description'}</p>
+                        <p><strong>Where Lost:</strong> ${item.location}</p>
+                        <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
+                        <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                        <p><strong>Phone Number:</strong> ${item.contact_phone}</p>
+                        <p><strong>Email:</strong> ${item.contact_email}</p>
+                        <div class="post-time">
+                            <small>Date Lost: ${item.formattedDate}</small><br>
+                            <small>Time Lost: ${item.formattedTime || ''}</small>
+                        </div>
+                    </div>
+                    <input type="text" class="comment-input" placeholder="Leave a comment..." onclick="event.stopPropagation()">
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+     function renderPagination() {
+    const paginationContainer = document.querySelector(".pagination");
+    if (!paginationContainer) return;
+    
+    paginationContainer.innerHTML = "";
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+
+    // 1. Previous Button
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "pag-btn-large"; // New class for the green button style
+    prevBtn.textContent = "Previous";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        if(currentPage > 1) { currentPage--; updateView(); } 
+    };
+    paginationContainer.appendChild(prevBtn);
+
+    // 2. Page Indicator Text
+    const pageIndicator = document.createElement("span");
+    pageIndicator.className = "page-indicator";
+    pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+    paginationContainer.appendChild(pageIndicator);
+
+    // 3. Next Button
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "pag-btn-large";
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        if(currentPage < totalPages) { currentPage++; updateView(); } 
+    };
+    paginationContainer.appendChild(nextBtn);
+}
+
+    function updateView() {
+        renderItems();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openModal(id) {
+        const highlighted = document.querySelector('.highlight-card');
+        if (highlighted) highlighted.classList.remove('highlight-card');
+
+        const item = allItems.find(i => i.id === id);
+        if (!item) return;
+
+        const body = document.getElementById("modalBody");
+        body.innerHTML = `
+            <div style="display: flex; gap: 40px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <span class="status-badge-published">Published</span>
+                    <h1 style="margin-top: 0;">${item.item_name}</h1>
+                    <img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <p style="margin-top:15px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
+                </div>
+                <div style="flex: 1;">
+                    <h3 class="info-header">Item Information</h3>
+                    <p><strong>Category:</strong> ${item.category}</p>
+                    <p><strong>Brand:</strong> ${item.brand || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${item.location}</p>
+                    <p><strong>Date:</strong> ${item.formattedDate}</p>
+                    <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
+                    <h3 class="info-header" style="margin-top:30px;">Description</h3>
+                    <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
+                <div class="contact-box">
+                    <h4 style="margin-top:0;">Contact Owner</h4>
+                    <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                    <p><strong>Phone:</strong> ${item.contact_phone}</p>
+                    <p><strong>Email:</strong> ${item.contact_email}</p>
+
+                    <button 
+                        class="chat-user-btn"
+                        onclick="event.stopPropagation(); chatWithUser(${item.user_id}, ${item.id})">
+                        <i class="fas fa-comment-dots"></i>
+                        Chat with User
+                    </button>
+                </div>
+                   
+                </div>
+            </div>
+        `;
+        document.getElementById("itemModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("itemModal").style.display = "none";
+    }
+
+    function checkSession() {
+    fetch('/user/me', { headers: { 'Accept': 'application/json' } })
+    .then(response => {
+        if (response.status === 401) {
+            const modal = document.getElementById('session-alert');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+            const grid = document.querySelector(".grid");
+            if (grid) grid.innerHTML = "<h3>Session Expired. Please log in.</h3>";
+        }
+    })
+    .catch(() => console.warn("Server connection offline."));
+}
+setInterval(checkSession, 60000);
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Logic to close the modal
+    const closeBtn = document.getElementById("closeModalBtn");
+    const modal = document.getElementById("itemModal");
+
+    if (closeBtn && modal) {
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        // Also close if the user clicks outside the modal box
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    }
+});
+
+function chatWithUser(userId, itemId) {
+    if (!userId) {
+        alert("Unable to identify this user.");
+        return;
+    }
+
+    window.location.href = `message.html?user=${encodeURIComponent(userId)}&item=${encodeURIComponent(itemId)}`;
+}
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\message.js ===
+/* =========================================================
+   ReFoundly - Messages / Conversations
+   Complete replacement
+   ========================================================= */
+
+"use strict";
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let conversations = [];
+let currentConversationId = null;
+let currentConversation = null;
+let currentMessages = [];
+
+let agreementStatus = {
+    userAgreed: false,
+    otherUserAgreed: false,
+    totalAgreed: 0,
+    status: "pending",
+    barangay: null
+};
+
+let itemCardExpanded = false;
+
+let itemDetailsCache = null;
+
+let messagePollingInterval = null;
+let conversationPollingInterval = null;
+let agreementPollingInterval = null;
+
+let messagePollRunning = false;
+let conversationPollRunning = false;
+let agreementPollRunning = false;
+
+let lastMessageSignature = "";
+
+const MESSAGE_POLL_INTERVAL = 1000;
+const CONVERSATION_POLL_INTERVAL = 5000;
+const AGREEMENT_POLL_INTERVAL = 3000;
+
+
+/* =========================================================
+   DOM
+   ========================================================= */
+
+const chatList = document.getElementById("chatList");
+const chatBody = document.getElementById("chatBody");
+const chatFooter = document.getElementById("chatFooter");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const currentUserName = document.getElementById("currentUserName");
+const currentItemName = document.getElementById("currentItemName");
+const chatSearch = document.getElementById("chatSearch");
+
+
+/* =========================================================
+   INIT
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+    try {
+        createAgreementModal();
+        createItemDetailsModal();
+
+        setupSearch();
+        setupSendMessage();
+        setupAgreementEvents();
+        setupItemDetailsEvents();
+
+        await loadCurrentUser();
+
+        if (!window.currentUserId) {
+            console.warn("No logged-in user found.");
+            showEmptyState("Please log in to use messages.");
+            return;
+        }
+
+        await loadConversations();
+
+        const params = new URLSearchParams(window.location.search);
+
+        const targetUserId =
+            params.get("userId") ||
+            params.get("user") ||
+            null;
+
+        const itemId =
+            params.get("itemId") ||
+            params.get("item") ||
+            null;
+
+        if (targetUserId && itemId) {
+            await startConversationFromItem(
+                targetUserId,
+                itemId
+            );
+        } else if (targetUserId) {
+            await startConversationWithUser(
+                targetUserId
+            );
+        } else {
+            showEmptyState();
+        }
+
+        startConversationListPolling();
+
+    } catch (error) {
+        console.error("Message page initialization error:", error);
+    }
+}
+
+
+/* =========================================================
+   USER
+   ========================================================= */
+
+async function loadCurrentUser() {
+    try {
+        const response = await fetch(
+            "/api/get-session-info",
+            {
+                method: "GET",
+                headers: {
+                    Accept: "application/json"
+                },
+                cache: "no-store"
+            }
+        );
+
+        if (response.status === 401) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to get session.");
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.userId) {
+            window.currentUserId = Number(data.userId);
+        }
+
+    } catch (error) {
+        console.error("loadCurrentUser:", error);
+    }
+}
+
+
+/* =========================================================
+   CONVERSATIONS
+   ========================================================= */
+
+async function loadConversations(options = {}) {
+    const silent = options.silent === true;
+
+    if (conversationPollRunning) {
+        return conversations;
+    }
+
+    conversationPollRunning = true;
+
+    try {
+        const response = await fetch(
+            "/api/conversations",
+            {
+                method: "GET",
+                headers: {
+                    Accept: "application/json"
+                },
+                cache: "no-store"
+            }
+        );
+
+        if (response.status === 401) {
+            window.location.href = "index.html";
+            return [];
+        }
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Unable to load conversations."
+            );
+        }
+
+        const newList =
+            Array.isArray(data.conversations)
+                ? data.conversations
+                : [];
+
+        const changed =
+            conversationsChanged(
+                conversations,
+                newList
+            );
+
+        conversations = newList;
+
+        if (!silent || changed) {
+            renderConversationList(
+                conversations
+            );
+        }
+
+        return conversations;
+
+    } catch (error) {
+        console.error(
+            "loadConversations:",
+            error
+        );
+
+        if (!silent && chatList) {
+            chatList.innerHTML = `
+                <div class="empty-chat-list">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Unable to load conversations.</p>
+                </div>
+            `;
+        }
+
+        return [];
+    } finally {
+        conversationPollRunning = false;
+    }
+}
+
+
+function conversationsChanged(oldList, newList) {
+    if (oldList.length !== newList.length) {
+        return true;
+    }
+
+    for (let i = 0; i < newList.length; i++) {
+        const oldItem = oldList[i];
+        const newItem = newList[i];
+
+        if (
+            String(oldItem?.conversation_id) !==
+            String(newItem?.conversation_id)
+        ) {
+            return true;
+        }
+
+        if (
+            String(oldItem?.last_message || "") !==
+            String(newItem?.last_message || "")
+        ) {
+            return true;
+        }
+
+        if (
+            Number(oldItem?.unread_count || 0) !==
+            Number(newItem?.unread_count || 0)
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+function renderConversationList(list) {
+    if (!chatList) return;
+
+    chatList.innerHTML = "";
+
+    if (!list || list.length === 0) {
+        chatList.innerHTML = `
+            <div class="empty-chat-list">
+                <i class="fas fa-comments"></i>
+                <p>No conversations yet.</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.forEach(conversation => {
+        const conversationId =
+            conversation.conversation_id;
+
+        const name =
+            conversation.other_user_name ||
+            conversation.other_user_email ||
+            "Unknown User";
+
+        const lastMessage =
+            conversation.last_message ||
+            "No messages yet";
+
+        const unread =
+            Number(conversation.unread_count || 0);
+
+        const item =
+            document.createElement("div");
+
+        item.className = "chat-item";
+
+        if (
+            Number(conversationId) ===
+            Number(currentConversationId)
+        ) {
+            item.classList.add("active");
+        }
+
+        const avatarName =
+            encodeURIComponent(name);
+
+        item.innerHTML = `
+            <img
+                src="https://ui-avatars.com/api/?name=${avatarName}&background=6B9E45&color=fff"
+                alt="User"
+                loading="lazy"
+            >
+
+            <div class="preview-text">
+                <h4>${escapeHtml(name)}</h4>
+
+                <p>
+                    ${escapeHtml(lastMessage)}
+                </p>
+
+                ${
+                    unread > 0
+                        ? `<span class="chat-unread">${unread}</span>`
+                        : ""
+                }
+            </div>
+        `;
+
+        item.addEventListener(
+            "click",
+            () => openConversation(conversationId)
+        );
+
+        chatList.appendChild(item);
+    });
+}
+
+
+/* =========================================================
+   START CONVERSATION
+   ========================================================= */
+
+async function startConversationFromItem(
+    targetUserId,
+    itemId
+) {
+    if (isSelf(targetUserId)) {
+        showEmptyState();
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/conversations/start",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json",
+                    Accept:
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    userId:
+                        Number(targetUserId),
+                    itemId:
+                        Number(itemId)
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            alert(
+                data.message ||
+                "Unable to start conversation."
+            );
+            return;
+        }
+
+        const conversationId =
+            data.conversationId ||
+            data.conversation_id;
+
+        if (!conversationId) {
+            alert(
+                "Conversation was created but no conversation ID was returned."
+            );
+            return;
+        }
+
+        await loadConversations();
+
+        await openConversation(
+            conversationId
+        );
+
+        window.history.replaceState(
+            {},
+            document.title,
+            "message.html"
+        );
+
+    } catch (error) {
+        console.error(
+            "startConversationFromItem:",
+            error
+        );
+
+        alert(
+            "Unable to start conversation."
+        );
+    }
+}
+
+
+async function startConversationWithUser(
+    targetUserId
+) {
+    if (isSelf(targetUserId)) {
+        showEmptyState();
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/conversations/start",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json",
+                    Accept:
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    userId:
+                        Number(targetUserId)
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            alert(
+                data.message ||
+                "Unable to start conversation."
+            );
+            return;
+        }
+
+        const conversationId =
+            data.conversationId ||
+            data.conversation_id;
+
+        if (!conversationId) {
+            alert(
+                "No conversation ID returned."
+            );
+            return;
+        }
+
+        await loadConversations();
+
+        await openConversation(
+            conversationId
+        );
+
+        window.history.replaceState(
+            {},
+            document.title,
+            "message.html"
+        );
+
+    } catch (error) {
+        console.error(
+            "startConversationWithUser:",
+            error
+        );
+
+        alert(
+            "Unable to start conversation."
+        );
+    }
+}
+
+
+function isSelf(userId) {
+    return (
+        window.currentUserId &&
+        Number(window.currentUserId) ===
+        Number(userId)
+    );
+}
+
+
+/* =========================================================
+   OPEN CONVERSATION
+   ========================================================= */
+
+async function openConversation(
+    conversationId
+) {
+    if (!conversationId) return;
+
+    stopMessagePolling();
+    stopAgreementPolling();
+
+    currentConversationId =
+        Number(conversationId);
+
+    currentConversation = null;
+    currentMessages = [];
+
+    itemDetailsCache = null;
+    lastMessageSignature = "";
+
+    resetAgreementStatus();
+
+    updateConversationHeader();
+
+    if (chatFooter) {
+        chatFooter.style.display = "none";
+    }
+
+    if (chatBody) {
+        chatBody.innerHTML = `
+            <div class="conversation-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading conversation...</p>
+            </div>
+        `;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/conversations/${encodeURIComponent(
+                currentConversationId
+            )}`,
+            {
+                method: "GET",
+                headers: {
+                    Accept:
+                        "application/json"
+                },
+                cache: "no-store"
+            }
+        );
+
+        if (response.status === 401) {
+            window.location.href =
+                "index.html";
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Unable to open conversation."
+            );
+        }
+
+        currentConversation =
+            data.conversation ||
+            data.data ||
+            {};
+
+        updateConversationHeader();
+
+        if (chatFooter) {
+            chatFooter.style.display =
+                "flex";
+        }
+
+        renderAgreementBar();
+
+        await loadMessages(
+            currentConversationId,
+            true
+        );
+
+        await loadAgreementStatus();
+
+        renderConversationList(
+            conversations
+        );
+
+        startMessagePolling();
+        startAgreementPolling();
+
+    } catch (error) {
+        console.error(
+            "openConversation:",
+            error
+        );
+
+        if (chatBody) {
+            chatBody.innerHTML = `
+                <div class="empty-chat-list">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Unable to open conversation.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+
+function updateConversationHeader() {
+    if (!currentConversation) {
+        if (currentUserName) {
+            currentUserName.textContent =
+                "Select a conversation";
+        }
+
+        if (currentItemName) {
+            currentItemName.textContent = "";
+        }
+
+        renderItemFloatingCard();
+        return;
+    }
+
+    if (currentUserName) {
+        currentUserName.textContent =
+            currentConversation.other_user_name ||
+            currentConversation.other_user_email ||
+            "User";
+    }
+
+    if (currentItemName) {
+        currentItemName.textContent =
+            currentConversation.item_name
+                ? `Item: ${currentConversation.item_name}`
+                : "";
+    }
+
+    renderItemFloatingCard();
+}
+
+
+/* =========================================================
+   ITEM FLOATING CARD (maximize / minimize item info in-chat)
+   ========================================================= */
+
+function renderItemFloatingCard() {
+    const card = document.getElementById("itemFloatingCard");
+    if (!card) return;
+
+    if (!currentConversation) {
+        card.innerHTML = "";
+        card.style.display = "none";
+        itemCardExpanded = false;
+        return;
+    }
+
+    card.style.display = "block";
+
+    const name = currentConversation.item_name || "Item";
+    const type = currentConversation.report_type
+        ? currentConversation.report_type.toUpperCase()
+        : "";
+    const image =
+        currentConversation.image_path ||
+        currentConversation.item_image ||
+        "";
+
+    card.innerHTML = `
+        <div class="item-floating-inner" id="itemFloatingToggle">
+            ${
+                image
+                    ? `<img src="${escapeAttribute(image)}" class="item-floating-image" alt="Item photo">`
+                    : `<div class="item-floating-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-box-open" style="color:#aaa;"></i></div>`
+            }
+
+            <div class="item-floating-info">
+                <span class="item-floating-label">${type ? `${type} ITEM` : "REGARDING"}</span>
+                <div class="item-floating-name">${escapeHtml(name)}</div>
+                <div class="item-floating-subtitle">${itemCardExpanded ? "Tap to minimize" : "Tap to see full details"}</div>
+            </div>
+
+            <i class="fas ${itemCardExpanded ? "fa-chevron-up" : "fa-chevron-down"} item-floating-arrow"></i>
+        </div>
+
+        <div id="itemFloatingExpanded" class="item-floating-expanded" style="display:${itemCardExpanded ? "block" : "none"};">
+            <div class="item-floating-loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading details...
+            </div>
+        </div>
+    `;
+
+    const toggle = document.getElementById("itemFloatingToggle");
+    if (toggle) {
+        toggle.addEventListener("click", toggleItemFloatingCard);
+    }
+
+    if (itemCardExpanded) {
+        populateItemFloatingExpanded();
+    }
+}
+
+async function toggleItemFloatingCard() {
+    itemCardExpanded = !itemCardExpanded;
+    renderItemFloatingCard();
+}
+
+async function populateItemFloatingExpanded() {
+    const container = document.getElementById("itemFloatingExpanded");
+    if (!container) return;
+
+    try {
+        const item = await getItemDetails();
+
+        const category = firstValue(item, ["category", "item_category"], "N/A");
+        const location = firstValue(item, ["location", "item_location"], "N/A");
+        const date = firstValue(item, ["incident_date", "item_date"], "");
+        const time = firstValue(item, ["incident_time"], "");
+        const description = firstValue(item, ["description", "item_description"], "No description provided.");
+
+        container.innerHTML = `
+            <div class="item-floating-detail-row"><i class="fas fa-tag"></i> <span>${escapeHtml(category)}</span></div>
+            <div class="item-floating-detail-row"><i class="fas fa-map-marker-alt"></i> <span>${escapeHtml(location)}</span></div>
+            ${date ? `<div class="item-floating-detail-row"><i class="fas fa-calendar"></i> <span>${escapeHtml(formatDetailDate(date))}${time ? " &middot; " + escapeHtml(time) : ""}</span></div>` : ""}
+            <div class="item-floating-detail-desc">${escapeHtml(description)}</div>
+            <button type="button" class="item-floating-full-btn" id="itemFloatingFullBtn">
+                <i class="fas fa-expand"></i> Open full details
+            </button>
+        `;
+
+        const fullBtn = document.getElementById("itemFloatingFullBtn");
+        if (fullBtn) {
+            fullBtn.addEventListener("click", openItemDetailsModal);
+        }
+    } catch (error) {
+        console.error("populateItemFloatingExpanded:", error);
+        container.innerHTML = `<div class="item-floating-detail-desc">Unable to load full item details right now.</div>`;
+    }
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+async function loadMessages(
+    conversationId,
+    initial = false
+) {
+    if (!conversationId) return [];
+
+    if (messagePollRunning) {
+        return currentMessages;
+    }
+
+    messagePollRunning = true;
+
+    try {
+        const response = await fetch(
+            `/api/conversations/${encodeURIComponent(
+                conversationId
+            )}/messages`,
+            {
+                method: "GET",
+                headers: {
+                    Accept:
+                        "application/json"
+                },
+                cache: "no-store"
+            }
+        );
+
+        if (response.status === 401) {
+            window.location.href =
+                "index.html";
+            return [];
+        }
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Unable to load messages."
+            );
+        }
+
+        const messages =
+            Array.isArray(data.messages)
+                ? data.messages
+                : [];
+
+        const signature =
+            makeMessageSignature(
+                messages
+            );
+
+        if (
+            initial ||
+            signature !== lastMessageSignature
+        ) {
+            renderMessages(
+                messages,
+                !initial
+            );
+
+            lastMessageSignature =
+                signature;
+
+            currentMessages =
+                messages;
+        }
+
+        return messages;
+
+    } catch (error) {
+        console.error(
+            "loadMessages:",
+            error
+        );
+
+        if (initial && chatBody) {
+            chatBody.innerHTML = `
+                <div class="empty-chat-list">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Unable to load messages.</p>
+                </div>
+            `;
+        }
+
+        return [];
+    } finally {
+        messagePollRunning = false;
+    }
+}
+
+
+function makeMessageSignature(
+    messages
+) {
+    if (!messages.length) {
+        return "empty";
+    }
+
+    return messages
+        .map(message => {
+            return [
+                message.id ||
+                    message.message_id ||
+                    "",
+                message.sender_id ||
+                    "",
+                message.message ||
+                    "",
+                message.message_type ||
+                    "",
+                message.image_url ||
+                    "",
+                message.created_at ||
+                    ""
+            ].join("|");
+        })
+        .join("||");
+}
+
+
+function renderMessages(
+    messages,
+    preserveScroll = true
+) {
+    if (!chatBody) return;
+
+    const wasNearBottom =
+        isChatNearBottom();
+
+    const previousHeight =
+        chatBody.scrollHeight;
+
+    const previousTop =
+        chatBody.scrollTop;
+
+    const agreementBar =
+        document.getElementById(
+            "agreementBar"
+        );
+
+    const readyPanel =
+        document.getElementById(
+            "transactionReadyPanel"
+        );
+
+    chatBody.innerHTML = "";
+
+    if (agreementBar) {
+        chatBody.appendChild(
+            agreementBar
+        );
+    }
+
+    if (
+        readyPanel &&
+        agreementStatus.totalAgreed >= 2
+    ) {
+        chatBody.appendChild(
+            readyPanel
+        );
+    }
+
+    if (!messages.length) {
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "conversation-start";
+
+        empty.innerHTML = `
+            <i class="fas fa-comments"></i>
+            <h3>Start a conversation</h3>
+            <p>Say hello and discuss the item.</p>
+        `;
+
+        chatBody.appendChild(empty);
+
+        return;
+    }
+
+    messages.forEach(message => {
+        const element =
+            document.createElement("div");
+
+        const senderId =
+            Number(message.sender_id);
+
+        const own =
+            senderId ===
+            Number(window.currentUserId);
+
+        element.className =
+            `msg ${own ? "sent" : "received"}`;
+
+        const messageType =
+            message.message_type ||
+            "text";
+
+        if (
+            messageType === "image" &&
+            message.image_url
+        ) {
+            element.innerHTML = `
+                <div class="message-image-wrapper">
+                    <img
+                        src="${escapeAttribute(
+                            message.image_url
+                        )}"
+                        alt="Shared item"
+                        class="message-image"
+                        loading="lazy"
+                    >
+                </div>
+
+                <small class="message-time">
+                    ${formatMessageTime(
+                        message.created_at
+                    )}
+                </small>
+            `;
+        } else {
+            element.innerHTML = `
+                <span>
+                    ${escapeHtml(
+                        message.message || ""
+                    )}
+                </span>
+
+                <small class="message-time">
+                    ${formatMessageTime(
+                        message.created_at
+                    )}
+                </small>
+            `;
+        }
+
+        chatBody.appendChild(
+            element
+        );
+    });
+
+    if (
+        !preserveScroll ||
+        wasNearBottom
+    ) {
+        scrollChatToBottom();
+    } else {
+        chatBody.scrollTop =
+            previousTop +
+            (
+                chatBody.scrollHeight -
+                previousHeight
+            );
+    }
+}
+
+
+/* =========================================================
+   MESSAGE POLLING
+   ========================================================= */
+
+function startMessagePolling() {
+    stopMessagePolling();
+
+    if (!currentConversationId) {
+        return;
+    }
+
+    messagePollingInterval =
+        setInterval(async () => {
+            if (
+                document.hidden ||
+                !currentConversationId
+            ) {
+                return;
+            }
+
+            const id =
+                currentConversationId;
+
+            await loadMessages(
+                id,
+                false
+            );
+
+            await loadConversations({
+                silent: true
+            });
+
+        }, MESSAGE_POLL_INTERVAL);
+}
+
+
+function stopMessagePolling() {
+    if (
+        messagePollingInterval !== null
+    ) {
+        clearInterval(
+            messagePollingInterval
+        );
+
+        messagePollingInterval =
+            null;
+    }
+}
+
+
+/* =========================================================
+   CONVERSATION POLLING
+   ========================================================= */
+
+function startConversationListPolling() {
+    stopConversationListPolling();
+
+    conversationPollingInterval =
+        setInterval(async () => {
+            if (document.hidden) {
+                return;
+            }
+
+            await loadConversations({
+                silent: true
+            });
+
+        }, CONVERSATION_POLL_INTERVAL);
+}
+
+
+function stopConversationListPolling() {
+    if (
+        conversationPollingInterval !== null
+    ) {
+        clearInterval(
+            conversationPollingInterval
+        );
+
+        conversationPollingInterval =
+            null;
+    }
+}
+
+
+/* =========================================================
+   AGREEMENT
+   ========================================================= */
+
+function resetAgreementStatus() {
+    agreementStatus = {
+        userAgreed: false,
+        otherUserAgreed: false,
+        totalAgreed: 0,
+        status: "pending",
+        barangay: null
+    };
+}
+
+
+function renderAgreementBar() {
+    if (!chatBody) return;
+
+    const old =
+        document.getElementById(
+            "agreementBar"
+        );
+
+    if (old) {
+        old.remove();
+    }
+
+    const bar =
+        document.createElement("div");
+
+    bar.id = "agreementBar";
+    bar.className =
+        "agreement-bar";
+
+    bar.innerHTML = `
+        <div class="agreement-info">
+
+            <div class="agreement-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+
+            <div>
+                <strong>
+                    Ready to settle this item?
+                </strong>
+
+                <p id="agreementDescription">
+                    Both parties must agree before
+                    the transaction can be reviewed
+                    by an admin.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="agreement-actions">
+
+            <span
+                id="agreementCount"
+                class="agreement-count"
+            >
+                Agreement: 0/2
+            </span>
+
+            <button
+                type="button"
+                id="agreeDealBtn"
+                class="agree-deal-btn"
+            >
+                Agree
+            </button>
+
+        </div>
+    `;
+
+    chatBody.prepend(bar);
+
+    const button =
+        document.getElementById(
+            "agreeDealBtn"
+        );
+
+    if (button) {
+        button.addEventListener(
+            "click",
+            openAgreementModal
+        );
+    }
+
+    updateAgreementUI();
+}
+
+
+async function loadAgreementStatus() {
+    if (
+        !currentConversationId ||
+        agreementPollRunning
+    ) {
+        return;
+    }
+
+    agreementPollRunning = true;
+
+    try {
+        const id =
+            currentConversationId;
+
+        const response = await fetch(
+            `/api/conversations/${encodeURIComponent(
+                id
+            )}/agreement`,
+            {
+                method: "GET",
+                headers: {
+                    Accept:
+                        "application/json"
+                },
+                cache: "no-store"
+            }
+        );
+
+        if (response.status === 401) {
+            window.location.href =
+                "index.html";
+            return;
+        }
+
+        if (response.status === 404) {
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            return;
+        }
+
+        const previousStatus =
+            agreementStatus.status;
+
+        agreementStatus = {
+            userAgreed: Boolean(
+                data.userAgreed ??
+                data.user_agreed ??
+                false
+            ),
+
+            otherUserAgreed: Boolean(
+                data.otherUserAgreed ??
+                data.other_user_agreed ??
+                false
+            ),
+
+            totalAgreed: Number(
+                data.totalAgreed ??
+                data.total_agreed ??
+                0
+            ),
+
+            status:
+                data.status ||
+                "pending",
+
+            barangay:
+                data.barangay ||
+                agreementStatus.barangay ||
+                null
+        };
+
+        if (
+            agreementStatus.totalAgreed >= 2 ||
+            agreementStatus.status ===
+                "both_agreed"
+        ) {
+            agreementStatus.totalAgreed = 2;
+            agreementStatus.status =
+                "both_agreed";
+
+            agreementStatus.otherUserAgreed =
+                true;
+
+            updateAgreementUI();
+
+            showTransactionReadyPanel();
+
+            if (
+                previousStatus !==
+                    "both_agreed"
+            ) {
+                showToast(
+                    "Both parties agreed. The transaction is now ready for admin review."
+                );
+            }
+
+        } else {
+            updateAgreementUI();
+        }
+
+    } catch (error) {
+        console.error(
+            "loadAgreementStatus:",
+            error
+        );
+    } finally {
+        agreementPollRunning = false;
+    }
+}
+
+
+function updateAgreementUI() {
+    const count =
+        document.getElementById(
+            "agreementCount"
+        );
+
+    const button =
+        document.getElementById(
+            "agreeDealBtn"
+        );
+
+    const description =
+        document.getElementById(
+            "agreementDescription"
+        );
+
+    const total = Math.max(
+        0,
+        Math.min(
+            2,
+            Number(
+                agreementStatus.totalAgreed ||
+                0
+            )
+        )
+    );
+
+    if (count) {
+        count.textContent =
+            `Agreement: ${total}/2`;
+    }
+
+    if (
+        agreementStatus.userAgreed
+    ) {
+        if (button) {
+            button.disabled = true;
+            button.textContent =
+                "Agreed";
+        }
+
+        if (description) {
+            if (
+                agreementStatus.otherUserAgreed ||
+                total >= 2
+            ) {
+                description.textContent =
+                    "Both parties agreed. The transaction is ready for admin review.";
+            } else {
+                description.textContent =
+                    "You agreed. Waiting for the other party.";
+            }
+        }
+
+    } else {
+        if (button) {
+            button.disabled = false;
+            button.textContent =
+                "Agree";
+        }
+
+        if (description) {
+            description.textContent =
+                "Both parties must agree before the transaction can be reviewed by an admin.";
+        }
+    }
+}
+
+
+/* =========================================================
+   AGREEMENT MODAL
+   ========================================================= */
+
+function createAgreementModal() {
+    if (
+        document.getElementById(
+            "agreementModal"
+        )
+    ) {
+        return;
+    }
+
+    const modal =
+        document.createElement("div");
+
+    modal.id = "agreementModal";
+    modal.className =
+        "agreement-modal-overlay";
+
+    modal.innerHTML = `
+        <div
+            class="agreement-modal"
+            role="dialog"
+            aria-modal="true"
+        >
+
+            <button
+                type="button"
+                id="closeAgreementModal"
+                class="agreement-modal-close"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+            <div class="agreement-modal-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+
+            <h2>
+                Agree to Settle This Item?
+            </h2>
+
+            <p class="agreement-modal-text">
+                By agreeing, you confirm that
+                you and the other party intend
+                to proceed with settling this
+                lost/found item through ReFoundly.
+            </p>
+
+            <div class="agreement-item-box">
+
+                <div>
+                    <span>Item</span>
+                    <strong id="agreementModalItem">
+                        â€”
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Other Party</span>
+                    <strong id="agreementModalUser">
+                        â€”
+                    </strong>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                id="viewItemDetailsBtn"
+                class="view-item-details-btn"
+            >
+                <i class="fas fa-eye"></i>
+                View Item Details
+            </button>
+
+            <div class="agreement-warning">
+                <i class="fas fa-info-circle"></i>
+
+                <span>
+                    Confirm Item: please make sure the item
+                    and details discussed in this
+                    chat are correct before agreeing.
+                </span>
+            </div>
+
+            <div class="agreement-barangay-box" id="agreementBarangayBox">
+                <label for="agreementBarangayInput">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Where will you meet to hand over the item?
+                </label>
+                <input
+                    type="text"
+                    id="agreementBarangayInput"
+                    placeholder="e.g. Barangay Poblacion Hall"
+                    maxlength="150"
+                >
+                <small class="agreement-barangay-hint">
+                    Meetups happen at the barangay hall for everyone's safety.
+                </small>
+            </div>
+
+            <div class="agreement-progress">
+
+                <div class="agreement-progress-title">
+                    Agreement Status
+                </div>
+
+                <div
+                    id="agreementModalCount"
+                    class="agreement-progress-count"
+                >
+                    0/2
+                </div>
+
+            </div>
+
+            <div class="agreement-modal-actions">
+
+                <button
+                    type="button"
+                    id="cancelAgreementBtn"
+                    class="agreement-cancel-btn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    id="confirmAgreementBtn"
+                    class="agreement-confirm-btn"
+                >
+                    <i class="fas fa-check"></i>
+                    Yes, I Agree
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.addEventListener(
+        "click",
+        event => {
+            if (
+                event.target === modal
+            ) {
+                closeAgreementModal();
+            }
+        }
+    );
+}
+
+
+function setupAgreementEvents() {
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.closest(
+                    "#cancelAgreementBtn"
+                )
+            ) {
+                closeAgreementModal();
+            }
+
+            if (
+                event.target.closest(
+                    "#closeAgreementModal"
+                )
+            ) {
+                closeAgreementModal();
+            }
+
+            if (
+                event.target.closest(
+                    "#confirmAgreementBtn"
+                )
+            ) {
+                confirmAgreement();
+            }
+
+        }
+    );
+}
+
+
+function openAgreementModal() {
+    if (!currentConversationId) {
+        alert(
+            "Please select a conversation first."
+        );
+        return;
+    }
+
+    if (agreementStatus.userAgreed) {
+        return;
+    }
+
+    const modal =
+        document.getElementById(
+            "agreementModal"
+        );
+
+    if (!modal) return;
+
+    const item =
+        document.getElementById(
+            "agreementModalItem"
+        );
+
+    const user =
+        document.getElementById(
+            "agreementModalUser"
+        );
+
+    const count =
+        document.getElementById(
+            "agreementModalCount"
+        );
+
+    if (item) {
+        item.textContent =
+            currentConversation?.item_name ||
+            "This item";
+    }
+
+    if (user) {
+        user.textContent =
+            currentConversation?.other_user_name ||
+            currentConversation?.other_user_email ||
+            "Other party";
+    }
+
+    if (count) {
+        count.textContent =
+            `${agreementStatus.totalAgreed}/2`;
+    }
+
+    const barangayBox = document.getElementById("agreementBarangayBox");
+    if (barangayBox) {
+        if (agreementStatus.barangay) {
+            barangayBox.innerHTML = `
+                <label>
+                    <i class="fas fa-map-marker-alt"></i>
+                    Meetup location
+                </label>
+                <div class="agreement-barangay-readonly">${escapeHtml(agreementStatus.barangay)}</div>
+                <small class="agreement-barangay-hint">
+                    Already chosen by the other party â€” you're confirming this spot.
+                </small>
+            `;
+        } else {
+            barangayBox.innerHTML = `
+                <label for="agreementBarangayInput">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Where will you meet to hand over the item?
+                </label>
+                <input
+                    type="text"
+                    id="agreementBarangayInput"
+                    placeholder="e.g. Barangay Poblacion Hall"
+                    maxlength="150"
+                >
+                <small class="agreement-barangay-hint">
+                    Meetups happen at the barangay hall for everyone's safety.
+                </small>
+            `;
+        }
+    }
+
+    modal.classList.add("show");
+
+    document.body.classList.add(
+        "agreement-modal-open"
+    );
+}
+
+
+function closeAgreementModal() {
+    const modal =
+        document.getElementById(
+            "agreementModal"
+        );
+
+    if (modal) {
+        modal.classList.remove(
+            "show"
+        );
+    }
+
+    document.body.classList.remove(
+        "agreement-modal-open"
+    );
+}
+
+
+/* =========================================================
+   CONFIRM AGREEMENT
+   ========================================================= */
+
+async function confirmAgreement() {
+    if (!currentConversationId) {
+        return;
+    }
+
+    if (agreementStatus.userAgreed) {
+        return;
+    }
+
+    let barangayToSend = agreementStatus.barangay || "";
+    if (!barangayToSend) {
+        const barangayInput = document.getElementById("agreementBarangayInput");
+        barangayToSend = barangayInput ? barangayInput.value.trim() : "";
+
+        if (!barangayToSend) {
+            alert("Please enter a barangay hall meetup location before agreeing.");
+            if (barangayInput) barangayInput.focus();
+            return;
+        }
+    }
+
+    const button =
+        document.getElementById(
+            "confirmAgreementBtn"
+        );
+
+    if (button) {
+        button.disabled = true;
+
+        button.innerHTML = `
+            <i class="fas fa-spinner fa-spin"></i>
+            Confirming...
+        `;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/conversations/${encodeURIComponent(
+                currentConversationId
+            )}/agreement`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json",
+                    Accept:
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    agreed: true,
+                    barangay: barangayToSend
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Agreement response:",
+            data
+        );
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Unable to save your agreement."
+            );
+        }
+
+        /*
+         * Update using backend response.
+         */
+
+        agreementStatus.userAgreed =
+            Boolean(
+                data.userAgreed ??
+                data.user_agreed ??
+                true
+            );
+
+        agreementStatus.otherUserAgreed =
+            Boolean(
+                data.otherUserAgreed ??
+                data.other_user_agreed ??
+                false
+            );
+
+        agreementStatus.totalAgreed =
+            Number(
+                data.totalAgreed ??
+                data.total_agreed ??
+                (
+                    agreementStatus.userAgreed
+                        ? agreementStatus.totalAgreed + 1
+                        : agreementStatus.totalAgreed
+                )
+            );
+
+        agreementStatus.status =
+            data.status ||
+            (
+                agreementStatus.totalAgreed >= 2
+                    ? "both_agreed"
+                    : "pending"
+            );
+
+        agreementStatus.barangay =
+            data.barangay ||
+            agreementStatus.barangay ||
+            barangayToSend;
+
+        if (
+            agreementStatus.totalAgreed >= 2 ||
+            agreementStatus.status ===
+                "both_agreed"
+        ) {
+            agreementStatus.totalAgreed = 2;
+            agreementStatus.status =
+                "both_agreed";
+            agreementStatus.otherUserAgreed =
+                true;
+
+            closeAgreementModal();
+
+            updateAgreementUI();
+
+            showTransactionReadyPanel();
+
+            showToast(
+                "Both parties agreed. The transaction is now ready for admin review."
+            );
+
+            await notifyAdminAgreementReady();
+
+        } else {
+            closeAgreementModal();
+
+            updateAgreementUI();
+
+            showToast(
+                "You agreed to the deal. Waiting for the other party."
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "confirmAgreement:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Unable to save your agreement."
+        );
+
+    } finally {
+        if (button) {
+            button.disabled = false;
+
+            button.innerHTML = `
+                <i class="fas fa-check"></i>
+                Yes, I Agree
+            `;
+        }
+    }
+}
+
+
+/* =========================================================
+   READY PANEL
+   ========================================================= */
+
+function showTransactionReadyPanel() {
+    if (!chatBody) return;
+
+    let panel =
+        document.getElementById(
+            "transactionReadyPanel"
+        );
+
+    if (panel) {
+        return;
+    }
+
+    panel =
+        document.createElement("div");
+
+    panel.id =
+        "transactionReadyPanel";
+
+    panel.className =
+        "transaction-ready-panel";
+
+    panel.innerHTML = `
+        <div class="transaction-ready-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+
+        <div class="transaction-ready-content">
+            <strong>
+                Both parties agreed
+            </strong>
+
+            <p>
+                Your agreement has been recorded.
+                The transaction can now proceed
+                to admin review and verification.
+            </p>
+            ${
+                agreementStatus.barangay
+                    ? `<p class="transaction-ready-barangay">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Meetup: ${escapeHtml(agreementStatus.barangay)}
+                       </p>`
+                    : ""
+            }
+        </div>
+
+        <div class="transaction-ready-status">
+            <span>2/2 Agreed</span>
+            <small>
+                Waiting for admin review
+            </small>
+        </div>
+    `;
+
+    const agreementBar =
+        document.getElementById(
+            "agreementBar"
+        );
+
+    if (agreementBar) {
+        agreementBar.insertAdjacentElement(
+            "afterend",
+            panel
+        );
+    } else {
+        chatBody.prepend(panel);
+    }
+}
+
+
+async function notifyAdminAgreementReady() {
+    if (!currentConversationId) {
+        return;
+    }
+
+    try {
+        const response =
+            await fetch(
+                `/api/conversations/${encodeURIComponent(
+                    currentConversationId
+                )}/agreement/notify-admin`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        Accept:
+                            "application/json"
+                    }
+                }
+            );
+
+        if (response.status === 404) {
+            console.warn(
+                "Admin notification endpoint not found."
+            );
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Admin notification response:",
+            data
+        );
+
+    } catch (error) {
+        console.error(
+            "notifyAdminAgreementReady:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   AGREEMENT POLLING
+   ========================================================= */
+
+function startAgreementPolling() {
+    stopAgreementPolling();
+
+    if (!currentConversationId) {
+        return;
+    }
+
+    agreementPollingInterval =
+        setInterval(async () => {
+
+            if (
+                document.hidden ||
+                !currentConversationId
+            ) {
+                return;
+            }
+
+            if (
+                agreementStatus.status ===
+                "both_agreed"
+            ) {
+                return;
+            }
+
+            await loadAgreementStatus();
+
+        }, AGREEMENT_POLL_INTERVAL);
+}
+
+
+function stopAgreementPolling() {
+    if (
+        agreementPollingInterval !== null
+    ) {
+        clearInterval(
+            agreementPollingInterval
+        );
+
+        agreementPollingInterval =
+            null;
+    }
+}
+
+
+/* =========================================================
+   SEND MESSAGE
+   ========================================================= */
+
+function setupSendMessage() {
+    if (!sendBtn || !messageInput) {
+        return;
+    }
+
+    sendBtn.addEventListener(
+        "click",
+        sendMessage
+    );
+
+    messageInput.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+                event.preventDefault();
+                sendMessage();
+            }
+
+        }
+    );
+}
+
+
+async function sendMessage() {
+    if (!currentConversationId) {
+        alert(
+            "Please select or start a conversation first."
+        );
+        return;
+    }
+
+    if (!messageInput) {
+        return;
+    }
+
+    const message =
+        messageInput.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+    if (sendBtn) {
+        sendBtn.disabled = true;
+    }
+
+    const original =
+        messageInput.value;
+
+    try {
+        const response =
+            await fetch(
+                `/api/conversations/${encodeURIComponent(
+                    currentConversationId
+                )}/messages`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        Accept:
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        message
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Failed to send message."
+            );
+        }
+
+        messageInput.value = "";
+
+        /*
+         * Immediately refresh.
+         */
+        lastMessageSignature = "";
+
+        await loadMessages(
+            currentConversationId,
+            false
+        );
+
+        await loadConversations({
+            silent: true
+        });
+
+    } catch (error) {
+        console.error(
+            "sendMessage:",
+            error
+        );
+
+        messageInput.value =
+            original;
+
+        alert(
+            error.message ||
+            "Failed to send message."
+        );
+
+    } finally {
+        if (sendBtn) {
+            sendBtn.disabled = false;
+        }
+
+        messageInput.focus();
+    }
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+function setupSearch() {
+    if (!chatSearch) {
+        return;
+    }
+
+    chatSearch.addEventListener(
+        "input",
+        () => {
+
+            const search =
+                chatSearch.value
+                    .trim()
+                    .toLowerCase();
+
+            if (!search) {
+                renderConversationList(
+                    conversations
+                );
+                return;
+            }
+
+            const filtered =
+                conversations.filter(
+                    conversation => {
+
+                        const name =
+                            String(
+                                conversation.other_user_name ||
+                                ""
+                            ).toLowerCase();
+
+                        const email =
+                            String(
+                                conversation.other_user_email ||
+                                ""
+                            ).toLowerCase();
+
+                        const item =
+                            String(
+                                conversation.item_name ||
+                                ""
+                            ).toLowerCase();
+
+                        return (
+                            name.includes(search) ||
+                            email.includes(search) ||
+                            item.includes(search)
+                        );
+                    }
+                );
+
+            renderConversationList(
+                filtered
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   ITEM DETAILS
+   ========================================================= */
+
+function createItemDetailsModal() {
+    if (
+        document.getElementById(
+            "itemDetailsModal"
+        )
+    ) {
+        return;
+    }
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "itemDetailsModal";
+
+    modal.className =
+        "item-details-modal-overlay";
+
+    modal.innerHTML = `
+        <div
+            class="item-details-modal"
+            role="dialog"
+            aria-modal="true"
+        >
+
+            <button
+                type="button"
+                id="closeItemDetailsModal"
+                class="item-details-close"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+            <div class="item-details-header">
+
+                <div class="item-details-header-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+
+                <div>
+                    <h2>Item Details</h2>
+
+                    <p>
+                        Review the item information
+                        before agreeing.
+                    </p>
+                </div>
+
+            </div>
+
+            <div
+                id="itemDetailsContent"
+                class="item-details-content"
+            >
+                <div class="item-details-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading item details...
+                </div>
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(
+        modal
+    );
+
+    modal.addEventListener(
+        "click",
+        event => {
+            if (
+                event.target === modal
+            ) {
+                closeItemDetailsModal();
+            }
+        }
+    );
+}
+
+
+function setupItemDetailsEvents() {
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.closest(
+                    "#viewItemDetailsBtn"
+                )
+            ) {
+                openItemDetailsModal();
+            }
+
+            if (
+                event.target.closest(
+                    "#closeItemDetailsModal"
+                )
+            ) {
+                closeItemDetailsModal();
+            }
+
+        }
+    );
+}
+
+
+async function openItemDetailsModal() {
+    const modal =
+        document.getElementById(
+            "itemDetailsModal"
+        );
+
+    const content =
+        document.getElementById(
+            "itemDetailsContent"
+        );
+
+    if (!modal || !content) {
+        return;
+    }
+
+    modal.classList.add(
+        "show"
+    );
+
+    document.body.classList.add(
+        "item-details-modal-open"
+    );
+
+    content.innerHTML = `
+        <div class="item-details-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            Loading item details...
+        </div>
+    `;
+
+    try {
+        const item =
+            await getItemDetails();
+
+        renderItemDetails(
+            item
+        );
+
+    } catch (error) {
+        console.error(
+            "openItemDetailsModal:",
+            error
+        );
+
+        renderItemDetails(
+            currentConversation || {}
+        );
+    }
+}
+
+
+function closeItemDetailsModal() {
+    const modal =
+        document.getElementById(
+            "itemDetailsModal"
+        );
+
+    if (modal) {
+        modal.classList.remove(
+            "show"
+        );
+    }
+
+    document.body.classList.remove(
+        "item-details-modal-open"
+    );
+}
+
+
+async function getItemDetails() {
+    if (itemDetailsCache) {
+        return itemDetailsCache;
+    }
+
+    const conversation =
+        currentConversation || {};
+
+    /*
+     * First try data already returned
+     * by conversation endpoint.
+     */
+
+    const hasDetails =
+        conversation.item_description ||
+        conversation.description ||
+        conversation.item_category ||
+        conversation.category ||
+        conversation.item_location ||
+        conversation.location ||
+        conversation.item_image ||
+        conversation.image_url;
+
+    if (hasDetails) {
+        itemDetailsCache =
+            conversation;
+
+        return itemDetailsCache;
+    }
+
+    const itemId =
+        conversation.item_id ||
+        conversation.itemId;
+
+    if (!itemId) {
+        itemDetailsCache =
+            conversation;
+
+        return itemDetailsCache;
+    }
+
+    const endpoints = [
+        `/api/items/${itemId}`,
+        `/api/items/${itemId}/details`,
+        `/api/item/${itemId}`,
+        `/api/item/${itemId}/details`
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            const response =
+                await fetch(
+                    endpoint,
+                    {
+                        headers: {
+                            Accept:
+                                "application/json"
+                        },
+                        cache:
+                            "no-store"
+                    }
+                );
+
+            if (!response.ok) {
+                continue;
+            }
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+                continue;
+            }
+
+            itemDetailsCache =
+                data.item ||
+                data.data ||
+                data;
+
+            return itemDetailsCache;
+
+        } catch (error) {
+            console.warn(
+                "Item endpoint failed:",
+                endpoint,
+                error
+            );
+        }
+    }
+
+    itemDetailsCache =
+        conversation;
+
+    return itemDetailsCache;
+}
+
+
+function renderItemDetails(item) {
+    const content =
+        document.getElementById(
+            "itemDetailsContent"
+        );
+
+    if (!content) return;
+
+    const name =
+        firstValue(
+            item,
+            [
+                "item_name",
+                "name",
+                "title"
+            ],
+            "Unknown Item"
+        );
+
+    const description =
+        firstValue(
+            item,
+            [
+                "item_description",
+                "description",
+                "details"
+            ],
+            "No description provided."
+        );
+
+    const category =
+        firstValue(
+            item,
+            [
+                "item_category",
+                "category",
+                "category_name"
+            ],
+            "Not specified"
+        );
+
+    const location =
+        firstValue(
+            item,
+            [
+                "item_location",
+                "location",
+                "found_location",
+                "lost_location"
+            ],
+            "Not specified"
+        );
+
+    const status =
+        firstValue(
+            item,
+            [
+                "status",
+                "item_status"
+            ],
+            "Not specified"
+        );
+
+    const date =
+        firstValue(
+            item,
+            [
+                "created_at",
+                "date_reported",
+                "reported_at",
+                "date"
+            ],
+            ""
+        );
+
+    const image =
+        firstValue(
+            item,
+            [
+                "image_url",
+                "item_image",
+                "image",
+                "photo_url",
+                "photo"
+            ],
+            ""
+        );
+
+    const type =
+        firstValue(
+            item,
+            [
+                "type",
+                "item_type",
+                "report_type"
+            ],
+            "Not specified"
+        );
+
+    const reference =
+        firstValue(
+            item,
+            [
+                "item_id",
+                "id"
+            ],
+            ""
+        );
+
+    content.innerHTML = `
+        ${
+            image
+                ? `
+                    <div class="item-details-image-wrapper">
+                        <img
+                            src="${escapeAttribute(image)}"
+                            alt="${escapeAttribute(name)}"
+                            class="item-details-image"
+                        >
+                    </div>
+                `
+                : `
+                    <div class="item-details-no-image">
+                        <i class="fas fa-image"></i>
+                        <span>
+                            No image available
+                        </span>
+                    </div>
+                `
+        }
+
+        <div class="item-details-title">
+            <span>Item</span>
+            <h3>
+                ${escapeHtml(name)}
+            </h3>
+        </div>
+
+        <div class="item-details-grid">
+
+            ${createDetailRow(
+                "Category",
+                category,
+                "fa-tag"
+            )}
+
+            ${createDetailRow(
+                "Type",
+                type,
+                "fa-clipboard-list"
+            )}
+
+            ${createDetailRow(
+                "Location",
+                location,
+                "fa-location-dot"
+            )}
+
+            ${createDetailRow(
+                "Status",
+                status,
+                "fa-circle-info"
+            )}
+
+            ${
+                date
+                    ? createDetailRow(
+                        "Date Reported",
+                        formatDetailDate(date),
+                        "fa-calendar"
+                    )
+                    : ""
+            }
+
+            ${
+                reference
+                    ? createDetailRow(
+                        "Reference ID",
+                        reference,
+                        "fa-hashtag"
+                    )
+                    : ""
+            }
+
+        </div>
+
+        <div class="item-details-description">
+
+            <h4>
+                <i class="fas fa-align-left"></i>
+                Description
+            </h4>
+
+            <p>
+                ${escapeHtml(description)}
+            </p>
+
+        </div>
+    `;
+}
+
+
+function createDetailRow(
+    label,
+    value,
+    icon
+) {
+    return `
+        <div class="item-detail-row">
+
+            <div class="item-detail-label">
+                <i class="fas ${icon}"></i>
+                <span>
+                    ${escapeHtml(label)}
+                </span>
+            </div>
+
+            <strong>
+                ${escapeHtml(value)}
+            </strong>
+
+        </div>
+    `;
+}
+
+
+function firstValue(
+    object,
+    keys,
+    fallback = ""
+) {
+    if (!object) {
+        return fallback;
+    }
+
+    for (const key of keys) {
+        const value =
+            object[key];
+
+        if (
+            value !== undefined &&
+            value !== null &&
+            String(value).trim() !== ""
+        ) {
+            return value;
+        }
+    }
+
+    return fallback;
+}
+
+
+function formatDetailDate(
+    value
+) {
+    if (!value) return "";
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
+
+    return date.toLocaleDateString(
+        [],
+        {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        }
+    );
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+function showEmptyState(
+    customMessage = null
+) {
+    stopMessagePolling();
+    stopAgreementPolling();
+
+    currentConversationId = null;
+    currentConversation = null;
+    currentMessages = [];
+
+    itemDetailsCache = null;
+    lastMessageSignature = "";
+
+    resetAgreementStatus();
+
+    closeAgreementModal();
+    closeItemDetailsModal();
+
+    if (currentUserName) {
+        currentUserName.textContent =
+            "Select a conversation";
+    }
+
+    if (currentItemName) {
+        currentItemName.textContent =
+            "";
+    }
+
+    renderItemFloatingCard();
+
+    if (chatFooter) {
+        chatFooter.style.display =
+            "none";
+    }
+
+    if (chatBody) {
+        chatBody.innerHTML = `
+            <div class="conversation-start">
+
+                <i class="fas fa-comments"></i>
+
+                <h3>
+                    ${
+                        customMessage ||
+                        "Select a conversation"
+                    }
+                </h3>
+
+                <p>
+                    ${
+                        customMessage
+                            ? ""
+                            : "Select a conversation to start chatting."
+                    }
+                </p>
+
+            </div>
+        `;
+    }
+
+    renderConversationList(
+        conversations
+    );
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(message) {
+    let toast =
+        document.getElementById(
+            "messageToast"
+        );
+
+    if (!toast) {
+        toast =
+            document.createElement(
+                "div"
+            );
+
+        toast.id =
+            "messageToast";
+
+        toast.className =
+            "message-toast";
+
+        document.body.appendChild(
+            toast
+        );
+    }
+
+    toast.textContent =
+        message;
+
+    toast.classList.add(
+        "show"
+    );
+
+    setTimeout(() => {
+        toast.classList.remove(
+            "show"
+        );
+    }, 3500);
+}
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function escapeHtml(value) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+function escapeAttribute(value) {
+    return escapeHtml(value);
+}
+
+
+function formatMessageTime(
+    value
+) {
+    if (!value) {
+        return "";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return date.toLocaleString(
+        [],
+        {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+function isChatNearBottom() {
+    if (!chatBody) {
+        return true;
+    }
+
+    const distance =
+        chatBody.scrollHeight -
+        chatBody.scrollTop -
+        chatBody.clientHeight;
+
+    return distance <= 100;
+}
+
+
+function scrollChatToBottom() {
+    if (!chatBody) return;
+
+    requestAnimationFrame(() => {
+        chatBody.scrollTop =
+            chatBody.scrollHeight;
+    });
+}
+
+
+/* =========================================================
+   VISIBILITY
+   ========================================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    async () => {
+
+        if (
+            document.hidden ||
+            !currentConversationId
+        ) {
+            return;
+        }
+
+        lastMessageSignature = "";
+
+        await loadMessages(
+            currentConversationId,
+            false
+        );
+
+        await loadAgreementStatus();
+
+        await loadConversations({
+            silent: true
+        });
+    }
+);
+
+
+/* =========================================================
+   CLEANUP
+   ========================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+        stopMessagePolling();
+        stopConversationListPolling();
+        stopAgreementPolling();
+    }
+);
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\NotifHistory.js ===
+let currentFilter = 'all'; 
+let currentPage = 1;
+const itemsPerPage = 10;
+let currentUserId = localStorage.getItem('userId') || localStorage.getItem('id'); 
+
+document.addEventListener("DOMContentLoaded", renderFullHistory);
+
+// Date Formatting
+function formatNiceDate(dateString) {
+    if (!dateString || dateString === "Just now") return "Just now";
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+
+    const options = { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+    };
+    
+    return date.toLocaleString('en-US', options);
+}
+
+// History Filtering
+function updateFilter(type) {
+    currentFilter = type;
+    currentPage = 1;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    if (event) event.target.classList.add('active');
+    renderFullHistory();
+}
+
+// Pagination Controls
+function movePage(direction) {
+    currentPage += direction;
+    renderFullHistory();
+}
+
+// Notification History Rendering
+async function renderFullHistory() {
+    const listContainer = document.getElementById("historyList");
+    const paginationContainer = document.getElementById("pagination-container");
+
+    if (!currentUserId || currentUserId === "null" || currentUserId === "0") {
+        try {
+            const sessionResponse = await fetch('/api/get-session-info'); 
+            if (sessionResponse.ok) {
+                const sessionData = await sessionResponse.json();
+                if (sessionData.userId) {
+                    currentUserId = String(sessionData.userId);
+                    localStorage.setItem('userId', currentUserId);
+                }
+            }
+        } catch (err) { console.error("Session recovery failed:", err); }
+    }
+
+    try {
+        const response = await fetch('/api/user/notifications');
+        if (response.ok) {
+            const dbData = await response.json();
+            if (Array.isArray(dbData)) {
+                localStorage.setItem('refoundly_user_private', JSON.stringify(dbData));
+            }
+        }
+    } catch (err) { console.error("Fetch failed:", err); }
+
+    const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || [];
+    let displayList = notifications.filter(n => {
+        const myId = String(currentUserId).trim();
+        const notifOwnerId = String(n.user_id).trim();
+        const isForMe = (notifOwnerId === myId); 
+        const content = n.message || n.text || "";
+        const isNotAdminAction = !content.includes("New Report");
+        return isForMe && isNotAdminAction;
+    }).reverse();
+
+    if (currentFilter === 'unread') {
+        displayList = displayList.filter(n => (n.is_read == 0 || n.read === false));
+    }
+
+    const totalItems = displayList.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedItems = displayList.slice(startIndex, startIndex + itemsPerPage);
+
+    // Pagination UI Update
+    if (paginationContainer) {
+        paginationContainer.innerHTML = `
+            <div class="pagination-controls">
+                <button id="prevPage" class="page-arrow" onclick="movePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <span id="pageDisplay" class="page-num">
+                    Page ${currentPage} of ${totalPages}
+                </span>
+                <button id="nextPage" class="page-arrow" onclick="movePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    if (totalItems === 0) {
+        listContainer.innerHTML = `<div style="padding: 60px; text-align: center; color: #888;">No notification history found.</div>`;
+        return;
+    }
+
+    // List Rendering
+    listContainer.innerHTML = paginatedItems.map(n => {
+        const isRead = n.is_read == 1 || n.read === true;
+        const messageContent = n.message || n.text || "Notification updated";
+        const timeContent = formatNiceDate(n.created_at || n.time);
+        
+        const targetId = n.item_id || n.itemId || null;
+
+        const iconBg = isRead ? '#f0f2f5' : '#7aa340';
+        const iconColor = isRead ? '#65676b' : '#ffffff';
+
+        return `
+            <div class="notif-list-item ${isRead ? '' : 'unread'}" 
+                 onclick="handleNotifClick(${n.id}, ${targetId ?? 'null'})">
+                <div class="icon-box" style="background: ${iconBg}; color: ${iconColor};">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <div class="notif-info">
+                    <p style="font-weight: ${isRead ? '400' : '600'}">${messageContent}</p>
+                    <span><i class="far fa-clock"></i> ${timeContent}</span>
+                </div>
+                ${!isRead ? '<div class="unread-dot" style="width: 10px; height: 10px; background: #7aa340; border-radius: 50%; margin-left: auto;"></div>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Notification Click Handler
+async function handleNotifClick(notifId, itemId) {
+    try {
+        // ðŸŸ¢ FIX: correct route is /api/user/notifications/read/:id
+        await fetch(`/api/user/notifications/read/${notifId}`, { method: 'POST' });
+
+        const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || [];
+        const updated = notifications.map(n => n.id === notifId ? { ...n, is_read: 1 } : n);
+        localStorage.setItem('refoundly_user_private', JSON.stringify(updated));
+    } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+    }
+
+    // No linked item (e.g. a general/system notice) -> just go to history
+    if (!itemId) {
+        window.location.href = 'history.html';
+        return;
+    }
+    try {
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+            const item = await res.json();
+            const type = (item.report_type || "").toLowerCase().trim();
+            window.location.href = type === 'lost'
+                ? `lost.html?open=${itemId}`
+                : `found.html?open=${itemId}`;
+        } else {
+            window.location.href = 'history.html';
+        }
+    } catch (err) {
+        console.error("Could not resolve matched item:", err);
+        window.location.href = 'history.html';
+    }
+}
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\notifications.js ===
+// --- GLOBAL USER NOTIFICATION ENGINE ---
+let currentNotifTab = 'all';
+
+// Toast Storage & State Setup
+if (!window.shownToastIds) {
+    window.shownToastIds = new Set(JSON.parse(sessionStorage.getItem('shownNotifToasts') || '[]'));
+}
+
+// Global ReFoundly Toast Function
+function showRefoundlyToast(title, message, iconClass = 'fa-solid fa-bell') {
+    let container = document.getElementById('refoundly-toast-container');
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'refoundly-toast-container';
+        container.className = 'refoundly-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'refoundly-toast';
+    toast.innerHTML = `
+        <div class="refoundly-toast-icon">
+            <i class="${iconClass}"></i>
+        </div>
+        <div class="refoundly-toast-content">
+            <h4 class="refoundly-toast-title">${title}</h4>
+            <p class="refoundly-toast-body">${message}</p>
+        </div>
+        <button class="refoundly-toast-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => toast.classList.add('show'), 50);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+}
+
+// Match Popup Checker
+function checkAndShowMatchPopups(notifications) {
+    if (!Array.isArray(notifications)) return;
+
+    const unreadNotifs = notifications.filter(n => n.is_read == 0 || n.is_read === false || n.read === false);
+
+    unreadNotifs.forEach(n => {
+        if (!window.shownToastIds.has(n.id)) {
+            showRefoundlyToast(
+                "New Notification!",
+                n.message || n.text || "You have a new update on your ReFoundly account.",
+                "fa-solid fa-bell"
+            );
+
+            window.shownToastIds.add(n.id);
+            sessionStorage.setItem('shownNotifToasts', JSON.stringify([...window.shownToastIds]));
+        }
+    });
+}
+
+// Update Notifications UI
+async function updateNotificationsUI() {
+    const list = document.getElementById("notifList");
+    const badge = document.getElementById("notifBadge");
+    
+    try {
+        const res = await fetch('/api/user/notifications');
+        if (!res.ok) return;
+        
+        const data = await res.json();
+
+        // Trigger Popup Toast Alert for unread notifications
+        if (Array.isArray(data)) {
+            checkAndShowMatchPopups(data);
+        }
+
+        // Check unread status
+        const unreadCount = data.filter(n => n.is_read == 0 || n.is_read === false || n.read === false).length;
+        
+        if (badge) {
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? "flex" : "none";
+        }
+
+        if (!list) return;
+
+        let displayList = currentNotifTab === 'unread' 
+            ? data.filter(n => n.is_read == 0 || n.is_read === false || n.read === false) 
+            : data;
+
+        if (displayList.length === 0) {
+            list.innerHTML = `<div class="notif-empty" style="padding:20px; text-align:center; color:#65676b;">No ${currentNotifTab === 'unread' ? 'unread' : ''} notifications</div>`;
+            return;
+        }
+
+        list.innerHTML = displayList.map(n => {
+            const safeMessage = n.message || '';
+            const date = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
+
+            return `
+                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleGlobalNotifClick(${n.id}, ${n.item_id || 'null'})">
+                    <div class="notif-icon-circle" style="background: #7aa340; width:35px; height:35px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
+                    </div>
+                    <div style="flex-grow:1;">
+                        <div style="font-size:0.85rem; color:#1c1e21; font-weight:${n.is_read ? '600' : '700'}">${safeMessage}</div>
+                        <div style="font-size:0.75rem; color:#65676b;">${date}</div>
+                    </div>
+                    ${!n.is_read ? '<div class="unread-dot-small"></div>' : ''}
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error("Notification Load Error:", err);
+    }
+}
+
+// Click & Tab Helpers
+async function handleGlobalNotifClick(id, itemId) {
+    try {
+        await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
+        await updateNotificationsUI(); 
+        if (!itemId) {
+            window.location.href = 'history.html';
+            return;
+        }
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+            const item = await res.json();
+            const dbType = (item.report_type || "").toLowerCase().trim();
+
+            // ðŸŸ¢ FIX: don't depend on `finalRedirect` â€” it's only defined in
+            // dashboard.js, which isn't loaded on every page (history.html,
+            // lost.html, found.html, etc). Calling it there threw a
+            // ReferenceError that got swallowed by the catch below, which
+            // silently redirected to history.html instead â€” making a real
+            // match look like it pointed back at your own post.
+            if (typeof finalRedirect === 'function') {
+                finalRedirect(itemId, dbType);
+            } else {
+                window.location.href = dbType === 'lost'
+                    ? `lost.html?open=${itemId}`
+                    : `found.html?open=${itemId}`;
+            }
+        } else {
+            window.location.href = 'history.html';
+        }
+    } catch (err) {
+        console.error("Could not mark notification as read", err);
+        window.location.href = 'history.html';
+    }
+}
+
+function switchNotifTab(type) {
+    currentNotifTab = type;
+    document.getElementById('tabAll')?.classList.toggle('active', type === 'all');
+    document.getElementById('tabUnread')?.classList.toggle('active', type === 'unread');
+    updateNotificationsUI();
+}
+
+function initNotifications() {
+    const bell = document.getElementById('notifBell');
+    const dropdown = document.getElementById('notifDropdown');
+    const tabAll = document.getElementById('tabAll');
+    const tabUnread = document.getElementById('tabUnread');
+
+    if (bell && dropdown) {
+        dropdown.style.display = "none";
+
+        bell.onclick = (e) => {
+            e.stopPropagation();
+            const isOpening = dropdown.style.display === "none" || dropdown.style.display === "";
+            dropdown.style.display = isOpening ? "flex" : "none";
+            if (isOpening) updateNotificationsUI();
+        };
+
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && e.target !== bell) {
+                dropdown.style.display = "none";
+            }
+        });
+    }
+
+    tabAll?.addEventListener('click', (e) => { e.stopPropagation(); switchNotifTab('all'); });
+    tabUnread?.addEventListener('click', (e) => { e.stopPropagation(); switchNotifTab('unread'); });
+    
+    updateNotificationsUI();
+}
+
+document.addEventListener("DOMContentLoaded", initNotifications);
+setInterval(updateNotificationsUI, 20000);
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\report.js ===
+function sanitizeInput(text) {
+    const element = document.createElement('div');
+    element.innerText = text;
+    return element.innerHTML;
+}
+
+/* 1. IMAGE PREVIEW & REMOVE LOGIC */
+document.addEventListener('DOMContentLoaded', () => {
+    const fileInput = document.getElementById('file-upload');
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeBtn = document.getElementById('removeImageBtn');
+    const viewBtn = document.getElementById('viewImageBtn');
+    
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const closeModal = document.getElementById('closeModal');
+
+    const maxSize = 2 * 1024 * 1024; // 2MB Limit
+
+    // Handle File Selection
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validation
+            if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                alert("Only JPG and PNG files are allowed!");
+                fileInput.value = '';
+                return;
+            }
+
+            if (file.size > maxSize) {
+                alert("File is too big! Please upload an image smaller than 2MB.");
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imagePreview.src = event.target.result;
+                placeholder.style.display = 'none';
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Remove Selected Image
+    if (removeBtn) {
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent opening file dialog
+            fileInput.value = ''; // Reset input
+            imagePreview.src = '';
+            previewContainer.style.display = 'none';
+            placeholder.style.display = 'flex';
+        });
+    }
+
+    // View Image in Lightbox Modal
+    if (viewBtn) {
+        viewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            modal.style.display = 'flex';
+            modalImg.src = imagePreview.src;
+        });
+    }
+
+    // Close Modal
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+
+/* 2. FORM SUBMISSION LOGIC (MySQL Database Only) */
+document.getElementById('mainForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); 
+    
+    const submitBtn = document.getElementById('btnSubmit');
+    
+    // GET CURRENT VALUES
+    const itemNameRaw = document.getElementById('itemName').value;
+    const descRaw = document.querySelector('textarea[name="description"]').value;
+    const firstName = document.getElementsByName('firstName')[0].value;
+    const emailValue = document.getElementsByName('contactEmail')[0].value;
+
+    // VALIDATION
+    const namePattern = /^[a-zA-Z\s]+$/;
+    if (!namePattern.test(firstName)) {
+        alert("Please enter a valid name (letters only).");
+        return;
+    }
+    if (!emailValue.includes('@')) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    const maliciousRegex = /https?:\/\/|www\.|<script/i; 
+    if (maliciousRegex.test(itemNameRaw) || maliciousRegex.test(descRaw)) {
+        alert("Security Block: External links and scripts are strictly prohibited.");
+        return; 
+    }
+        
+    const sanitizedItemName = sanitizeInput(itemNameRaw);
+    const sanitizedDesc = sanitizeInput(descRaw);
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "â³ Saving Report...";
+
+        let csrfToken = '';
+        try {
+            const csrfResponse = await fetch('/api/csrf-token');
+            if (csrfResponse.ok) {
+                const csrfData = await csrfResponse.json();
+                csrfToken = csrfData.csrfToken;
+            }
+        } catch (err) {
+            console.warn("CSRF fetch skipped or failed.");
+        }
+
+        // PREPARE FORM DATA FOR MYSQL
+        const formData = new FormData(this);
+        formData.set('itemName', sanitizedItemName);
+        formData.set('description', sanitizedDesc);
+
+        // Include Accept header to force a JSON response
+        const headers = {
+            'Accept': 'application/json'
+        };
+        if (csrfToken) headers['CSRF-Token'] = csrfToken;
+
+        const response = await fetch('/submit-report', { 
+            method: 'POST',
+            body: formData,
+            headers: headers
+        });
+
+        // Check content type before parsing, to avoid "Unexpected token '<'" errors
+        // when the server returns an HTML error page instead of JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Your session has expired or a server error occurred. Please log in again and try again.");
+        }
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "Server Error");
+
+        showSuccessToast();
+
+    } catch (error) {
+        console.error("Submission Error:", error);
+        alert("Submission Failed: " + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Submit Report";
+    }
+});
+
+function showSuccessToast() {
+    const toast = document.getElementById('custom-toast');
+    if (toast) {
+        toast.classList.remove('toast-hidden');
+        toast.classList.add('toast-visible');
+
+        setTimeout(() => {
+            toast.classList.remove('toast-visible');
+            toast.classList.add('toast-hidden');
+            window.location.href = "/dashboard.html";
+        }, 3000);
+    } else {
+        alert("Report successfully submitted!");
+        window.location.href = "/dashboard.html";
+    }
+}
+
+/* 3. AUTO-FILL & SESSION LOGIC */
+window.onload = async () => {
+    try {
+        const response = await fetch('/user/me');
+        if (response.ok) {
+            const user = await response.json();
+            
+            if (user.name) {
+                const fullName = user.name.trim();
+                
+                if (fullName.includes(',')) {
+                    const parts = fullName.split(',');
+                    document.getElementsByName('lastName')[0].value = parts[0].trim();
+                    document.getElementsByName('firstName')[0].value = parts[1].trim();
+                } else if (fullName.includes(' ')) {
+                    const lastSpaceIndex = fullName.lastIndexOf(' ');
+                    document.getElementsByName('firstName')[0].value = fullName.substring(0, lastSpaceIndex);
+                    document.getElementsByName('lastName')[0].value = fullName.substring(lastSpaceIndex + 1);
+                } else {
+                    document.getElementsByName('firstName')[0].value = fullName;
+                }
+            }
+
+            document.getElementsByName('contactEmail')[0].value = user.email || '';
+            
+            const phoneInput = document.getElementById('phoneNumber');
+            if (phoneInput) {
+                phoneInput.value = user.contact_number || '';
+                phoneInput.addEventListener('input', function (e) {
+                    this.value = this.value.replace(/[^0-9]/g, ''); 
+                });
+            }
+        }
+    } catch (error) {
+        console.log("Session inactive.");
+    }
+};
+
+function checkSession() {
+    fetch('/user/me', { headers: { 'Accept': 'application/json' } })
+    .then(response => {
+        if (response.status === 401) {
+            const modal = document.getElementById('session-alert');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+        }
+    })
+    .catch(() => console.warn("Server connection offline."));
+}
+setInterval(checkSession, 10000);
+
+function showSuccessToast() {
+    if (typeof showRefoundlyToast === 'function') {
+        showRefoundlyToast(
+            "Report Submitted!", 
+            "Your report has been posted! We'll notify you if a possible match is found.", 
+            "fa-solid fa-circle-check"
+        );
+        setTimeout(() => { window.location.href = "/dashboard.html"; }, 2500);
+    } else {
+        const toast = document.getElementById('custom-toast');
+        if (toast) {
+            toast.classList.remove('toast-hidden');
+            toast.classList.add('toast-visible');
+            setTimeout(() => { window.location.href = "/dashboard.html"; }, 3000);
+        } else {
+            alert("Report successfully submitted!");
+            window.location.href = "/dashboard.html";
+        }
+    }
+}
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\script.js ===
+const container = document.getElementById('container');
+const registerBtn = document.getElementById('register');
+const loginBtn = document.getElementById('login');
+const loginForm = document.querySelector('.sign-in form');
+const signUpForm = document.querySelector('.sign-up form');
+const errorDiv = document.getElementById('login-error');
+
+/* FORM SIDE TOGGLE */
+function handleFormToggle() {
+    registerBtn.addEventListener('click', () => container.classList.add("active"));
+    loginBtn.addEventListener('click', () => container.classList.remove("active"));
+}
+
+/* --- TOOLTIP SYSTEM --- */
+function updateChecklist(input, requirements) {
+    let tooltip = document.getElementById(`tooltip-${input.name}`);
+    
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.className = 'input-tooltip-neat';
+        tooltip.id = `tooltip-${input.name}`;
+        document.body.appendChild(tooltip);
+    }
+
+    const allValid = requirements.every(req => req.isValid);
+
+    if (!allValid && input.value.length > 0) {
+        input.classList.add('input-invalid');
+    } else {
+        input.classList.remove('input-invalid');
+    }
+
+    const rect = input.getBoundingClientRect();
+    tooltip.style.left = `${rect.right + window.scrollX + 15}px`;
+    tooltip.style.top = `${rect.top + window.scrollY + (rect.height / 2)}px`;
+
+    let html = '';
+    requirements.forEach(req => {
+        const icon = req.isValid ? 'fa-check-circle' : 'fa-circle';
+        const color = req.isValid ? '#7aa340' : '#cbd5e0';
+        html += `<div class="req-item" style="color: ${req.isValid ? '#444' : '#888'}">
+                    <i class="fas ${icon}" style="color: ${color}; font-size: 10px;"></i>
+                    <span>${req.text}</span>
+                 </div>`;
+    });
+    tooltip.innerHTML = html;
+}
+
+function removeTooltip(inputName) {
+    const tooltip = document.getElementById(`tooltip-${inputName}`);
+    if (tooltip) tooltip.remove();
+}
+
+/* PASSWORD VISIBILITY TOGGLE */
+function initializePasswordToggles() {
+    document.querySelectorAll('.toggle-password').forEach(eye => {
+        eye.addEventListener('click', function() {
+            const passwordInput = this.parentElement.querySelector('input');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    });
+}
+
+const nameInput = signUpForm.querySelector('input[name="name"]');
+const usernameInput = signUpForm.querySelector('input[name="username"]');
+const emailInput = signUpForm.querySelector('input[name="email"]');
+const contactInput = signUpForm.querySelector('input[name="contact_number"]');
+const passwordInput = signUpForm.querySelector('input[name="password"]');
+const confirmInput = signUpForm.querySelector('input[name="confirm_password"]');
+
+/* VALIDATION WRAPPERS (UI ONLY) */
+function validateFullName() {
+    const check = () => {
+        const val = nameInput.value.replace(/[0-9]/g, '');
+        nameInput.value = val;
+        updateChecklist(nameInput, [{ text: "Format: Lastname, Firstname", isValid: /^[a-zA-Z\s]+,\s[a-zA-Z\s]+$/.test(val.trim()) }]);
+    };
+    nameInput.addEventListener('input', check);
+    nameInput.addEventListener('focus', check);
+    nameInput.addEventListener('blur', () => removeTooltip('name'));
+}
+
+function validateUsername() {
+    const check = () => {
+        let value = usernameInput.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
+        usernameInput.value = value;
+        updateChecklist(usernameInput, [{ text: "3-20 characters", isValid: value.length >= 3 && value.length <= 20 }]);
+    };
+    usernameInput.addEventListener('input', check);
+    usernameInput.addEventListener('focus', check);
+    usernameInput.addEventListener('blur', () => removeTooltip('username'));
+}
+
+function validateEmail() {
+    const check = () => {
+        updateChecklist(emailInput, [{ text: "Use @gmail.com or @example.com", isValid: /^[a-zA-Z0-9._%+-]+@(gmail\.com|example\.com)$/.test(emailInput.value.trim()) }]);
+    };
+    emailInput.addEventListener('input', check);
+    emailInput.addEventListener('focus', check);
+    emailInput.addEventListener('blur', () => removeTooltip('email'));
+}
+
+function validateContactNumber() {
+    const check = () => {
+        contactInput.value = contactInput.value.replace(/\D/g, '');
+        updateChecklist(contactInput, [{ text: "Exactly 11 digits", isValid: contactInput.value.length === 11 }]);
+    };
+    contactInput.addEventListener('input', check);
+    contactInput.addEventListener('focus', check);
+    contactInput.addEventListener('blur', () => removeTooltip('contact_number'));
+}
+
+function validatePasswords() {
+    const check = () => {
+        const val = passwordInput.value;
+        updateChecklist(passwordInput, [
+            { text: "At least 8 characters", isValid: val.length >= 8 },
+            { text: "One uppercase & one number", isValid: /[A-Z]/.test(val) && /\d/.test(val) },
+            { text: "At least 1 special character", isValid: /[!@#$%^&*(),.?":{}|<>]/.test(val) },
+            { text: "No spaces", isValid: !/\s/.test(val) }
+        ]);
+        if (confirmInput.value) checkMatch();
+    };
+    const checkMatch = () => {
+        updateChecklist(confirmInput, [{ text: "Passwords match", isValid: confirmInput.value === passwordInput.value && confirmInput.value !== "" }]);
+    };
+    passwordInput.addEventListener('input', check);
+    passwordInput.addEventListener('focus', check);
+    passwordInput.addEventListener('blur', () => removeTooltip('password'));
+    confirmInput.addEventListener('input', checkMatch);
+    confirmInput.addEventListener('focus', checkMatch);
+    confirmInput.addEventListener('blur', () => removeTooltip('confirm_password'));
+}
+
+function validateResetPassword() {
+    const newPassInput = document.getElementById('newPassword');
+
+    const check = () => {
+        const val = newPassInput.value;
+        updateChecklist(newPassInput, [
+            { text: "At least 8 characters", isValid: val.length >= 8 },
+            { text: "One uppercase & one number", isValid: /[A-Z]/.test(val) && /\d/.test(val) },
+            { text: "At least 1 special character", isValid: /[!@#$%^&*(),.?":{}|<>]/.test(val) },
+            { text: "No spaces", isValid: !/\s/.test(val) }
+        ]);
+    };
+
+    newPassInput.addEventListener('input', check);
+    newPassInput.addEventListener('focus', check);
+    newPassInput.addEventListener('blur', () => removeTooltip('new_password'));
+}
+
+/* --- INITIALIZE DROPDOWNS --- */
+function initializeDobDropdowns() {
+    const monthSel = document.getElementById('dob-month');
+    const daySel = document.getElementById('dob-day');
+    const yearSel = document.getElementById('dob-year');
+    const currentYear = new Date().getFullYear();
+
+    // Months
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    months.forEach((m, i) => {
+        monthSel.options[monthSel.options.length] = new Option(m, i + 1);
+    });
+
+    // Days
+    for (let i = 1; i <= 31; i++) {
+        daySel.options[daySel.options.length] = new Option(i, i);
+    }
+
+    // Years (Limit: 15 to 100 years old)
+    const startYear = currentYear - 15;  // 2011
+    const endYear = currentYear - 100;   // 1926
+    for (let i = startYear; i >= endYear; i--) {
+        yearSel.options[yearSel.options.length] = new Option(i, i);
+    }
+}
+
+/* --- UPDATED REGISTRATION HANDLER --- */
+function handleRegistrationSubmit() {
+    signUpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitBtn = signUpForm.querySelector('button');
+        const originalText = submitBtn.innerText;
+        const termsCheckbox = document.getElementById('terms-checkbox');
+
+        // MANDATORY TERMS CHECK
+        if (!termsCheckbox.checked) {
+            alert("You must agree to the Terms and Conditions to create an account.");
+            return;
+        }
+
+        // REGEX VALIDATIONS
+        const isNameValid = /^[a-zA-Z\s]+,\s[a-zA-Z\s]+$/.test(nameInput.value.trim());
+        const isEmailValid = /^[a-zA-Z0-9._%+-]+@(gmail\.com|example\.com)$/.test(emailInput.value.trim());
+        const isPassValid = passwordInput.value.length >= 8 && /[A-Z]/.test(passwordInput.value);
+        const isMatch = passwordInput.value === confirmInput.value;
+
+        if (!isNameValid || !isEmailValid || !isPassValid || !isMatch) {
+            alert("Please satisfy all requirements shown in the side tooltips.");
+            return;
+        }
+
+        // COMBINE DOB FROM DROPDOWNS
+        const year = document.getElementById('dob-year').value;
+        const month = document.getElementById('dob-month').value.padStart(2, '0');
+        const day = document.getElementById('dob-day').value.padStart(2, '0');
+        const dobString = `${year}-${month}-${day}`;
+
+        // NETWORK REQUEST
+        submitBtn.innerText = "Sending OTP...";
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = "0.7";
+
+        const data = {
+            name: nameInput.value.trim(),
+            username: usernameInput.value.trim(),
+            email: emailInput.value.trim(),
+            password: passwordInput.value,
+            contact_number: contactInput.value,
+            dob: dobString
+        };
+
+        try {
+            const response = await fetch('http://localhost:3000/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+
+            if (result.otpSent) {
+                document.getElementById('otp-title').innerText = "Verify Registration";
+                const overlay = document.getElementById('otp-overlay');
+                overlay.setAttribute('data-mode', 'register');
+                overlay.style.display = 'flex';
+            } else {
+                alert(result.message || "Registration error.");
+            }
+        } catch (error) {
+            console.error("ðŸ”¥ Error:", error);
+            alert("Server connection failed.");
+        } finally {
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = "1";
+        }
+    });
+
+    // TRIGGER MODAL VIEW
+    document.getElementById('open-terms').addEventListener('click', () => {
+        document.getElementById('terms-modal').style.display = 'flex';
+    });
+
+    // AUTO-CHECK ON AGREE
+    document.getElementById('agree-btn').addEventListener('click', () => {
+        document.getElementById('terms-modal').style.display = 'none';
+        document.getElementById('terms-checkbox').checked = true;
+    });
+}
+
+function startLoginTimer(seconds) {
+    const submitBtn = loginForm.querySelector('button');
+    const originalText = "Login"; 
+    let timeLeft = seconds;
+
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.7";
+
+    const timer = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            errorDiv.textContent = "";
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+            submitBtn.style.opacity = "1";
+        } else {
+            // Display the message in your errorDiv and on the button itself
+            errorDiv.innerHTML = `Too many attempts. Try again in <b style="color:red;">${timeLeft}s</b>`;
+            submitBtn.innerText = `Locked (${timeLeft}s)`;
+            timeLeft--;
+        }
+    }, 1000);
+}
+
+initializeDobDropdowns();
+
+function handleLoginSubmit() {
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const isTrusted = localStorage.getItem('device_trusted') === 'true';
+            const submitBtn = loginForm.querySelector('button');
+            const originalText = submitBtn.innerText;
+            const emailField = loginForm.querySelector('input[name="email"]') || loginForm.querySelector('input[type="email"]');
+            const passwordField = loginForm.querySelector('input[name="password"]') || loginForm.querySelector('input[type="password"]');
+
+            if (!emailField || !passwordField) return;
+
+            const email = emailField.value;
+            const password = passwordField.value;
+
+            errorDiv.textContent = ""; 
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Verifying...";
+            submitBtn.style.opacity = "0.7";
+
+            try {
+                const response = await fetch('http://localhost:3000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
+                });
+
+                // --- 1. HANDLE BRUTE FORCE LOGGING ---
+                if (response.status === 429) {
+                    const rateLimitData = await response.json();
+                    
+                    // Send to Audit Log
+                    await fetch('http://localhost:3000/api/admin/audit_logs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'SECURITY_BRUTE_FORCE_BLOCK',
+                            guest_identifier: email,
+                            details: JSON.stringify({ reason: "Rate limit exceeded", retryAfter: rateLimitData.retryAfter })
+                        })
+                    });
+
+                    if (rateLimitData.retryAfter) startLoginTimer(rateLimitData.retryAfter);
+                    throw new Error(rateLimitData.message || "Too many attempts.");
+                }
+
+                const result = await response.json();
+
+                // --- 2. CHECK PARA SA SUSPENDED ACCOUNT ---
+                if (response.status === 403 || result.isSuspended || (result.message && result.message.toLowerCase().includes('suspend'))) {
+                    showSuspensionModal(result); // ðŸŸ¢ PINALITAN LANG ITO: ipinasa ang buong result object
+                    return;
+                }
+
+                // --- 3. HANDLE INVALID CREDENTIALS LOGGING ---
+                if (!response.ok) {
+                    await fetch('http://localhost:3000/api/admin/audit_logs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'SECURITY_LOGIN_FAILURE',
+                            guest_identifier: email,
+                            details: JSON.stringify({ reason: "Invalid Credentials", attempt_time: new Date().toISOString() })
+                        })
+                    });
+                    
+                    throw new Error(result.message || "Login failed.");
+                }
+
+                if (result.success === false) {
+                    throw new Error(result.message || "Login failed.");
+                }
+
+                // --- 4. PROCEED TO MFA OR DASHBOARD ---
+                if (result.mfaRequired) {
+                    const overlay = document.getElementById('otp-overlay');
+                    if (overlay) {
+                        overlay.style.display = 'flex'; 
+                        overlay.setAttribute('data-mode', 'login');
+                        overlay.setAttribute('data-email', email); 
+                    }
+                } else if (result.success) {
+                    window.location.href = '/dashboard.html';
+                }
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.color = "red";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                submitBtn.style.opacity = "1";
+            }
+        });
+    }
+}
+
+async function verifyLoginOTP(otp) {
+    const res = await fetch('/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp })
+    });
+    const data = await res.json();
+    if (data.success) window.location.href = '/dashboard.html';
+    else alert("Invalid OTP");
+}
+
+/* UNIVERSAL OTP HANDLER */
+function initializeOTPHandler() {
+    const otpOverlay = document.getElementById('otp-overlay');
+    const verifyBtn = document.getElementById('verify-btn');
+    const otpInput = document.getElementById('otp-input');
+    const cancelBtn = document.getElementById('cancel-otp');
+
+    verifyBtn.addEventListener('click', async () => {
+        const mode = otpOverlay.getAttribute('data-mode');
+        const userEmail = otpOverlay.getAttribute('data-email'); 
+        const otpValue = otpInput.value.trim();
+
+        if (otpValue.length !== 6) {
+            alert("Please enter the 6-digit code.");
+            return;
+        }
+
+        verifyBtn.innerText = "Sending OTP in email...";
+        verifyBtn.disabled = true;
+
+        const endpoint = mode === 'register' ? '/verify-registration' : '/verify-otp';
+
+        const requestData = { otp: otpValue };
+        
+        if (mode === 'login' && userEmail) {
+            requestData.email = userEmail;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                if (mode === 'register') {
+                    alert("Account Verified! Please log in.");
+                    location.reload();
+                } else {
+                    // Login success
+                    localStorage.setItem('device_trusted', 'true');
+                    window.location.href = '/dashboard.html';
+                }
+            } else {
+                alert("Invalid OTP code: " + (result.message || "Please try again."));
+                otpInput.value = "";
+            }
+        } catch (err) {
+            console.error("Verification error:", err);
+            alert("Verification failed. Check your connection.");
+        } finally {
+            verifyBtn.innerText = "Verify Identity";
+            verifyBtn.disabled = false;
+        }
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        otpOverlay.style.display = 'none';
+        otpInput.value = "";
+    });
+}
+
+function showResetMessage(text, isError = false) {
+    const msgDiv = document.getElementById('reset-msg');
+    if (!msgDiv) return;
+    
+    msgDiv.textContent = text;
+    msgDiv.style.display = 'block';
+    
+    if (isError) {
+        msgDiv.style.backgroundColor = '#f8d7da'; 
+        msgDiv.style.color = '#721c24';
+        msgDiv.style.border = '1px solid #f5c6cb';
+    } else {
+        msgDiv.style.backgroundColor = '#d4edda'; 
+        msgDiv.style.color = '#155724';
+        msgDiv.style.border = '1px solid #c3e6cb';
+    }
+}
+
+/* --- FORGOT PASSWORD TOGGLE --- */
+function initializeForgotPassword() {
+    const forgotLink = document.getElementById('forgot-password-link');
+    const backBtn = document.getElementById('back-to-login');
+    const forgotSection = document.getElementById('forgot-password-section');
+    const signInContainer = document.querySelector('.form-container.sign-in');
+
+    if (forgotLink) {
+        forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            signInContainer.style.display = 'none';
+            forgotSection.style.display = 'flex';
+        });
+    }
+
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            forgotSection.style.display = 'none';
+            signInContainer.style.display = 'flex';
+        });
+    }
+}
+
+async function requestPasswordReset() {
+    const email = document.getElementById('resetEmail').value;
+    if (!email) return showResetMessage("Please enter your email", true);
+
+    try {
+        const response = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            document.getElementById('otpSection').style.display = 'block';
+            showResetMessage("OTP sent to your email!"); 
+        } else {
+            showResetMessage(result.message, true);
+        }
+    } catch (err) {
+        showResetMessage("Server error. Please try again.", true);
+    }
+}
+
+async function verifyAndReset() {
+    const otp = document.getElementById('resetOTP').value;
+    const newPassword = document.getElementById('newPassword').value;
+
+    if (!otp || !newPassword) return showResetMessage("Please fill in all fields", true);
+
+    const response = await fetch('/api/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp, newPassword })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        showResetMessage("Success! Your password has been updated.");
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    } else {
+        showResetMessage(result.message, true);
+    }
+}
+
+// Function para ipakita ang Suspension Pop-up Modal
+function showSuspensionModal(data) {
+    const modal = document.getElementById('suspension-modal');
+    const reasonText = document.getElementById('suspension-reason-text');
+    const durationText = document.getElementById('suspension-duration-text');
+    
+    // 1. Handling for Reason (Supports array or string, snake_case or camelCase)
+    let rawReason = data.suspend_reasons || data.reason || data.suspensionReason;
+    if (Array.isArray(rawReason)) {
+        reasonText.innerText = rawReason.length > 0 ? rawReason.join(", ") : "Violation of ReFoundly community guidelines.";
+    } else if (typeof rawReason === 'string' && rawReason.trim() !== '') {
+        reasonText.innerText = rawReason;
+    } else {
+        reasonText.innerText = "Violation of ReFoundly community guidelines.";
+    }
+
+    // 2. Handling for Duration / Date (Supports suspended_until or suspendedUntil)
+    const rawUntil = data.suspended_until || data.suspendedUntil;
+
+    if (data.daysRemaining) {
+        durationText.innerText = `${data.daysRemaining} day${data.daysRemaining > 1 ? 's' : ''} remaining`;
+    } else if (rawUntil) {
+        const untilDate = new Date(rawUntil);
+        const now = new Date();
+        const diffMs = untilDate - now;
+        
+        if (!isNaN(untilDate.getTime()) && diffMs > 0) {
+            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            durationText.innerText = `${diffDays} day${diffDays > 1 ? 's' : ''} remaining (Until ${untilDate.toLocaleDateString()})`;
+        } else if (!isNaN(untilDate.getTime())) {
+            durationText.innerText = `Suspended until ${untilDate.toLocaleDateString()}`;
+        } else {
+            durationText.innerText = "Permanent / Indefinite Suspension";
+        }
+    } else {
+        durationText.innerText = "Permanent / Indefinite Suspension";
+    }
+
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeSuspensionModal() {
+    const modal = document.getElementById('suspension-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close Button Event Listener
+document.getElementById('close-suspension-btn')?.addEventListener('click', () => {
+    document.getElementById('suspension-modal').style.display = 'none';
+});
+
+// Call this at the bottom with your other initializers
+initializeOTPHandler();
+handleFormToggle();
+initializePasswordToggles();
+validateFullName();
+validateUsername();
+validateEmail();
+validateContactNumber();
+validatePasswords();
+handleRegistrationSubmit();
+handleLoginSubmit();
+initializeForgotPassword();
+validateResetPassword();
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\session-handler.js ===
+function initSessionMonitor() {
+    const timeout = 15000; // 15 seconds for Sprint 1 testing
+
+    console.log("ReFoundly session monitor started... waiting 15s");
+
+    setTimeout(() => {
+        const modal = document.getElementById('session-alert');
+        if (modal) {
+            modal.style.setProperty('display', 'block', 'important');
+            console.log("Session expired! Modal is now visible.");
+        } else {
+            console.error("Could not find session-alert div!");
+        }
+    }, timeout);
+}
+
+function redirectToLogin() {
+    fetch('/logout', { method: 'POST' })
+        .then(() => {
+            window.location.href = "/index.html";
+        })
+        .catch(() => {
+            window.location.href = "/index.html";
+        });
+}
+
+window.addEventListener('load', initSessionMonitor);
+
+
+=== FILE: C:\Users\tulia\Desktop\ReFoundly\User\user_acc.js ===
+document.addEventListener("DOMContentLoaded", () => {
+    let originalUserData = {};
+
+    const nameInput = document.getElementById('input-name');
+    const emailInput = document.getElementById('input-email');
+    const contactInput = document.getElementById('input-contact');
+    const dobInput = document.getElementById('input-dob');
+
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const accountForm = document.getElementById('account-form');
+
+    // Modal elements
+    const otpModal = document.getElementById('otp-modal');
+    const otpInput = document.getElementById('otp-input');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+
+    // Fetch and populate data
+    function loadUserData() {
+        fetch('/user/me', { credentials: 'same-origin' })
+            .then(res => res.json())
+            .then(user => {
+                if (!user) return;
+                originalUserData = user;
+
+                nameInput.value = user.name || '';
+                emailInput.value = user.email || '';
+                contactInput.value = user.contact_number || '';
+                
+                if (user.dob) {
+                    const d = new Date(user.dob);
+                    dobInput.value = d.toISOString().split('T')[0];
+                }
+
+                document.getElementById('user-fullname').textContent = user.name || 'User';
+                document.getElementById('user-email').textContent = user.email || '';
+            })
+            .catch(err => console.error('Error fetching profile:', err));
+    }
+
+    loadUserData();
+
+    // Toggle Edit Mode
+    editBtn.addEventListener('click', () => {
+        nameInput.disabled = false;
+        emailInput.disabled = false;
+        contactInput.disabled = false;
+        dobInput.disabled = false;
+
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'inline-block';
+    });
+
+    // Cancel Edit Mode
+    cancelBtn.addEventListener('click', () => {
+        loadUserData();
+
+        nameInput.disabled = true;
+        emailInput.disabled = true;
+        contactInput.disabled = true;
+        dobInput.disabled = true;
+
+        editBtn.style.display = 'inline-block';
+        saveBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+    });
+
+    // Handle Account Form Submission
+    accountForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const updatedData = {
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim(),
+            contact_number: contactInput.value.trim(),
+            dob: dobInput.value
+        };
+
+        if (updatedData.email !== originalUserData.email) {
+            try {
+                const res = await fetch('/api/user/request-email-change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newEmail: updatedData.email })
+                });
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    otpModal.style.display = 'flex';
+                } else {
+                    alert(result.message || "Failed to send verification code.");
+                }
+            } catch (err) {
+                console.error("Error requesting OTP:", err);
+            }
+        } else {
+            saveProfileChanges(updatedData);
+        }
+    });
+
+    async function saveProfileChanges(data) {
+        try {
+            const res = await fetch('/api/user/update-profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                alert("Profile updated successfully!");
+                location.reload();
+            } else {
+                alert(result.message || "Update failed.");
+            }
+        } catch (err) {
+            console.error("Save error:", err);
+        }
+    }
+
+    // Verify OTP for Email Change
+    verifyOtpBtn.addEventListener('click', async () => {
+        const otp = otpInput.value.trim();
+        const newEmail = emailInput.value.trim();
+
+        if (otp.length !== 6) {
+            alert("Please enter a valid 6-digit code.");
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/user/verify-email-change', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp, newEmail })
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                await fetch('/api/user/update-profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: nameInput.value.trim(),
+                        email: newEmail,
+                        contact_number: contactInput.value.trim(),
+                        dob: dobInput.value
+                    })
+                });
+
+                alert("Profile and email updated successfully!");
+                location.reload();
+            } else {
+                alert(result.message || "Invalid or expired verification code.");
+            }
+        } catch (err) {
+            console.error("OTP verification error:", err);
+        }
+    });
+
+    // ==========================================
+    // PASSWORD MODAL CONTROLS & VALIDATION
+    // ==========================================
+    const pwLink = document.querySelector('.change-pw');
+    const pwModal = document.getElementById('password-modal');
+    const closePwBtn = document.getElementById('close-password-btn');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+
+    if (pwLink) {
+        pwLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (pwModal) pwModal.style.display = 'flex';
+        });
+    }
+
+    // Eye Toggle Handler
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Helper to clear red error borders and error message banner
+    function clearPasswordErrors() {
+        const errorMsg = document.getElementById('password-error-msg');
+        if (errorMsg) {
+            errorMsg.style.display = 'none';
+            errorMsg.textContent = '';
+        }
+
+        ['currentPassword', 'newPassword', 'confirmNewPassword'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.style.borderColor = '#ccc';
+            }
+        });
+    }
+
+    // Helper to highlight invalid inputs red and display error banner
+    function showPasswordError(message, invalidInputIds = []) {
+        clearPasswordErrors();
+
+        const errorMsg = document.getElementById('password-error-msg');
+        if (errorMsg) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+
+        invalidInputIds.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.style.borderColor = '#d9534f';
+            }
+        });
+    }
+
+    // Close Modal Reset
+    if (closePwBtn) {
+        closePwBtn.addEventListener('click', () => {
+            if (pwModal) pwModal.style.display = 'none';
+            if (changePasswordForm) changePasswordForm.reset();
+            clearPasswordErrors();
+        });
+    }
+
+    // Single Form Submission Handler
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearPasswordErrors();
+
+            const currentInput = document.getElementById('currentPassword');
+            const newInput = document.getElementById('newPassword');
+            const confirmInput = document.getElementById('confirmNewPassword');
+
+            const currentPassword = currentInput.value;
+            const newPassword = newInput.value;
+            const confirmNewPassword = confirmInput.value;
+
+            // 1. Check Passwords Match
+            if (newPassword !== confirmNewPassword) {
+                showPasswordError('New passwords do not match.', ['newPassword', 'confirmNewPassword']);
+                return;
+            }
+
+            // 2. Check Password Strength Rules
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(newPassword)) {
+                showPasswordError(
+                    'Password must be at least 8 characters and include uppercase, lowercase, number, and special character (@$!%*?&).',
+                    ['newPassword']
+                );
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword, newPassword }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Hide the form and show the green checkmark UI
+                    const formContainer = document.getElementById('password-form-container');
+                    const successContainer = document.getElementById('password-success-container');
+
+                    if (formContainer) formContainer.style.display = 'none';
+                    if (successContainer) successContainer.style.display = 'block';
+
+                    // Redirect to index.html after 1.5 seconds
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+
+                } else {
+                    // Show backend error inline (e.g., incorrect current password)
+                    showPasswordError(
+                        data.message || 'Failed to update password.',
+                        data.message && data.message.toLowerCase().includes('current') ? ['currentPassword'] : ['newPassword']
+                    );
+                }
+            } catch (err) {
+                console.error('Error changing password:', err);
+                showPasswordError('An error occurred. Please try again.');
+            }
+        });
+    }
+});
+
+
