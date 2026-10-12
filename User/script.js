@@ -429,11 +429,11 @@ function initializeOTPHandler() {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
+            const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestData)
+});
 
             const result = await response.json();
 
