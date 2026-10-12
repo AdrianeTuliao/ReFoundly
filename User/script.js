@@ -4,7 +4,9 @@ const loginBtn = document.getElementById('login');
 const loginForm = document.querySelector('.sign-in form');
 const signUpForm = document.querySelector('.sign-up form');
 const errorDiv = document.getElementById('login-error');
-
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://refoundly.onrender.com'; 
 /* FORM SIDE TOGGLE */
 function handleFormToggle() {
     registerBtn.addEventListener('click', () => container.classList.add("active"));
