@@ -360,3 +360,128 @@ td {
     justify-content: flex-end;
     margin-top: 20px;
 }
+
+/* =========================================================
+   THEMED CONFIRM / PROMPT DIALOG (replaces native confirm()/prompt())
+   ========================================================= */
+
+.agr-dialog-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+
+.agr-dialog-overlay.active {
+    display: flex;
+}
+
+.agr-dialog-card {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 92%;
+    max-width: 380px;
+    padding: 28px 26px 22px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: agrDialogPop 0.15s ease-out;
+}
+
+@keyframes agrDialogPop {
+    from { transform: scale(0.94); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.agr-dialog-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #eaf1e6;
+    color: #55725b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 14px;
+}
+
+.agr-dialog-icon.danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.agr-dialog-card h3 {
+    font-size: 1.05rem;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.agr-dialog-card p {
+    font-size: 0.88rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
+.agr-dialog-input-wrap {
+    margin-top: 14px;
+    text-align: left;
+}
+
+.agr-dialog-input-wrap textarea {
+    width: 100%;
+    resize: vertical;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: #334155;
+    outline: none;
+}
+
+.agr-dialog-input-wrap textarea:focus {
+    border-color: #55725b;
+}
+
+.agr-dialog-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.agr-dialog-btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.agr-dialog-btn:hover {
+    opacity: 0.9;
+}
+
+.agr-dialog-cancel {
+    background: #eef1ee;
+    color: #334155;
+}
+
+.agr-dialog-confirm {
+    background: #55725b;
+    color: #ffffff;
+}
+
+.agr-dialog-confirm.danger {
+    background: #dc2626;
+}

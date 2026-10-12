@@ -141,27 +141,32 @@ fetch('/api/user-history')
 
         function setupPagination() {
             paginationContainer.innerHTML = "";
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            if (totalPages <= 1) return;
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
 
+            // 1. Previous Button
             const prevBtn = document.createElement("button");
-            prevBtn.className = "pag-btn";
-            prevBtn.innerHTML = "<i class='fas fa-chevron-left'></i>";
-            prevBtn.onclick = () => { if(currentPage > 1) { renderPage(currentPage - 1); window.scrollTo(0,0); }};
+            prevBtn.className = "pag-btn-large";
+            prevBtn.textContent = "Previous";
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) { renderPage(currentPage - 1); window.scrollTo(0, 0); }
+            };
             paginationContainer.appendChild(prevBtn);
 
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement("button");
-                btn.className = `pag-btn ${i === currentPage ? 'active' : ''}`;
-                btn.innerText = i;
-                btn.onclick = () => { renderPage(i); window.scrollTo(0,0); };
-                paginationContainer.appendChild(btn);
-            }
+            // 2. Page Indicator Text
+            const pageIndicator = document.createElement("span");
+            pageIndicator.className = "page-indicator";
+            pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+            paginationContainer.appendChild(pageIndicator);
 
+            // 3. Next Button
             const nextBtn = document.createElement("button");
-            nextBtn.className = "pag-btn";
-            nextBtn.innerHTML = "<i class='fas fa-chevron-right'></i>";
-            nextBtn.onclick = () => { if(currentPage < totalPages) { renderPage(currentPage + 1); window.scrollTo(0,0); }};
+            nextBtn.className = "pag-btn-large";
+            nextBtn.textContent = "Next";
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) { renderPage(currentPage + 1); window.scrollTo(0, 0); }
+            };
             paginationContainer.appendChild(nextBtn);
         }
     });

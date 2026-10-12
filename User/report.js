@@ -1,8 +1,11 @@
-function sanitizeInput(text) {
-    const element = document.createElement('div');
-    element.innerText = text;
-    return element.innerHTML;
-}
+/* NOTE: sanitizeInput() was removed. It pre-encoded text into HTML entities
+   ("<html>" -> "&lt;html&gt;") client-side, before the server's own
+   stripTags() ever saw it. Since stripTags() only matches literal < and >
+   characters, it had nothing left to strip once the client had already
+   encoded them — so the entities went straight into the database as
+   visible text. The server is the only place this can be enforced
+   correctly anyway (anyone can bypass client JS), so sanitization now
+   happens exactly once, server-side, on the raw text as typed. */
 
 /* 1. IMAGE PREVIEW & REMOVE LOGIC */
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,41 +22,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const maxSize = 2 * 1024 * 1024; // 2MB Limit
 
-    // Handle File Selection
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Validation
-            if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-                alert("Only JPG and PNG files are allowed!");
-                fileInput.value = '';
-                return;
-            }
+    if (fileInput) {
+        // Handle File Selection
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Validation
+                if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                    alert("Only JPG and PNG files are allowed!");
+                    fileInput.value = '';
+                    return;
+                }
 
-            if (file.size > maxSize) {
-                alert("File is too big! Please upload an image smaller than 2MB.");
-                fileInput.value = '';
-                return;
-            }
+                if (file.size > maxSize) {
+                    alert("File is too big! Please upload an image smaller than 2MB.");
+                    fileInput.value = '';
+                    return;
+                }
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                imagePreview.src = event.target.result;
-                placeholder.style.display = 'none';
-                previewContainer.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    if (imagePreview) imagePreview.src = event.target.result;
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (previewContainer) previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 
     // Remove Selected Image
     if (removeBtn) {
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent opening file dialog
-            fileInput.value = ''; // Reset input
-            imagePreview.src = '';
-            previewContainer.style.display = 'none';
-            placeholder.style.display = 'flex';
+            if (fileInput) fileInput.value = ''; // Reset input
+            if (imagePreview) imagePreview.src = '';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'flex';
         });
     }
 
@@ -61,123 +66,137 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewBtn) {
         viewBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            modal.style.display = 'flex';
-            modalImg.src = imagePreview.src;
+            if (modal) modal.style.display = 'flex';
+            if (modalImg && imagePreview) modalImg.src = imagePreview.src;
         });
     }
 
     // Close Modal
     if (closeModal) {
         closeModal.addEventListener('click', () => {
-            modal.style.display = 'none';
+            if (modal) modal.style.display = 'none';
         });
     }
 
     window.addEventListener('click', (e) => {
-        if (e.target === modal) {
+        if (modal && e.target === modal) {
             modal.style.display = 'none';
         }
     });
 });
 
 /* 2. FORM SUBMISSION LOGIC (MySQL Database Only) */
-document.getElementById('mainForm').addEventListener('submit', async function(event) {
-    event.preventDefault(); 
-    
-    const submitBtn = document.getElementById('btnSubmit');
-    
-    // GET CURRENT VALUES
-    const itemNameRaw = document.getElementById('itemName').value;
-    const descRaw = document.querySelector('textarea[name="description"]').value;
-    const firstName = document.getElementsByName('firstName')[0].value;
-    const emailValue = document.getElementsByName('contactEmail')[0].value;
-
-    // VALIDATION
-    const namePattern = /^[a-zA-Z\s]+$/;
-    if (!namePattern.test(firstName)) {
-        alert("Please enter a valid name (letters only).");
-        return;
-    }
-    if (!emailValue.includes('@')) {
-        alert("Please enter a valid email address.");
-        return;
-    }
-
-    const maliciousRegex = /https?:\/\/|www\.|<script/i; 
-    if (maliciousRegex.test(itemNameRaw) || maliciousRegex.test(descRaw)) {
-        alert("Security Block: External links and scripts are strictly prohibited.");
-        return; 
-    }
+const mainForm = document.getElementById('mainForm');
+if (mainForm) {
+    mainForm.addEventListener('submit', async function(event) {
+        event.preventDefault(); 
         
-    const sanitizedItemName = sanitizeInput(itemNameRaw);
-    const sanitizedDesc = sanitizeInput(descRaw);
+        const submitBtn = document.getElementById('btnSubmit');
+        
+        // GET CURRENT VALUES WITH SAFE GUARDS
+        const itemNameElem = document.getElementById('itemName');
+        const descElem = document.querySelector('textarea[name="description"]');
+        const firstNameElem = document.getElementsByName('firstName')[0];
+        const emailElem = document.getElementsByName('contactEmail')[0];
 
-    try {
-        submitBtn.disabled = true;
-        submitBtn.innerText = "⏳ Saving Report...";
+        const itemNameRaw = itemNameElem ? itemNameElem.value : '';
+        const descRaw = descElem ? descElem.value : '';
+        const firstName = firstNameElem ? firstNameElem.value : '';
+        const emailValue = emailElem ? emailElem.value : '';
 
-        let csrfToken = '';
+        // VALIDATION
+        const namePattern = /^[a-zA-Z\s]+$/;
+        if (!namePattern.test(firstName)) {
+            alert("Please enter a valid name (letters only).");
+            return;
+        }
+        if (!emailValue.includes('@')) {
+            alert("Please enter a valid email address.");
+            return;
+        }
+
+        const maliciousRegex = /https?:\/\/|www\.|<script/i; 
+        if (maliciousRegex.test(itemNameRaw) || maliciousRegex.test(descRaw)) {
+            alert("Security Block: External links and scripts are strictly prohibited.");
+            return; 
+        }
+
         try {
-            const csrfResponse = await fetch('/api/csrf-token');
-            if (csrfResponse.ok) {
-                const csrfData = await csrfResponse.json();
-                csrfToken = csrfData.csrfToken;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "⏳ Saving Report...";
             }
-        } catch (err) {
-            console.warn("CSRF fetch skipped or failed.");
+
+            let csrfToken = '';
+            try {
+                const csrfResponse = await fetch('/api/csrf-token');
+                if (csrfResponse.ok) {
+                    const csrfData = await csrfResponse.json();
+                    csrfToken = csrfData.csrfToken;
+                }
+            } catch (err) {
+                console.warn("CSRF fetch skipped or failed.");
+            }
+
+            // PREPARE FORM DATA FOR MYSQL
+            // (itemName/description are already included as typed via
+            // `new FormData(this)` below — the server strips any HTML tags
+            // before storage, so no client-side rewriting is needed here.)
+            const formData = new FormData(this);
+
+            // Include Accept header to force a JSON response
+            const headers = {
+                'Accept': 'application/json'
+            };
+            if (csrfToken) headers['CSRF-Token'] = csrfToken;
+
+            const response = await fetch('/submit-report', { 
+                method: 'POST',
+                body: formData,
+                headers: headers
+            });
+
+            // Check content type before parsing, to avoid "Unexpected token '<'" errors
+            // when the server returns an HTML error page instead of JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Your session has expired or a server error occurred. Please log in again and try again.");
+            }
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || "Server Error");
+
+            showSuccessToast();
+
+        } catch (error) {
+            console.error("Submission Error:", error);
+            alert("Submission Failed: " + error.message);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit Report";
+            }
         }
-
-        // PREPARE FORM DATA FOR MYSQL
-        const formData = new FormData(this);
-        formData.set('itemName', sanitizedItemName);
-        formData.set('description', sanitizedDesc);
-
-        // Include Accept header to force a JSON response
-        const headers = {
-            'Accept': 'application/json'
-        };
-        if (csrfToken) headers['CSRF-Token'] = csrfToken;
-
-        const response = await fetch('/submit-report', { 
-            method: 'POST',
-            body: formData,
-            headers: headers
-        });
-
-        // Check content type before parsing, to avoid "Unexpected token '<'" errors
-        // when the server returns an HTML error page instead of JSON
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            throw new Error("Your session has expired or a server error occurred. Please log in again and try again.");
-        }
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message || "Server Error");
-
-        showSuccessToast();
-
-    } catch (error) {
-        console.error("Submission Error:", error);
-        alert("Submission Failed: " + error.message);
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Submit Report";
-    }
-});
+    });
+}
 
 function showSuccessToast() {
-    const toast = document.getElementById('custom-toast');
-    if (toast) {
-        toast.classList.remove('toast-hidden');
-        toast.classList.add('toast-visible');
-
-        setTimeout(() => {
-            toast.classList.remove('toast-visible');
-            toast.classList.add('toast-hidden');
-            window.location.href = "/dashboard.html";
-        }, 3000);
+    if (typeof showRefoundlyToast === 'function') {
+        showRefoundlyToast(
+            "Report Submitted!", 
+            "Your report has been posted! We'll notify you if a possible match is found.", 
+            "fa-solid fa-circle-check"
+        );
+        setTimeout(() => { window.location.href = "/dashboard.html"; }, 2500);
     } else {
-        alert("Report successfully submitted!");
-        window.location.href = "/dashboard.html";
+        const toast = document.getElementById('custom-toast');
+        if (toast) {
+            toast.classList.remove('toast-hidden');
+            toast.classList.add('toast-visible');
+            setTimeout(() => { window.location.href = "/dashboard.html"; }, 3000);
+        } else {
+            alert("Report successfully submitted!");
+            window.location.href = "/dashboard.html";
+        }
     }
 }
 
@@ -190,21 +209,24 @@ window.onload = async () => {
             
             if (user.name) {
                 const fullName = user.name.trim();
-                
+                const firstNameElem = document.getElementsByName('firstName')[0];
+                const lastNameElem = document.getElementsByName('lastName')[0];
+
                 if (fullName.includes(',')) {
                     const parts = fullName.split(',');
-                    document.getElementsByName('lastName')[0].value = parts[0].trim();
-                    document.getElementsByName('firstName')[0].value = parts[1].trim();
+                    if (lastNameElem) lastNameElem.value = parts[0].trim();
+                    if (firstNameElem) firstNameElem.value = parts[1].trim();
                 } else if (fullName.includes(' ')) {
                     const lastSpaceIndex = fullName.lastIndexOf(' ');
-                    document.getElementsByName('firstName')[0].value = fullName.substring(0, lastSpaceIndex);
-                    document.getElementsByName('lastName')[0].value = fullName.substring(lastSpaceIndex + 1);
+                    if (firstNameElem) firstNameElem.value = fullName.substring(0, lastSpaceIndex);
+                    if (lastNameElem) lastNameElem.value = fullName.substring(lastSpaceIndex + 1);
                 } else {
-                    document.getElementsByName('firstName')[0].value = fullName;
+                    if (firstNameElem) firstNameElem.value = fullName;
                 }
             }
 
-            document.getElementsByName('contactEmail')[0].value = user.email || '';
+            const emailElem = document.getElementsByName('contactEmail')[0];
+            if (emailElem) emailElem.value = user.email || '';
             
             const phoneInput = document.getElementById('phoneNumber');
             if (phoneInput) {
@@ -230,24 +252,3 @@ function checkSession() {
     .catch(() => console.warn("Server connection offline."));
 }
 setInterval(checkSession, 10000);
-
-function showSuccessToast() {
-    if (typeof showRefoundlyToast === 'function') {
-        showRefoundlyToast(
-            "Report Submitted!", 
-            "Your report has been posted! We'll notify you if a possible match is found.", 
-            "fa-solid fa-circle-check"
-        );
-        setTimeout(() => { window.location.href = "/dashboard.html"; }, 2500);
-    } else {
-        const toast = document.getElementById('custom-toast');
-        if (toast) {
-            toast.classList.remove('toast-hidden');
-            toast.classList.add('toast-visible');
-            setTimeout(() => { window.location.href = "/dashboard.html"; }, 3000);
-        } else {
-            alert("Report successfully submitted!");
-            window.location.href = "/dashboard.html";
-        }
-    }
-}

@@ -40,6 +40,63 @@
     margin-bottom: 25px;
 }
 
+/* REPORT TYPE TABS (Item Reports / User Reports) */
+.report-type-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.report-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 10px 16px;
+
+    border: none;
+    border-bottom: 3px solid transparent;
+
+    background: transparent;
+
+    color: #666;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.report-tab-btn:hover {
+    color: #5D8252;
+}
+
+.report-tab-btn.active {
+    color: #5D8252;
+    border-bottom-color: #5D8252;
+}
+
+.tab-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+
+    background: #c0392b;
+    color: white;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
 .btn-archive {
     background: #5D8252;
     color: #fff;
@@ -347,9 +404,14 @@ tbody tr:not(:last-child) {
     color: #15803d !important;
 }
 
-.badge.denied {
+.badge.denied, .badge.dismissed {
     background-color: #fee2e2 !important; /* Soft Pastel Red */
     color: #b91c1c !important;
+}
+
+.badge.reviewed {
+    background-color: #dcfce7 !important; /* Soft Pastel Sage Green */
+    color: #15803d !important;
 }
 
 /* --- SUMMARY CARD ICON FIX --- */

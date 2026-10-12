@@ -99,10 +99,12 @@
                 <div class="filter-bar">
                     <select id="stageFilter">
                         <option value="all">All Handover Stages</option>
-                        <option value="Scheduled">Scheduled Meetup</option>
-                        <option value="Pending Clearance">Awaiting Admin Clearance</option>
-                        <option value="Completed">Handover Completed</option>
-                        <option value="Disputed">Disputed / Flagged</option>
+                        <option value="review">Awaiting Review</option>
+                        <option value="awaiting_barangay">Waiting for Barangay Approval</option>
+                        <option value="approved">Ready for Handover</option>
+                        <option value="resched">Rescheduling</option>
+                        <option value="completed">Completed</option>
+                        <option value="disputed">Disputed / Flagged</option>
                     </select>
 
                     <div class="search-box">
@@ -186,6 +188,22 @@
         .btn-confirm { background:#7aa340; color:white; border:none; border-radius:8px; padding:10px; font-weight:600; cursor:pointer; font-size:0.85rem; }
         .btn-confirm:hover { background:#6a9036; }
     </style>
+
+    <!-- Themed Confirm / Prompt Dialog (replaces native confirm()/prompt()) -->
+    <div id="agrDialog" class="agr-dialog-overlay">
+        <div class="agr-dialog-card">
+            <div class="agr-dialog-icon" id="agrDialogIcon"><i class="fa-solid fa-circle-question"></i></div>
+            <h3 id="agrDialogTitle">Are you sure?</h3>
+            <p id="agrDialogMessage"></p>
+            <div id="agrDialogInputWrap" class="agr-dialog-input-wrap" style="display:none;">
+                <textarea id="agrDialogInput" rows="3" placeholder="Type here..."></textarea>
+            </div>
+            <div class="agr-dialog-actions">
+                <button type="button" id="agrDialogCancel" class="agr-dialog-btn agr-dialog-cancel">Cancel</button>
+                <button type="button" id="agrDialogConfirm" class="agr-dialog-btn agr-dialog-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <script src="AdAgreements.js"></script>
     <script src="Adminscript.js"></script>

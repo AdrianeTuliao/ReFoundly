@@ -572,6 +572,37 @@ input:not(:placeholder-shown) + label {
     form h1 {
         font-size: 26px !important;
     }
+
+    /* --- Mobile layout fix: only ONE form takes up space at a time --- */
+
+    /* Let the page grow and scroll from the top (centering would clip the top of tall forms) */
+    body {
+        height: auto;
+        min-height: 100vh;
+        align-items: flex-start;
+    }
+
+    .container {
+        justify-content: center;
+    }
+
+    /* The desktop slide/fade transitions must not apply on mobile */
+    .sign-in,
+    .sign-up,
+    .container.active .sign-in,
+    .container.active .sign-up {
+        transform: none !important;
+        opacity: 1 !important;
+        left: 0 !important;
+    }
+
+    /* The hidden sign-up form was still taking up space above Login. Hide whichever is inactive. */
+    .sign-up { display: none !important; }
+    .container.active .sign-up { display: flex !important; }
+    .container.active .sign-in { display: none !important; }
+
+    /* The <br> spacers in the login form are for the desktop layout only */
+    #loginForm br { display: none; }
 }
 
 /* ==========================================

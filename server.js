@@ -40,7 +40,33 @@ const storage = multer.diskStorage({
     destination: './User/uploads/',
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
-const upload = multer({ storage: storage });
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB — anything larger is rejected before it touches disk
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JPG, PNG, and WEBP images are allowed.'));
+        }
+    }
+});
+
+// Same storage/limits/filter as `upload`, dedicated to chat image
+// attachments so it can be wired independently of the report-form uploader.
+const chatImageUpload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JPG, PNG, and WEBP images are allowed.'));
+        }
+    }
+});
 
 /*--Connect To Database--*/
 db.connect(err => {
@@ -647,34 +673,145 @@ app.get('/admin/me', requireAdmin, (req, res) => {
     });
 });
 
+/*--Server-side input sanitization/validation for report submissions--*
+   Client-side checks in report.js are UX only — they don't run at all if
+   someone POSTs to this endpoint directly (Postman, curl, disabled JS).
+   Everything that actually matters has to be enforced here. */
+function stripTags(value) {
+    // Removes literal HTML tags entirely rather than escaping them, so
+    // "<html></html>", "<script>...</script>", "<img onerror=...>" etc.
+    // never reach the database as markup in the first place.
+    return String(value || '').replace(/<[^>]*>/g, '').trim();
+}
+
+function validateReportFields(body) {
+    const errors = [];
+    const clean = {};
+
+    const requiredText = {
+        itemName: { label: 'Item name', max: 100 },
+        category: { label: 'Category', max: 50 },
+        location: { label: 'Location', max: 100 },
+        firstName: { label: 'First name', max: 50 },
+        lastName: { label: 'Last name', max: 50 }
+    };
+
+    for (const [field, rules] of Object.entries(requiredText)) {
+        const value = stripTags(body[field]);
+        if (!value) {
+            errors.push(`${rules.label} is required.`);
+        } else if (value.length > rules.max) {
+            errors.push(`${rules.label} must be ${rules.max} characters or fewer.`);
+        }
+        clean[field] = value;
+    }
+
+    // Category must match one of the actual dropdown options (see dashboard.html) —
+    // a raw POST could otherwise send anything here.
+    const validCategories = [
+        'wallet', 'gadgets', 'accessories', 'clothing', 'id',
+        'documents', 'books', 'school supplies', 'tools', 'others'
+    ];
+    if (!validCategories.includes(clean.category.toLowerCase())) {
+        errors.push('Category must be one of the listed options.');
+    }
+
+    // Description and brand are optional but still get stripped + capped.
+    clean.description = stripTags(body.description).slice(0, 1000);
+    clean.brand = stripTags(body.brand).slice(0, 50);
+
+    // Report type must be one of the two real values — never trust the raw string.
+    const reportType = String(body.reportType || '').trim().toLowerCase();
+    if (reportType !== 'lost' && reportType !== 'found') {
+        errors.push('Report type must be either Lost or Found.');
+    }
+    clean.reportType = reportType === 'lost' ? 'Lost' : 'Found';
+
+    // Email: basic format check.
+    const email = String(body.contactEmail || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push('A valid contact email is required.');
+    }
+    clean.contactEmail = email.slice(0, 100);
+
+    // Phone: digits only after stripping common separators, reasonable length.
+    const phoneDigits = String(body.contactPhone || '').replace(/[\s\-()]/g, '');
+    if (!/^[0-9]{7,15}$/.test(phoneDigits)) {
+        errors.push('A valid contact phone number is required.');
+    }
+    clean.contactPhone = phoneDigits;
+
+    // Incident date/time: optional, but if provided must match a real date
+    // or time format. Without this, an invalid string (or an injection
+    // attempt) gets handed straight to a MySQL DATE/TIME column, which
+    // MySQL will often silently coerce to 0000-00-00 / NULL rather than
+    // erroring — so bad input was disappearing instead of being rejected.
+    const rawDate = String(body.incidentDate || '').trim();
+    if (rawDate) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate) || isNaN(new Date(rawDate).getTime())) {
+            errors.push('Incident date must be a valid date (YYYY-MM-DD).');
+            clean.incidentDate = null;
+        } else {
+            clean.incidentDate = rawDate;
+        }
+    } else {
+        clean.incidentDate = null;
+    }
+
+    const rawTime = String(body.incidentTime || '').trim();
+    if (rawTime) {
+        if (!/^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/.test(rawTime)) {
+            errors.push('Incident time must be a valid 24-hour time (HH:MM).');
+            clean.incidentTime = null;
+        } else {
+            clean.incidentTime = rawTime;
+        }
+    } else {
+        clean.incidentTime = null;
+    }
+
+    // Whether the reporter flagged their own uploaded photo as showing a
+    // valid ID, cash, or other sensitive document — never trust a raw
+    // string here, only "1"/"true" counts as checked.
+    const selfFlagged = ['1', 'true', 'on'].includes(String(body.isSensitiveImage || '').toLowerCase());
+
+    // Don't rely on the reporter to remember to check that box — a photo
+    // reported under the "ID" or "Documents" category is automatically
+    // treated as sensitive and blurred, regardless of the checkbox.
+    const autoSensitiveCategory = ['id', 'documents'].includes(clean.category.toLowerCase());
+
+    clean.isSensitiveImage = (selfFlagged || autoSensitiveCategory) ? 1 : 0;
+
+    return { errors, clean };
+}
+
 /*--Submit Item Report--*/
 app.post('/submit-report', requireUser, upload.single('image'), async (req, res) => {
     try {
         const currentUserId = req.session.userId;
-        const { 
-            itemName, category, location, reportType, brand, 
-            incidentDate, incidentTime, description, contactPhone, contactEmail,
-            firstName, lastName // 🟢 Kinukuha na ang firstName at lastName mula sa HTML form
-        } = req.body;
+
+        const { errors, clean } = validateReportFields(req.body);
+        if (errors.length > 0) {
+            // Reject clearly — no partial/garbage rows ever get inserted.
+            return res.status(400).json({ success: false, message: errors.join(' ') });
+        }
 
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-        const formattedDate = incidentDate && incidentDate.trim() !== '' ? incidentDate : null;
-        const formattedTime = incidentTime && incidentTime.trim() !== '' ? incidentTime : null;
 
         const insertQuery = `
             INSERT INTO items (
-                user_id, item_name, category, location, report_type, brand, 
-                incident_date, incident_time, description, 
-                contact_firstname, contact_lastname, contact_phone, contact_email, 
-                image_path, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending Approval')
+                user_id, item_name, category, location, report_type, brand,
+                incident_date, incident_time, description,
+                contact_firstname, contact_lastname, contact_phone, contact_email,
+                image_path, is_sensitive_image, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending Approval')
         `;
 
         db.query(insertQuery, [
-            currentUserId, itemName, category, location, reportType, brand, 
-            formattedDate, formattedTime, description, 
-            firstName, lastName, contactPhone, contactEmail, 
-            imagePath
+            currentUserId, clean.itemName, clean.category, clean.location, clean.reportType, clean.brand,
+            clean.incidentDate, clean.incidentTime, clean.description,
+            clean.firstName, clean.lastName, clean.contactPhone, clean.contactEmail,
+            imagePath, clean.isSensitiveImage
         ], (err, result) => {
             if (err) {
                 console.error("Submit Report Error:", err);
@@ -809,6 +946,71 @@ app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
         }
 
         res.json({ success: true, message: "Status updated in DB" });
+    });
+});
+
+/*--Admin: Get User Reports (from the chat "Report User" button)--*/
+app.get('/api/admin/user-reports', requireAdmin, (req, res) => {
+    const sql = `
+        SELECT
+            ur.id,
+            ur.reason,
+            ur.details,
+            ur.status,
+            ur.conversation_id,
+            DATE_FORMAT(ur.created_at, '%b %d, %Y %h:%i %p') AS formattedDate,
+            ur.created_at,
+
+            reporter.id   AS reporter_id,
+            reporter.name  AS reporter_name,
+            reporter.email AS reporter_email,
+
+            reported.id    AS reported_user_id,
+            reported.name  AS reported_user_name,
+            reported.email AS reported_user_email,
+            reported.status AS reported_user_account_status,
+
+            i.item_name AS item_name
+
+        FROM user_reports ur
+        JOIN users reporter  ON reporter.id = ur.reporter_id
+        JOIN users reported  ON reported.id = ur.reported_user_id
+        LEFT JOIN conversations c ON c.id = ur.conversation_id
+        LEFT JOIN items i ON i.id = c.item_id
+        ORDER BY ur.created_at DESC
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Fetch user reports error:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.json(results);
+    });
+});
+
+/*--Admin: Update a User Report's Status (reviewed / dismissed)--*/
+app.post('/api/admin/user-reports/:id/status', requireAdmin, (req, res) => {
+    const reportId = parseInt(req.params.id, 10);
+    const { status } = req.body;
+
+    const allowedStatuses = ['pending', 'reviewed', 'dismissed'];
+    if (!reportId || !allowedStatuses.includes(status)) {
+        return res.status(400).json({ success: false, message: "Invalid report or status." });
+    }
+
+    db.query("UPDATE user_reports SET status = ? WHERE id = ?", [status, reportId], (err, result) => {
+        if (err) {
+            console.error("Update user report status error:", err);
+            return res.status(500).json({ success: false, message: "Database update failed." });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Report not found." });
+        }
+
+        createAuditLog(req, `ADMIN_USER_REPORT_${status.toUpperCase()}`, { reportId, status });
+        res.json({ success: true, message: "Report status updated." });
     });
 });
 
@@ -1077,7 +1279,7 @@ app.post('/api/user/request-email-change', requireUser, async (req, res) => {
         };
 
         const mailOptions = {
-            from: '"ReFoundly" <refoundlynoreply@gmail.com>',
+            from: `"ReFoundly" <${process.env.EMAIL_USER}>`,
             to: newEmail,
             subject: 'ReFoundly - Email Change Verification',
             html: `
@@ -1137,8 +1339,10 @@ app.post('/api/user/verify-email-change', requireUser, (req, res) => {
     });
 });
 
-/*--Change Password--*/
-app.post('/api/user/change-password', requireUser, async (req, res) => {
+/*--Request Password Change OTP--*
+   Step 1 of 2: confirm the current password, then email a code to the
+   account's existing address before allowing the change to go through. */
+app.post('/api/user/request-password-change-otp', requireUser, async (req, res) => {
   try {
     const userId = req.session.userId;
     const { currentPassword, newPassword } = req.body;
@@ -1155,35 +1359,132 @@ app.post('/api/user/change-password', requireUser, async (req, res) => {
       });
     }
 
-    db.query('SELECT password FROM users WHERE id = ?', [userId], async (err, results) => {
+    db.query('SELECT email, password FROM users WHERE id = ?', [userId], async (err, results) => {
       if (err || results.length === 0) {
         return res.status(500).json({ success: false, message: 'User not found or database error.' });
       }
 
       const user = results[0];
-
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
         return res.status(400).json({ success: false, message: 'Incorrect current password.' });
       }
 
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId], (updateErr) => {
-        if (updateErr) {
-          return res.status(500).json({ success: false, message: 'Failed to update password.' });
-        }
+      // The new password is only kept in the server-side session (never
+      // sent back to the client, never logged) until the OTP is verified.
+      req.session.passwordChangeOtp = {
+        code: otpCode,
+        newPasswordHash: await bcrypt.hash(newPassword, 10),
+        expiresAt: Date.now() + 10 * 60 * 1000
+      };
 
-        createAuditLog(req, 'USER_PASSWORD_CHANGE', { userId });
+      const mailOptions = {
+        from: `"ReFoundly" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: 'ReFoundly - Password Change Verification',
+        html: `
+        <body style="margin: 0; padding: 40px 10px; background-color: #f9f9f9; font-family: sans-serif;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td align="center">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 40px 30px; text-align: center;">
+                            <tr>
+                                <td>
+                                    <h2 style="color: #333333; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">Password Change Verification</h2>
+                                    <p style="color: #555555; font-size: 15px; line-height: 1.5; margin: 0 0 30px 0;">A request was made to change your ReFoundly account password. Use this code to confirm the change:</p>
+                                    <div style="color: #6B9E45; font-size: 38px; font-weight: bold; letter-spacing: 4px; margin: 20px 0 30px 0;">${otpCode}</div>
+                                    <p style="color: #888888; font-size: 12px; margin: 0;">This code will expire in 10 minutes. If you did not request this, your password has NOT been changed — you can safely ignore this email.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>`
+      };
 
-        return res.json({ success: true, message: 'Password updated successfully!' });
-      });
+      try {
+        await transporter.sendMail(mailOptions);
+        res.json({ success: true, message: "Verification code sent to your email!" });
+      } catch (mailErr) {
+        console.error("Password OTP Mail Error:", mailErr);
+        res.status(500).json({ success: false, message: "Failed to send verification email." });
+      }
+    });
+  } catch (error) {
+    console.error('Request password change OTP error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+/*--Change Password (Step 2 of 2: verify OTP, then apply the pre-hashed new password)--*/
+app.post('/api/user/change-password', requireUser, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { otp } = req.body;
+    const pending = req.session.passwordChangeOtp;
+
+    if (!pending) {
+      return res.status(400).json({ success: false, message: 'No pending password change request found. Please start over.' });
+    }
+    if (Date.now() > pending.expiresAt) {
+      delete req.session.passwordChangeOtp;
+      return res.status(400).json({ success: false, message: 'Verification code has expired. Please start over.' });
+    }
+    if (!otp || pending.code !== String(otp).trim()) {
+      return res.status(400).json({ success: false, message: 'Invalid verification code.' });
+    }
+
+    db.query('UPDATE users SET password = ? WHERE id = ?', [pending.newPasswordHash, userId], (updateErr) => {
+      if (updateErr) {
+        return res.status(500).json({ success: false, message: 'Failed to update password.' });
+      }
+
+      delete req.session.passwordChangeOtp;
+      createAuditLog(req, 'USER_PASSWORD_CHANGE', { userId });
+
+      return res.json({ success: true, message: 'Password updated successfully!' });
     });
   } catch (error) {
     console.error('Password change error:', error);
     return res.status(500).json({ success: false, message: 'Server error.' });
   }
+});
+
+/*--Report a User (e.g. from the "Report User" option inside a chat)--*/
+app.post('/api/users/:userId/report', requireUser, (req, res) => {
+    const reporterId = req.session.userId;
+    const reportedUserId = parseInt(req.params.userId, 10);
+    const { conversationId, reason, details } = req.body;
+
+    if (!reportedUserId || Number.isNaN(reportedUserId) || reportedUserId === reporterId) {
+        return res.status(400).json({ success: false, message: "Invalid user to report." });
+    }
+
+    const allowedReasons = ['scam', 'harassment', 'fake_item', 'no_show', 'other'];
+    if (!allowedReasons.includes(reason)) {
+        return res.status(400).json({ success: false, message: "Please select a valid reason." });
+    }
+
+    const cleanDetails = (details || '').toString().trim().slice(0, 500);
+    const convoId = conversationId ? parseInt(conversationId, 10) : null;
+
+    const sql = `
+        INSERT INTO user_reports (reporter_id, reported_user_id, conversation_id, reason, details, status, created_at)
+        VALUES (?, ?, ?, ?, ?, 'pending', NOW())
+    `;
+
+    db.query(sql, [reporterId, reportedUserId, convoId, reason, cleanDetails], (err) => {
+        if (err) {
+            console.error("User report insert error:", err);
+            return res.status(500).json({ success: false, message: "Failed to submit report." });
+        }
+
+        createAuditLog(req, 'USER_REPORTED', { reportedUserId, reason, conversationId: convoId });
+        res.json({ success: true, message: "Report submitted. Our team will review it shortly." });
+    });
 });
 
 /*-- Messaging System --*/
@@ -1573,6 +1874,9 @@ app.get(
                         m.id,
                         m.sender_id,
                         m.message,
+                        m.message_type,
+                        m.image_url,
+                        m.is_sensitive,
                         m.is_read,
                         m.created_at,
                         u.name AS sender_name
@@ -1619,10 +1923,53 @@ app.get(
                             () => {}
                         );
 
-                        res.json({
-                            success: true,
-                            messages
-                        });
+                        // Sensitive photos: don't hand the recipient the real
+                        // image_url up front (that would let the 2-view limit
+                        // be bypassed just by inspecting the response/network
+                        // tab). Strip it here and let the client fetch it
+                        // on demand via POST /api/messages/:id/reveal-image,
+                        // which is what actually enforces the view count.
+                        const sensitiveIds = messages
+                            .filter(m => m.is_sensitive && m.message_type === 'image' && Number(m.sender_id) !== Number(currentUserId))
+                            .map(m => m.id);
+
+                        const finishUp = (viewCounts) => {
+                            const withLimits = messages.map(m => {
+                                const isOtherPartySensitive = m.is_sensitive && m.message_type === 'image' && Number(m.sender_id) !== Number(currentUserId);
+
+                                if (!isOtherPartySensitive) {
+                                    return { ...m, remainingViews: null };
+                                }
+
+                                const used = viewCounts[m.id] || 0;
+                                return {
+                                    ...m,
+                                    image_url: null, // must call reveal-image to get this
+                                    remainingViews: Math.max(0, MAX_SENSITIVE_VIEWS - used)
+                                };
+                            });
+
+                            res.json({ success: true, messages: withLimits });
+                        };
+
+                        if (sensitiveIds.length === 0) {
+                            return finishUp({});
+                        }
+
+                        db.query(
+                            `SELECT message_id, view_count FROM message_image_views WHERE viewer_id = ? AND message_id IN (?)`,
+                            [currentUserId, sensitiveIds],
+                            (viewErr, viewRows) => {
+                                if (viewErr) {
+                                    console.error("Message View Counts Error:", viewErr);
+                                    return finishUp({});
+                                }
+
+                                const viewCounts = {};
+                                viewRows.forEach(row => { viewCounts[row.message_id] = row.view_count; });
+                                finishUp(viewCounts);
+                            }
+                        );
                     }
                 );
             }
@@ -1632,22 +1979,37 @@ app.get(
 
 
 /*
-    SEND MESSAGE
+    SEND MESSAGE (text, or an image attachment)
 */
 app.post(
     '/api/conversations/:conversationId/messages',
     requireUser,
+    (req, res, next) => {
+        // multer only engages for multipart/form-data (image uploads);
+        // a plain JSON text message skips straight past it untouched.
+        chatImageUpload.single('image')(req, res, (err) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    message: err.message || "Failed to upload image."
+                });
+            }
+            next();
+        });
+    },
     (req, res) => {
 
         const currentUserId = req.session.userId;
         const conversationId = req.params.conversationId;
+
+        const hasImage = Boolean(req.file);
 
         const message =
             typeof req.body.message === 'string'
                 ? req.body.message.trim()
                 : '';
 
-        if (!message) {
+        if (!hasImage && !message) {
             return res.status(400).json({
                 success: false,
                 message: "Message cannot be empty."
@@ -1661,14 +2023,19 @@ app.post(
             });
         }
 
-        // Verify conversation access
+        const messageType = hasImage ? 'image' : 'text';
+        const imageUrl = hasImage ? `/uploads/${req.file.filename}` : null;
+        const isSensitive = hasImage && String(req.body.isSensitive) === '1' ? 1 : 0;
+
+        // Verify conversation access (also grab the sender's name for the notification)
         const accessSql = `
-            SELECT id
-            FROM conversations
-            WHERE id = ?
+            SELECT c.id, c.item_id, c.user_one_id, c.user_two_id, u.name AS sender_name
+            FROM conversations c
+            JOIN users u ON u.id = ?
+            WHERE c.id = ?
               AND (
-                  user_one_id = ?
-                  OR user_two_id = ?
+                  c.user_one_id = ?
+                  OR c.user_two_id = ?
               )
             LIMIT 1
         `;
@@ -1676,6 +2043,7 @@ app.post(
         db.query(
             accessSql,
             [
+                currentUserId,
                 conversationId,
                 currentUserId,
                 currentUserId
@@ -1701,9 +2069,12 @@ app.post(
                     (
                         conversation_id,
                         sender_id,
-                        message
+                        message,
+                        message_type,
+                        image_url,
+                        is_sensitive
                     )
-                    VALUES (?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 `;
 
                 db.query(
@@ -1711,7 +2082,10 @@ app.post(
                     [
                         conversationId,
                         currentUserId,
-                        message
+                        message,
+                        messageType,
+                        imageUrl,
+                        isSensitive
                     ],
                     (insertErr, result) => {
 
@@ -1738,6 +2112,24 @@ app.post(
                             () => {}
                         );
 
+                        // Notify the other party — best-effort, doesn't block the response.
+                        const convo = accessResults[0];
+                        const otherUserId = Number(convo.user_one_id) === Number(currentUserId)
+                            ? convo.user_two_id
+                            : convo.user_one_id;
+                        const senderName = convo.sender_name || 'Someone';
+                        const preview = hasImage
+                            ? (isSensitive ? '📎 Sent a sensitive photo' : '📷 Sent a photo')
+                            : (message.length > 80 ? message.slice(0, 77) + '...' : message);
+
+                        db.query(
+                            `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?)`,
+                            [otherUserId, `New message from ${senderName}: ${preview}`, convo.item_id, conversationId],
+                            (notifErr) => {
+                                if (notifErr) console.error("Message notification insert failed:", notifErr);
+                            }
+                        );
+
                         res.json({
                             success: true,
                             messageId: result.insertId
@@ -1748,6 +2140,100 @@ app.post(
         );
     }
 );
+
+/*
+    REVEAL A SENSITIVE CHAT IMAGE (view-limited)
+    The sender can always see their own photo. Anyone else gets at most
+    2 reveals total, enforced server-side (a page refresh doesn't reset it).
+*/
+const MAX_SENSITIVE_VIEWS = 2;
+
+app.post('/api/messages/:messageId/reveal-image', requireUser, (req, res) => {
+    const currentUserId = req.session.userId;
+    const messageId = req.params.messageId;
+
+    const sql = `
+        SELECT m.id, m.sender_id, m.message_type, m.image_url, m.is_sensitive,
+               c.user_one_id, c.user_two_id
+        FROM messages m
+        JOIN conversations c ON c.id = m.conversation_id
+        WHERE m.id = ?
+          AND (c.user_one_id = ? OR c.user_two_id = ?)
+        LIMIT 1
+    `;
+
+    db.query(sql, [messageId, currentUserId, currentUserId], (err, results) => {
+        if (err) {
+            console.error("Reveal Image Lookup Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: "Message not found." });
+        }
+
+        const msg = results[0];
+
+        if (msg.message_type !== 'image' || !msg.image_url) {
+            return res.status(400).json({ success: false, message: "This message has no image." });
+        }
+
+        // The sender always has full, unlimited access to their own photo.
+        if (Number(msg.sender_id) === Number(currentUserId)) {
+            return res.json({ success: true, imageUrl: msg.image_url, remainingViews: null });
+        }
+
+        if (!msg.is_sensitive) {
+            // Not flagged sensitive — no view limit applies.
+            return res.json({ success: true, imageUrl: msg.image_url, remainingViews: null });
+        }
+
+        // Sensitive + viewed by the other party: enforce the view cap.
+        db.query(
+            `SELECT view_count FROM message_image_views WHERE message_id = ? AND viewer_id = ? LIMIT 1`,
+            [messageId, currentUserId],
+            (viewErr, viewResults) => {
+                if (viewErr) {
+                    console.error("Reveal Image View Lookup Error:", viewErr);
+                    return res.status(500).json({ success: false, message: "Database error." });
+                }
+
+                const currentCount = viewResults.length ? viewResults[0].view_count : 0;
+
+                if (currentCount >= MAX_SENSITIVE_VIEWS) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "View limit reached for this sensitive photo. Ask the sender to resend it if you need to see it again.",
+                        remainingViews: 0
+                    });
+                }
+
+                const newCount = currentCount + 1;
+
+                db.query(
+                    `
+                    INSERT INTO message_image_views (message_id, viewer_id, view_count)
+                    VALUES (?, ?, ?)
+                    ON DUPLICATE KEY UPDATE view_count = ?
+                    `,
+                    [messageId, currentUserId, newCount, newCount],
+                    (upsertErr) => {
+                        if (upsertErr) {
+                            console.error("Reveal Image View Upsert Error:", upsertErr);
+                            return res.status(500).json({ success: false, message: "Database error." });
+                        }
+
+                        res.json({
+                            success: true,
+                            imageUrl: msg.image_url,
+                            remainingViews: MAX_SENSITIVE_VIEWS - newCount
+                        });
+                    }
+                );
+            }
+        );
+    });
+});
 
 /* =========================================================
    DEAL AGREEMENT (0/2 -> 2/2 mutual confirmation)
@@ -1815,6 +2301,123 @@ app.post('/api/conversations/:conversationId/agreement/notify-admin', requireUse
                 res.json({ success: true, status: 'admin_reviewing' });
             }
         );
+    });
+});
+
+/*
+    REQUEST RESCHEDULE — either party can call this once a meetup has been
+    agreed on (both_agreed / admin_reviewing / confirmed). Resets both
+    parties' agreement so they have to re-agree, and takes it out of
+    'confirmed' so admin has to re-review before another PDF is issued.
+*/
+app.post('/api/conversations/:conversationId/reschedule', requireUser, (req, res) => {
+    const currentUserId = req.session.userId;
+    const conversationId = req.params.conversationId;
+    const reason = stripTags(req.body.reason).slice(0, 300);
+    const newBarangayInput = typeof req.body.barangay === 'string' ? req.body.barangay.trim() : '';
+    const newDate = req.body.meetup_date || req.body.date || null;
+    const newTime = req.body.meetup_time || req.body.time || null;
+
+    const sql = `
+        SELECT c.id, c.item_id, c.user_one_id, c.user_two_id, c.agreement_status,
+               c.meetup_barangay, c.meetup_date, c.meetup_time,
+               ua.name AS user_one_name, ub.name AS user_two_name
+        FROM conversations c
+        JOIN users ua ON ua.id = c.user_one_id
+        JOIN users ub ON ub.id = c.user_two_id
+        WHERE c.id = ? AND (c.user_one_id = ? OR c.user_two_id = ?)
+        LIMIT 1
+    `;
+
+    db.query(sql, [conversationId, currentUserId, currentUserId], (err, results) => {
+        if (err) {
+            console.error("Reschedule Lookup Error:", err);
+            return res.status(500).json({ success: false, message: "Database error." });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: "Conversation not found." });
+        }
+
+        const c = results[0];
+
+        // Only makes sense once a meetup was actually on the books —
+        // a conversation still at 'pending' has nothing to reschedule yet.
+        const reschedulableStatuses = ['both_agreed', 'admin_reviewing', 'confirmed'];
+        if (!reschedulableStatuses.includes(c.agreement_status)) {
+            return res.status(400).json({
+                success: false,
+                message: "There's no scheduled meetup to reschedule yet."
+            });
+        }
+
+        const isUserOne = Number(c.user_one_id) === Number(currentUserId);
+        const requesterName = isUserOne ? c.user_one_name : c.user_two_name;
+        const otherUserId = isUserOne ? c.user_two_id : c.user_one_id;
+
+        const finalBarangay = newBarangayInput || c.meetup_barangay;
+        if (!finalBarangay) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a barangay hall meetup location."
+            });
+        }
+
+        const updateSql = `
+            UPDATE conversations
+            SET user_one_agreed = 0,
+                user_two_agreed = 0,
+                agreement_status = 'reschedule_requested',
+                meetup_barangay = ?,
+                meetup_date = ?,
+                meetup_time = ?,
+                admin_notified_at = NULL,
+                transaction_report_path = NULL,
+                updated_at = NOW()
+            WHERE id = ?
+        `;
+
+        db.query(updateSql, [finalBarangay, newDate, newTime, conversationId], (updateErr) => {
+            if (updateErr) {
+                console.error("Reschedule Update Error:", updateErr);
+                return res.status(500).json({ success: false, message: "Database error." });
+            }
+
+            // Drop a visible notice into the chat itself, so the other party
+            // sees why the agreement bar just reset instead of it looking
+            // like a bug.
+            const noticeText = reason
+                ? `${requesterName} requested to reschedule the meetup: "${reason}". Both parties need to agree again.`
+                : `${requesterName} requested to reschedule the meetup. Both parties need to agree again.`;
+
+            db.query(
+                `INSERT INTO messages (conversation_id, sender_id, message) VALUES (?, ?, ?)`,
+                [conversationId, currentUserId, noticeText],
+                (msgErr) => { if (msgErr) console.error("Reschedule notice message insert failed:", msgErr); }
+            );
+
+            db.query(
+                `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?)`,
+                [otherUserId, `${requesterName} requested to reschedule your meetup for "${finalBarangay}". Please review and agree again.`, c.item_id, conversationId],
+                (notifErr) => { if (notifErr) console.error("Reschedule notification insert failed:", notifErr); }
+            );
+
+            db.query(
+                `INSERT INTO audit_logs (action, details) VALUES ('MEETUP_RESCHEDULE_REQUESTED', ?)`,
+                [JSON.stringify({
+                    conversationId, itemId: c.item_id, requestedBy: currentUserId,
+                    reason, newBarangay: finalBarangay, newDate, newTime
+                })],
+                () => {}
+            );
+
+            res.json({
+                success: true,
+                status: 'reschedule_requested',
+                barangay: finalBarangay,
+                meetupDate: newDate,
+                meetupTime: newTime
+            });
+        });
     });
 });
 
@@ -2006,7 +2609,7 @@ app.get('/api/admin/conversations/:conversationId/messages', requireAdmin, (req,
     const conversationId = req.params.conversationId;
 
     const sql = `
-        SELECT m.id, m.sender_id, m.message, m.image_path, m.created_at,
+        SELECT m.id, m.sender_id, m.message, m.message_type, m.image_url, m.is_sensitive, m.created_at,
                u.name AS sender_name
         FROM messages m
         JOIN users u ON u.id = m.sender_id
@@ -2048,8 +2651,8 @@ app.post('/api/admin/transactions/:conversationId/dispute', requireAdmin, (req, 
 
                 const notifMsg = `Your ReFoundly transaction for "${c.item_name}" was flagged for admin review: ${reason}`;
                 db.query(
-                    `INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?), (?, ?, ?)`,
-                    [c.user_one_id, notifMsg, c.item_id, c.user_two_id, notifMsg, c.item_id],
+                    `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                    [c.user_one_id, notifMsg, c.item_id, conversationId, c.user_two_id, notifMsg, c.item_id, conversationId],
                     () => {}
                 );
 
@@ -2107,29 +2710,37 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
         const publicPath = `/uploads/reports/${fileName}`;
 
         try {
-            const doc = new PDFDocument({ margin: 50 });
+            const doc = new PDFDocument({ margin: 60 });
             const stream = fs.createWriteStream(filePath);
             doc.pipe(stream);
 
-            doc.fontSize(18).fillColor('#5D8252').text('ReFoundly Transaction Report', { align: 'center' });
-            doc.moveDown();
-            doc.fontSize(10).fillColor('#555').text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
-            doc.moveDown(2);
+            // MySQL DATE columns come back as JS Date objects — format them
+            // properly instead of letting pdfkit call .toString() on them
+            // (which produces "Fri Aug 21 2026 00:00:00 GMT+0800 (...)").
+            const formatNiceDate = (value) => {
+                if (!value) return 'N/A';
+                const d = new Date(value);
+                if (isNaN(d.getTime())) return String(value);
+                return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            };
 
-            doc.fontSize(13).fillColor('#000').text('Item Details', { underline: true });
-            doc.moveDown(0.5);
-            doc.fontSize(11);
-            doc.text(`Item Name: ${c.item_name || 'N/A'}`);
-            doc.text(`Category: ${c.category || 'N/A'}`);
-            doc.text(`Report Type: ${c.report_type || 'N/A'}`);
-            doc.text(`Brand: ${c.brand || 'N/A'}`);
-            doc.text(`Location: ${c.location || 'N/A'}`);
-            doc.text(`Date: ${c.incident_date || 'N/A'}`);
-            doc.text(`Time: ${c.incident_time || 'N/A'}`);
-            doc.moveDown();
-            doc.text('Description:', { continued: false });
-            doc.text(c.description || 'N/A', { width: 480 });
-            doc.moveDown(1.5);
+            // MySQL TIME columns come back as "HH:MM:SS" (military time).
+            // Convert to a plain 12-hour "h:mm AM/PM" format for the letter.
+            const formatNiceTime = (value) => {
+                if (!value) return null;
+                const match = String(value).match(/^(\d{1,2}):(\d{2})/);
+                if (!match) return String(value);
+                let hours = parseInt(match[1], 10);
+                const minutes = match[2];
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                return `${hours}:${minutes} ${ampm}`;
+            };
+
+            const pageWidth = 480;
+            const adminName = (req.session.admin && req.session.admin.name) || 'ReFoundly Admin';
+            const todayFormatted = formatNiceDate(new Date());
+            const barangayName = c.meetup_barangay || 'the designated Barangay Hall';
 
             // Whoever posted the item is either the Finder (if they posted to
             // "Found") or the Owner (if they posted to "Lost"). The other
@@ -2143,26 +2754,103 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
             const posterRole = isFoundReport ? 'Finder' : 'Owner (Lost the Item)';
             const otherRole = isFoundReport ? 'Owner (Lost the Item)' : 'Finder';
 
-            doc.fontSize(13).text('Parties Involved', { underline: true });
-            doc.moveDown(0.5);
-            doc.fontSize(11);
-            doc.text(`${posterRole}: ${posterName || 'N/A'} (${posterContact || 'N/A'})`);
-            doc.text(`${otherRole}: ${otherName || 'N/A'} (${otherContact || 'N/A'})`);
+            const formattedIncidentDate = formatNiceDate(c.incident_date);
+            const formattedMeetupDate = formatNiceDate(c.meetup_date);
+            const formattedIncidentTime = formatNiceTime(c.incident_time);
+            const formattedMeetupTime = formatNiceTime(c.meetup_time);
+
+            // --- Letterhead ---
+            doc.fontSize(16).font('Helvetica-Bold').fillColor('#5D8252').text('ReFoundly', { align: 'left' });
+            doc.fontSize(9).font('Helvetica').fillColor('#666')
+                .text('Digital Lost & Found Portal  ·  refoundly@gmail.com  ·  +63 912 345 6789');
+            doc.moveDown(0.3);
+            doc.moveTo(60, doc.y).lineTo(60 + pageWidth, doc.y).strokeColor('#ddd').stroke();
             doc.moveDown(1.5);
 
-            doc.fontSize(13).text('Meetup Details', { underline: true });
+            // --- Date ---
+            doc.fontSize(11).fillColor('#000').font('Helvetica').text(todayFormatted);
+            doc.moveDown(1.2);
+
+            // --- Addressee ---
+            doc.text('The Barangay Captain');
+            doc.text(barangayName);
+            doc.moveDown(1.2);
+
+            // --- Subject ---
+            doc.font('Helvetica-Bold').text('Re: Endorsement for Use of Barangay Hall — Lost and Found Item Handover');
+            doc.font('Helvetica');
+            doc.moveDown(1);
+
+            // --- Salutation ---
+            doc.text('Dear Sir/Madam,');
+            doc.moveDown(0.8);
+
+            // --- Body: intro / request ---
+            doc.text(
+                `This letter is to formally inform your office that two verified users of the ReFoundly digital ` +
+                `lost-and-found platform have mutually agreed, through our platform's messaging system and following ` +
+                `admin verification, to meet at ${barangayName} to complete the handover of the item described below. ` +
+                `We respectfully request permission to use your barangay hall as the venue for this meeting and, if ` +
+                `possible, the presence of a barangay official during the handover to ensure the safety of both parties.`,
+                { align: 'justify', width: pageWidth }
+            );
+            doc.moveDown(1.2);
+
+            // --- Item Details ---
+            doc.font('Helvetica-Bold').text('Item Details');
+            doc.font('Helvetica').moveDown(0.3);
+            doc.text(`Item Name: ${c.item_name || 'N/A'}`);
+            doc.text(`Category: ${c.category || 'N/A'}`);
+            doc.text(`Brand: ${c.brand || 'N/A'}`);
+            doc.text(`Report Type: ${c.report_type || 'N/A'}`);
+            doc.text(`Location Reported: ${c.location || 'N/A'}`);
+            doc.text(`Date and Time Reported: ${formattedIncidentDate}${formattedIncidentTime ? ' at ' + formattedIncidentTime : ''}`);
             doc.moveDown(0.5);
-            doc.fontSize(11);
-            doc.text(`Barangay Hall: ${c.meetup_barangay || 'To be arranged'}`);
-            if (c.meetup_date) doc.text(`Scheduled Date: ${c.meetup_date}`);
-            if (c.meetup_time) doc.text(`Scheduled Time: ${c.meetup_time}`);
+            doc.text('Description:');
+            doc.text(c.description || 'N/A', { width: pageWidth, align: 'justify' });
+            doc.moveDown(1.2);
+
+            // --- Parties Involved ---
+            doc.font('Helvetica-Bold').text('Parties Involved');
+            doc.font('Helvetica').moveDown(0.3);
+            doc.text(`${posterRole}: ${posterName || 'N/A'}  —  Contact: ${posterContact || 'N/A'}`);
+            doc.text(`${otherRole}: ${otherName || 'N/A'}  —  Contact: ${otherContact || 'N/A'}`);
+            doc.moveDown(1.2);
+
+            // --- Scheduled Meetup ---
+            doc.font('Helvetica-Bold').text('Scheduled Meetup');
+            doc.font('Helvetica').moveDown(0.3);
+            doc.text(`Venue: ${barangayName}`);
+            doc.text(`Date: ${formattedMeetupDate}`);
+            doc.text(`Time: ${formattedMeetupTime || 'To be arranged'}`);
+            doc.moveDown(1.2);
+
+            // --- Closing ---
+            doc.text(
+                `Both parties have formally confirmed through the ReFoundly platform their agreement to proceed with the ` +
+                `handover of the item at the venue and on the schedule indicated above. This agreement has been reviewed and ` +
+                `verified by the ReFoundly Administration prior to the issuance of this letter. Should your office require any ` +
+                `further verification or clarification, please do not hesitate to contact us using the contact information ` +
+                `provided above.`,
+                { align: 'justify', width: pageWidth }
+            );
+            doc.moveDown(1);
+            doc.text('Thank you for your cooperation and support in facilitating safe community handovers.');
             doc.moveDown(2);
 
-            doc.fontSize(10).fillColor('#777').text(
-                'Both parties confirmed in-app that they agree to settle this item at the location above. ' +
-                'This report was generated after admin verification and stands as confirmation that the ' +
-                'transaction is proceeding as described.',
-                { width: 480 }
+            // --- Signature block ---
+            doc.text('Respectfully yours,');
+            doc.moveDown(2.5);
+            doc.text('_______________________________');
+            doc.font('Helvetica-Bold').text(adminName);
+            doc.font('Helvetica').fontSize(10).fillColor('#555').text('ReFoundly Verification Team');
+            doc.moveDown(1.5);
+
+            // --- Footer note ---
+            doc.fontSize(8).fillColor('#999').text(
+                `This letter was system-generated by ReFoundly following in-app verification of both parties' ` +
+                `agreement. Reference: Agreement #AGR-${conversationId} · Generated ${new Date().toLocaleString()}`,
+                { width: pageWidth }
             );
 
             doc.end();
@@ -2183,8 +2871,8 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
 
                         const notifMsg = `Your ReFoundly transaction for "${c.item_name}" has been confirmed. View the report in your chat.`;
                         db.query(
-                            `INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?), (?, ?, ?)`,
-                            [c.user_one_id, notifMsg, c.item_id, c.user_two_id, notifMsg, c.item_id],
+                            `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                            [c.user_one_id, notifMsg, c.item_id, conversationId, c.user_two_id, notifMsg, c.item_id, conversationId],
                             () => {}
                         );
 

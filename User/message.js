@@ -21,7 +21,8 @@ let agreementStatus = {
     status: "pending",
     barangay: null,
     meetupDate: null,
-    meetupTime: null
+    meetupTime: null,
+    transactionReportPath: null
 };
 
 let itemCardExpanded = false;
@@ -36,6 +37,14 @@ let conversationPollRunning = false;
 let agreementPollRunning = false;
 
 let lastMessageSignature = "";
+
+// Sensitive photos this viewer has already revealed *this page load*.
+// The GET /messages endpoint always returns image_url = null for a
+// sensitive photo the recipient hasn't (or has already used up their
+// views for), so without this cache, message polling every second would
+// re-lock an image right after it was revealed — and clicking it again
+// would burn another one of the 2 server-enforced views for nothing.
+const revealedImageCache = new Map();
 let currentUserConfirmedItem = false;
 
 const REQUIRED_CONFIRM_MESSAGE = "confirm item";
@@ -89,9 +98,14 @@ const chatBody = document.getElementById("chatBody");
 const chatFooter = document.getElementById("chatFooter");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
+const attachBtn = document.getElementById("attachBtn");
+const chatImageInput = document.getElementById("chatImageInput");
 const currentUserName = document.getElementById("currentUserName");
 const currentItemName = document.getElementById("currentItemName");
 const chatSearch = document.getElementById("chatSearch");
+
+const chatHeaderActions = document.getElementById("chatHeaderActions");
+const reportUserBtn = document.getElementById("reportUserBtn");
 
 
 /* =========================================================
@@ -103,12 +117,17 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
     try {
         createAgreementModal();
+        createRescheduleModal();
         createItemDetailsModal();
+        createImageConsentModal();
+        createReportUserModal();
 
         setupSearch();
         setupSendMessage();
+        setupImageUpload();
         setupAgreementEvents();
         setupItemDetailsEvents();
+        setupReportUserButton();
 
         await loadCurrentUser();
 
@@ -121,10 +140,16 @@ async function init() {
         await loadConversations();
 
         const params = new URLSearchParams(window.location.search);
+        const directConversationId = params.get("conversation") || params.get("conversationId") || null;
         const targetUserId = params.get("userId") || params.get("user") || null;
         const itemId = params.get("itemId") || params.get("item") || null;
 
-        if (targetUserId && itemId) {
+        if (directConversationId) {
+            // Came from a notification that already knows exactly which
+            // conversation to open (new message, agreement update, etc).
+            await openConversation(directConversationId);
+            window.history.replaceState({}, document.title, "message.html");
+        } else if (targetUserId && itemId) {
             await startConversationFromItem(targetUserId, itemId);
         } else if (targetUserId) {
             await startConversationWithUser(targetUserId);
@@ -491,6 +516,7 @@ function updateConversationHeader() {
     if (!currentConversation) {
         if (currentUserName) currentUserName.textContent = "Select a conversation";
         if (currentItemName) currentItemName.textContent = "";
+        if (chatHeaderActions) chatHeaderActions.style.display = "none";
         renderItemFloatingCard();
         return;
     }
@@ -502,6 +528,8 @@ function updateConversationHeader() {
     if (currentItemName) {
         currentItemName.textContent = currentConversation.item_name ? `Item: ${currentConversation.item_name}` : "";
     }
+
+    if (chatHeaderActions) chatHeaderActions.style.display = "inline-flex";
 
     renderItemFloatingCard();
 }
@@ -686,6 +714,8 @@ function renderMessages(messages, preserveScroll = true) {
 
     const agreementBar = document.getElementById("agreementBar");
     const readyPanel = document.getElementById("transactionReadyPanel");
+    const confirmedPanel = document.getElementById("confirmedPanel");
+    const disputedPanel = document.getElementById("disputedPanel");
 
     chatBody.innerHTML = "";
 
@@ -693,7 +723,16 @@ function renderMessages(messages, preserveScroll = true) {
         chatBody.appendChild(agreementBar);
     }
 
-    if (readyPanel && agreementStatus.totalAgreed >= 2) {
+    // Re-attach whichever state panel currently applies. Only one of
+    // these should ever exist at a time (removeAgreementPanels() takes
+    // care of that), but each is only re-inserted while it still matches
+    // the live agreementStatus.status, so a stale panel from before a
+    // state change never gets carried back in here.
+    if (confirmedPanel && agreementStatus.status === "confirmed") {
+        chatBody.appendChild(confirmedPanel);
+    } else if (disputedPanel && agreementStatus.status === "disputed") {
+        chatBody.appendChild(disputedPanel);
+    } else if (readyPanel && agreementStatus.totalAgreed >= 2) {
         chatBody.appendChild(readyPanel);
     }
 
@@ -717,13 +756,66 @@ function renderMessages(messages, preserveScroll = true) {
         element.className = `msg ${own ? "sent" : "received"}`;
         const messageType = message.message_type || "text";
 
-        if (messageType === "image" && message.image_url) {
-            element.innerHTML = `
-                <div class="message-image-wrapper">
-                    <img src="${escapeAttribute(message.image_url)}" alt="Shared item" class="message-image" loading="lazy">
-                </div>
-                <small class="message-time">${formatMessageTime(message.created_at)}</small>
-            `;
+        if (messageType === "image") {
+            const isSensitive = Boolean(message.is_sensitive);
+            const remaining = message.remainingViews;
+            const cachedUrl = revealedImageCache.get(message.id);
+            const alreadyHasUrl = Boolean(message.image_url) || Boolean(cachedUrl);
+
+            if (isSensitive && !own && cachedUrl) {
+                // Already revealed this page load — show it as-is, no
+                // re-fetch, no extra view spent.
+                element.innerHTML = `
+                    <div class="message-image-wrapper sensitive revealed">
+                        <img src="${escapeAttribute(cachedUrl)}" alt="Shared item" class="message-image" loading="lazy" draggable="false" oncontextmenu="return false;">
+                    </div>
+                    <small class="message-time">${formatMessageTime(message.created_at)}</small>
+                `;
+                const wrapper = element.querySelector(".message-image-wrapper");
+                wrapper.addEventListener("click", () => wrapper.classList.toggle("revealed"));
+            } else if (isSensitive && !own) {
+                // Recipient side of a sensitive photo: the server withholds
+                // the real URL until reveal-image is called, and caps it at
+                // MAX_SENSITIVE_VIEWS total (enforced server-side, survives
+                // a page refresh — this isn't a client-side toggle).
+                const exhausted = !alreadyHasUrl && remaining === 0;
+
+                element.innerHTML = `
+                    <div class="message-image-wrapper sensitive ${exhausted ? "exhausted" : ""}" data-message-id="${message.id}">
+                        <div class="sensitive-lock-overlay">
+                            ${exhausted
+                                ? `<i class="fas fa-ban"></i><span>View limit reached</span>`
+                                : `<i class="fas fa-eye"></i><span>Tap to view${remaining !== null && remaining !== undefined ? ` (${remaining} view${remaining === 1 ? "" : "s"} left)` : ""}</span>`
+                            }
+                        </div>
+                    </div>
+                    <small class="message-time">${formatMessageTime(message.created_at)}</small>
+                `;
+
+                if (!exhausted) {
+                    const wrapper = element.querySelector(".message-image-wrapper");
+                    wrapper.addEventListener("click", () => revealSensitiveImage(message.id, wrapper));
+                }
+            } else if (alreadyHasUrl) {
+                // Own sent photo, or a non-sensitive photo — no view limit.
+                element.innerHTML = `
+                    <div class="message-image-wrapper${isSensitive ? " sensitive revealed" : ""}">
+                        <img src="${escapeAttribute(message.image_url)}" alt="Shared item" class="message-image" loading="lazy" draggable="false" oncontextmenu="return false;">
+                    </div>
+                    <small class="message-time">${formatMessageTime(message.created_at)}</small>
+                `;
+
+                const img = element.querySelector(".message-image");
+                if (isSensitive) {
+                    // Even the sender sees their own sensitive photo blurred
+                    // by default in the thread, tap to reveal (no view cap).
+                    const wrapper = element.querySelector(".message-image-wrapper");
+                    wrapper.classList.remove("revealed");
+                    wrapper.addEventListener("click", () => wrapper.classList.toggle("revealed"));
+                } else {
+                    img.addEventListener("click", () => window.open(message.image_url, "_blank"));
+                }
+            }
         } else {
             element.innerHTML = `
                 <span>${escapeHtml(message.message || "")}</span>
@@ -803,7 +895,8 @@ function resetAgreementStatus() {
         status: "pending",
         barangay: null,
         meetupDate: null,
-        meetupTime: null
+        meetupTime: null,
+        transactionReportPath: null
     };
 }
 
@@ -905,29 +998,81 @@ async function loadAgreementStatus() {
             status: data.status || "pending",
             barangay: data.barangay || agreementStatus.barangay || null,
             meetupDate: data.meetupDate || data.meetup_date || data.date || agreementStatus.meetupDate || null,
-            meetupTime: data.meetupTime || data.meetup_time || data.time || agreementStatus.meetupTime || null
+            meetupTime: data.meetupTime || data.meetup_time || data.time || agreementStatus.meetupTime || null,
+            transactionReportPath: data.transactionReportPath || data.transaction_report_path || null,
+            rescheduleReason: data.rescheduleReason || data.reschedule_reason || null
         };
 
-        if (agreementStatus.totalAgreed >= 2 || agreementStatus.status === "both_agreed") {
-            agreementStatus.totalAgreed = 2;
-            agreementStatus.status = "both_agreed";
-            agreementStatus.otherUserAgreed = true;
-
-            updateAgreementUI();
-            showTransactionReadyPanel();
-
-            if (previousStatus !== "both_agreed") {
-                showToast("Both parties agreed. The transaction is now ready for admin review.");
-            }
-        } else {
-            updateAgreementUI();
-        }
+        // Trust whatever the server actually says — do NOT force this back
+        // to "both_agreed" once it's been reached once. That overwrite is
+        // what previously made "confirmed", "disputed", and
+        // "reschedule_requested" impossible to ever display.
+        renderAgreementStateChange(previousStatus);
 
     } catch (error) {
         console.error("loadAgreementStatus:", error);
     } finally {
         agreementPollRunning = false;
     }
+}
+
+
+// Renders the correct panel for whatever agreementStatus.status currently
+// is, and fires one-time side effects (toast, admin notification) only on
+// the specific transition into that state — not on every single poll.
+function renderAgreementStateChange(previousStatus) {
+    const status = agreementStatus.status;
+
+    updateAgreementUI();
+    removeAgreementPanels();
+
+    if (status === "both_agreed" || status === "admin_reviewing") {
+        showTransactionReadyPanel();
+
+        if (previousStatus !== "both_agreed" && previousStatus !== "admin_reviewing") {
+            showToast("Both parties agreed. The transaction is now ready for admin review.");
+            notifyAdminAgreementReady();
+        }
+    } else if (status === "awaiting_barangay" || status === "confirmed") {
+        // Admin confirmed + PDF generated. The barangay is contacted by the admin separately,
+        // so users only ever see "waiting for barangay approval".
+        showConfirmedPanel();
+
+        if (previousStatus !== "awaiting_barangay" && previousStatus !== "confirmed") {
+            showToast("Confirmed by the admin. Waiting for barangay approval, please stand by.");
+        }
+    } else if (status === "barangay_approved") {
+        showConfirmedPanel();
+
+        if (previousStatus !== "barangay_approved") {
+            showToast("The barangay approved your handover. Please bring a valid ID!");
+        }
+    } else if (status === "disputed") {
+        showDisputedPanel();
+
+        if (previousStatus !== "disputed") {
+            showToast("An admin flagged this agreement for review.");
+        }
+    } else if (status === "reschedule_requested") {
+        if (previousStatus !== "reschedule_requested") {
+            showToast(agreementStatus.rescheduleReason
+                ? `Reschedule needed: ${agreementStatus.rescheduleReason}. Please agree to a new schedule.`
+                : "A reschedule was requested. Please review and agree again.");
+        }
+        // Falls through to the plain agreement bar (0/2) rendered by
+        // updateAgreementUI() above — nothing else to show here.
+    }
+}
+
+
+// Removes any of the state-specific panels below the agreement bar, so
+// switching between states (e.g. both_agreed -> confirmed) doesn't stack
+// multiple panels on top of each other.
+function removeAgreementPanels() {
+    ["transactionReadyPanel", "confirmedPanel", "disputedPanel"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    });
 }
 
 
@@ -1268,6 +1413,8 @@ async function confirmAgreement() {
             throw new Error(data.message || "Unable to save your agreement.");
         }
 
+        const previousStatus = agreementStatus.status;
+
         agreementStatus.userAgreed = Boolean(data.userAgreed ?? data.user_agreed ?? true);
         agreementStatus.otherUserAgreed = Boolean(data.otherUserAgreed ?? data.other_user_agreed ?? false);
         agreementStatus.totalAgreed = Number(data.totalAgreed ?? data.total_agreed ?? (agreementStatus.userAgreed ? agreementStatus.totalAgreed + 1 : agreementStatus.totalAgreed));
@@ -1276,21 +1423,10 @@ async function confirmAgreement() {
         agreementStatus.meetupDate = data.meetupDate || data.meetup_date || dateToSend;
         agreementStatus.meetupTime = data.meetupTime || data.meetup_time || timeToSend;
 
-        if (agreementStatus.totalAgreed >= 2 || agreementStatus.status === "both_agreed") {
-            agreementStatus.totalAgreed = 2;
-            agreementStatus.status = "both_agreed";
-            agreementStatus.otherUserAgreed = true;
+        closeAgreementModal();
+        renderAgreementStateChange(previousStatus);
 
-            closeAgreementModal();
-            updateAgreementUI();
-            showTransactionReadyPanel();
-            showToast("Both parties agreed. The transaction is now ready for admin review.");
-
-            await notifyAdminAgreementReady();
-
-        } else {
-            closeAgreementModal();
-            updateAgreementUI();
+        if (agreementStatus.status !== "both_agreed" && agreementStatus.status !== "admin_reviewing") {
             showToast("You agreed to the deal. Waiting for the other party.");
         }
 
@@ -1351,11 +1487,137 @@ function showTransactionReadyPanel() {
                 The transaction can now proceed to admin review and verification.
             </p>
             ${meetupDetailsHtml}
+            <button type="button" class="reschedule-link-btn" id="rescheduleBtn" style="background:none;border:1px solid #ccc;color:#555;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-calendar-xmark"></i> Can't make it? Reschedule
+            </button>
         </div>
 
         <div class="transaction-ready-status">
             <span>2/2 Agreed</span>
             <small>Waiting for admin review</small>
+        </div>
+    `;
+
+    const agreementBar = document.getElementById("agreementBar");
+    if (agreementBar) {
+        agreementBar.insertAdjacentElement("afterend", panel);
+    } else {
+        chatBody.prepend(panel);
+    }
+
+    const rescheduleBtn = document.getElementById("rescheduleBtn");
+    if (rescheduleBtn) {
+        rescheduleBtn.addEventListener("click", openRescheduleModal);
+    }
+}
+
+
+function showConfirmedPanel() {
+    if (!chatBody) return;
+
+    let panel = document.getElementById("confirmedPanel");
+    if (panel) return;
+
+    panel = document.createElement("div");
+    panel.id = "confirmedPanel";
+    panel.className = "transaction-ready-panel transaction-confirmed-panel";
+
+    const formattedDate = agreementStatus.meetupDate ? formatDetailDate(agreementStatus.meetupDate) : null;
+    const formattedTime = agreementStatus.meetupTime ? formatTimeDisplay(agreementStatus.meetupTime) : null;
+
+    let meetupDetailsHtml = "";
+    if (agreementStatus.barangay || formattedDate || formattedTime) {
+        meetupDetailsHtml = `<p class="transaction-ready-barangay">`;
+        if (agreementStatus.barangay) {
+            meetupDetailsHtml += `<i class="fas fa-map-marker-alt"></i> ${escapeHtml(agreementStatus.barangay)}`;
+        }
+        if (formattedDate) {
+            meetupDetailsHtml += `${agreementStatus.barangay ? " &middot; " : ""}<i class="fas fa-calendar-alt"></i> ${escapeHtml(formattedDate)}`;
+        }
+        if (formattedTime) {
+            meetupDetailsHtml += ` &middot; <i class="fas fa-clock"></i> ${escapeHtml(formattedTime)}`;
+        }
+        meetupDetailsHtml += `</p>`;
+    }
+
+    // "Approved" is only shown after the admin records the barangay's reply.
+    const barangayApproved = agreementStatus.status === "barangay_approved";
+    const panelTitle = barangayApproved ? "Ready for handover" : "Confirmed by admin, waiting for barangay approval";
+    const panelBody = barangayApproved
+        ? "The barangay hall approved this schedule. See you at the meetup! Please bring a valid ID."
+        : "An admin confirmed your handover and is coordinating with the barangay hall. Please stand by. Your meetup is not final until the barangay approves.";
+    const panelBadge = barangayApproved ? "Ready" : "Waiting for Barangay";
+    const panelColor = barangayApproved ? "#2e7d32" : "#0369a1";
+    const panelIcon = barangayApproved ? "fa-circle-check" : "fa-hourglass-half";
+
+    const reportLinkHtml = agreementStatus.transactionReportPath
+        ? `<a href="${escapeAttribute(agreementStatus.transactionReportPath)}" target="_blank" class="view-report-link-btn" style="background:#5D8252;color:white;text-decoration:none;padding:6px 12px;border-radius:6px;font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+               <i class="fas fa-file-pdf"></i> View Confirmation Letter
+           </a>`
+        : "";
+
+    panel.innerHTML = `
+        <div class="transaction-ready-icon" style="color:${panelColor};">
+            <i class="fas ${panelIcon}"></i>
+        </div>
+
+        <div class="transaction-ready-content">
+            <strong>${panelTitle}</strong>
+            <p>
+                ${panelBody}
+            </p>
+            ${meetupDetailsHtml}
+            <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                ${reportLinkHtml}
+                <button type="button" class="reschedule-link-btn" id="rescheduleBtn" style="background:none;border:1px solid #ccc;color:#555;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                    <i class="fas fa-calendar-xmark"></i> Can't make it? Reschedule
+                </button>
+            </div>
+        </div>
+
+        <div class="transaction-ready-status">
+            <span style="color:${panelColor};">${panelBadge}</span>
+        </div>
+    `;
+
+    const agreementBar = document.getElementById("agreementBar");
+    if (agreementBar) {
+        agreementBar.insertAdjacentElement("afterend", panel);
+    } else {
+        chatBody.prepend(panel);
+    }
+
+    const rescheduleBtn = document.getElementById("rescheduleBtn");
+    if (rescheduleBtn) {
+        rescheduleBtn.addEventListener("click", openRescheduleModal);
+    }
+}
+
+
+function showDisputedPanel() {
+    if (!chatBody) return;
+
+    let panel = document.getElementById("disputedPanel");
+    if (panel) return;
+
+    panel = document.createElement("div");
+    panel.id = "disputedPanel";
+    panel.className = "transaction-ready-panel transaction-disputed-panel";
+
+    panel.innerHTML = `
+        <div class="transaction-ready-icon" style="color:#b3261e;">
+            <i class="fas fa-triangle-exclamation"></i>
+        </div>
+
+        <div class="transaction-ready-content">
+            <strong>Flagged for review</strong>
+            <p>
+                An admin flagged this agreement and is looking into it. You'll be notified once it's resolved.
+            </p>
+        </div>
+
+        <div class="transaction-ready-status">
+            <span style="color:#b3261e;">Disputed</span>
         </div>
     `;
 
@@ -1395,6 +1657,173 @@ async function notifyAdminAgreementReady() {
 
 
 /* =========================================================
+   RESCHEDULE
+   ========================================================= */
+
+function createRescheduleModal() {
+    if (document.getElementById("rescheduleModal")) return;
+
+    const modal = document.createElement("div");
+    modal.id = "rescheduleModal";
+    modal.className = "agreement-modal";
+
+    modal.innerHTML = `
+        <div class="agreement-modal-content" role="dialog" aria-modal="true">
+            <button type="button" id="closeRescheduleModal" class="agreement-modal-close" aria-label="Close">&times;</button>
+
+            <div class="agreement-modal-icon">
+                <i class="fas fa-calendar-xmark"></i>
+            </div>
+
+            <h2>Reschedule This Meetup?</h2>
+
+            <p class="agreement-modal-text">
+                This resets both parties' agreement — you'll both need to agree again, and an admin will re-review before it's confirmed.
+            </p>
+
+            <div class="agreement-barangay-box">
+                <label for="rescheduleBarangayInput">
+                    <i class="fas fa-map-marker-alt"></i> New meetup location (optional — keeps current if left blank)
+                </label>
+                <select id="rescheduleBarangayInput" class="agreement-barangay-select" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:14px; margin-top:4px;">
+                    <option value="">Keep current location</option>
+                    ${buildBarangayOptionsHTML()}
+                </select>
+            </div>
+
+            <div class="agreement-datetime-box" style="margin-top: 12px; display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label for="rescheduleDateInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">
+                        <i class="fas fa-calendar-alt"></i> New Date
+                    </label>
+                    <input type="date" id="rescheduleDateInput" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
+                </div>
+                <div style="flex: 1;">
+                    <label for="rescheduleTimeInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">
+                        <i class="fas fa-clock"></i> New Time
+                    </label>
+                    <input type="time" id="rescheduleTimeInput" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div class="agreement-barangay-box" style="margin-top: 12px;">
+                <label for="rescheduleReasonInput">
+                    <i class="fas fa-comment-dots"></i> Reason (optional)
+                </label>
+                <textarea id="rescheduleReasonInput" rows="2" maxlength="300"
+                    style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:14px; margin-top:4px; font-family:inherit; resize:vertical;"
+                    placeholder="e.g. Something came up, can we move to Saturday instead?"></textarea>
+            </div>
+
+            <div class="agreement-modal-actions">
+                <button type="button" id="cancelRescheduleBtn" class="agreement-cancel-btn">Cancel</button>
+                <button type="button" id="submitRescheduleBtn" class="agreement-confirm-btn">
+                    <i class="fas fa-calendar-check"></i> Request Reschedule
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", event => {
+        if (event.target === modal) closeRescheduleModal();
+    });
+
+    document.getElementById("closeRescheduleModal")?.addEventListener("click", closeRescheduleModal);
+    document.getElementById("cancelRescheduleBtn")?.addEventListener("click", closeRescheduleModal);
+    document.getElementById("submitRescheduleBtn")?.addEventListener("click", submitReschedule);
+}
+
+
+function openRescheduleModal() {
+    if (!currentConversationId) return;
+
+    const modal = document.getElementById("rescheduleModal");
+    if (!modal) return;
+
+    modal.classList.add("show");
+    document.body.classList.add("agreement-modal-open");
+}
+
+
+function closeRescheduleModal() {
+    const modal = document.getElementById("rescheduleModal");
+    if (modal) modal.classList.remove("show");
+    document.body.classList.remove("agreement-modal-open");
+}
+
+
+async function submitReschedule() {
+    if (!currentConversationId) return;
+
+    const barangayInput = document.getElementById("rescheduleBarangayInput");
+    const dateInput = document.getElementById("rescheduleDateInput");
+    const timeInput = document.getElementById("rescheduleTimeInput");
+    const reasonInput = document.getElementById("rescheduleReasonInput");
+
+    const button = document.getElementById("submitRescheduleBtn");
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Requesting...`;
+    }
+
+    try {
+        const response = await fetch(`/api/conversations/${encodeURIComponent(currentConversationId)}/reschedule`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            },
+            body: JSON.stringify({
+                barangay: barangayInput ? barangayInput.value.trim() : "",
+                meetup_date: dateInput ? dateInput.value.trim() : "",
+                meetup_time: timeInput ? timeInput.value.trim() : "",
+                reason: reasonInput ? reasonInput.value.trim() : ""
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to request a reschedule.");
+        }
+
+        closeRescheduleModal();
+        removeAgreementPanels();
+
+        // Reset local state back to a fresh, pre-agreement state — both
+        // parties now need to agree again.
+        agreementStatus.userAgreed = false;
+        agreementStatus.otherUserAgreed = false;
+        agreementStatus.totalAgreed = 0;
+        agreementStatus.status = "reschedule_requested";
+        agreementStatus.barangay = data.barangay || agreementStatus.barangay;
+        agreementStatus.meetupDate = data.meetupDate || null;
+        agreementStatus.meetupTime = data.meetupTime || null;
+        agreementStatus.transactionReportPath = null;
+
+        renderAgreementBar();
+        showToast("Reschedule requested. Both parties need to agree again.");
+
+        // Pull in the system notice message the server dropped into the chat.
+        if (typeof loadMessages === "function") {
+            loadMessages(currentConversationId);
+        }
+
+    } catch (error) {
+        console.error("submitReschedule:", error);
+        alert(error.message || "Unable to request a reschedule.");
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = `<i class="fas fa-calendar-check"></i> Request Reschedule`;
+        }
+    }
+}
+
+
+/* =========================================================
    AGREEMENT POLLING
    ========================================================= */
 
@@ -1406,7 +1835,15 @@ function startAgreementPolling() {
     agreementPollingInterval = setInterval(async () => {
         if (document.hidden || !currentConversationId) return;
 
-        if (agreementStatus.status === "both_agreed") return;
+        // NOTE: this used to `return` early once status hit "both_agreed",
+        // which permanently stopped checking the server from that point on.
+        // Since loadAgreementStatus() below ALSO used to force-overwrite
+        // agreementStatus.status back to "both_agreed" on every poll
+        // (regardless of what the server actually said), the two bugs
+        // combined meant the UI could never learn that admin later
+        // confirmed, disputed, or that a reschedule was requested — it was
+        // frozen showing "waiting for admin review" forever. Polling now
+        // continues for the life of the conversation.
 
         await loadAgreementStatus();
 
@@ -1486,6 +1923,392 @@ async function sendMessage() {
     } finally {
         if (sendBtn) sendBtn.disabled = false;
         messageInput.focus();
+    }
+}
+
+
+/* =========================================================
+   REVEAL A SENSITIVE PHOTO (view-limited, server-enforced)
+   ========================================================= */
+
+async function revealSensitiveImage(messageId, wrapper) {
+    wrapper.classList.add("loading");
+
+    try {
+        const response = await fetch(`/api/messages/${encodeURIComponent(messageId)}/reveal-image`, {
+            method: "POST",
+            headers: { Accept: "application/json" }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            wrapper.classList.remove("loading");
+
+            if (response.status === 403) {
+                wrapper.classList.add("exhausted");
+                wrapper.innerHTML = `
+                    <div class="sensitive-lock-overlay">
+                        <i class="fas fa-ban"></i><span>View limit reached</span>
+                    </div>
+                `;
+                showToast(data.message || "View limit reached for this photo.");
+                return;
+            }
+
+            alert(data.message || "Unable to load this photo.");
+            return;
+        }
+
+        // Cache it so the next poll (every 1s) re-renders this message as
+        // already-revealed instead of re-locking it and burning another view.
+        revealedImageCache.set(messageId, data.imageUrl);
+
+        // Swap the lock overlay for the actual (still-blurred) image. A
+        // second tap on the wrapper just toggles the blur — it does NOT
+        // call the server again, so re-blurring/un-blurring within this
+        // same reveal doesn't burn another view.
+        wrapper.classList.remove("loading");
+        wrapper.innerHTML = `
+            <img src="${escapeAttribute(data.imageUrl)}" alt="Shared item" class="message-image" loading="lazy" draggable="false" oncontextmenu="return false;">
+        `;
+        wrapper.classList.add("revealed");
+
+        const newWrapper = wrapper; // still the same node
+        newWrapper.onclick = () => newWrapper.classList.toggle("revealed");
+
+        if (typeof data.remainingViews === "number") {
+            showToast(data.remainingViews > 0
+                ? `Photo revealed. ${data.remainingViews} view${data.remainingViews === 1 ? "" : "s"} left.`
+                : "Photo revealed. This was your last view of it.");
+        }
+
+    } catch (error) {
+        console.error("revealSensitiveImage:", error);
+        wrapper.classList.remove("loading");
+        alert("Unable to load this photo.");
+    }
+}
+
+
+/* =========================================================
+   IMAGE UPLOAD + CONSENT
+   ========================================================= */
+
+let pendingImageFile = null;
+
+function createImageConsentModal() {
+    if (document.getElementById("imageConsentModal")) return;
+
+    const modal = document.createElement("div");
+    modal.id = "imageConsentModal";
+    modal.className = "upload-consent-modal";
+
+    modal.innerHTML = `
+        <div class="upload-consent-content" role="dialog" aria-modal="true">
+            <i class="fas fa-triangle-exclamation upload-consent-icon"></i>
+            <h3>Sending a photo</h3>
+
+            <p id="imageConsentDefaultText">
+                This photo will be visible to the other person in this chat
+                (and to an admin, if this transaction is later reviewed).
+            </p>
+
+            <label id="imageSensitiveLabel" style="display:flex; align-items:flex-start; gap:8px; text-align:left; font-size:12.5px; color:#333; margin-bottom:14px; cursor:pointer;">
+                <input type="checkbox" id="imageIsSensitive" style="margin-top:2px;">
+                <span>This photo shows a valid ID, cash, or other sensitive document</span>
+            </label>
+
+            <p id="imageConsentSensitiveText" style="display:none; background:#fff8e1; border:1px solid #f0d78c; border-radius:8px; padding:10px; text-align:left;">
+                By continuing, you consent to sharing this ID/sensitive document with the
+                other party for verification purposes only. It will be blurred by default
+                in the chat and only revealed when tapped. Please make sure any details you
+                don't want shared (e.g. full ID number) are covered before sending.
+            </p>
+
+            <div class="upload-consent-actions">
+                <button type="button" class="consent-cancel-btn" id="imageConsentCancelBtn">Cancel</button>
+                <button type="button" class="consent-confirm-btn" id="imageConsentSendBtn">Send Photo</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const checkbox = document.getElementById("imageIsSensitive");
+    const sensitiveText = document.getElementById("imageConsentSensitiveText");
+    const defaultText = document.getElementById("imageConsentDefaultText");
+
+    checkbox.addEventListener("change", () => {
+        sensitiveText.style.display = checkbox.checked ? "block" : "none";
+        defaultText.style.display = checkbox.checked ? "none" : "block";
+    });
+
+    document.getElementById("imageConsentCancelBtn").addEventListener("click", closeImageConsentModal);
+    document.getElementById("imageConsentSendBtn").addEventListener("click", () => {
+        const isSensitive = checkbox.checked;
+        const file = pendingImageFile;
+        closeImageConsentModal();
+        if (file) sendImageMessage(file, isSensitive);
+    });
+}
+
+function openImageConsentModal(file) {
+    pendingImageFile = file;
+
+    const modal = document.getElementById("imageConsentModal");
+    const checkbox = document.getElementById("imageIsSensitive");
+    const sensitiveText = document.getElementById("imageConsentSensitiveText");
+    const defaultText = document.getElementById("imageConsentDefaultText");
+
+    if (checkbox) checkbox.checked = false;
+    if (sensitiveText) sensitiveText.style.display = "none";
+    if (defaultText) defaultText.style.display = "block";
+
+    if (modal) modal.classList.add("open");
+}
+
+function closeImageConsentModal() {
+    const modal = document.getElementById("imageConsentModal");
+    if (modal) modal.classList.remove("open");
+    pendingImageFile = null;
+    if (chatImageInput) chatImageInput.value = "";
+}
+
+function setupImageUpload() {
+    if (!attachBtn || !chatImageInput) return;
+
+    attachBtn.addEventListener("click", () => {
+        if (!currentConversationId) {
+            alert("Please select or start a conversation first.");
+            return;
+        }
+        chatImageInput.click();
+    });
+
+    chatImageInput.addEventListener("change", () => {
+        const file = chatImageInput.files && chatImageInput.files[0];
+        if (!file) return;
+
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+            alert("Only JPG, PNG, or WEBP images are allowed.");
+            chatImageInput.value = "";
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Image is too large. Max size is 5MB.");
+            chatImageInput.value = "";
+            return;
+        }
+
+        openImageConsentModal(file);
+    });
+}
+
+async function sendImageMessage(file, isSensitive) {
+    if (!currentConversationId) return;
+
+    if (attachBtn) attachBtn.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("isSensitive", isSensitive ? "1" : "0");
+
+        const response = await fetch(`/api/conversations/${encodeURIComponent(currentConversationId)}/messages`, {
+            method: "POST",
+            headers: { Accept: "application/json" },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Failed to send image.");
+        }
+
+        lastMessageSignature = "";
+        await loadMessages(currentConversationId, false);
+        await loadConversations({ silent: true });
+
+    } catch (error) {
+        console.error("sendImageMessage:", error);
+        alert(error.message || "Failed to send image.");
+
+    } finally {
+        if (attachBtn) attachBtn.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        if (chatImageInput) chatImageInput.value = "";
+    }
+}
+
+
+/* =========================================================
+   REPORT USER
+   A plain flag button in the chat header (so it reads at a
+   glance, with no hidden menu to discover) rather than another
+   control crammed into the already-busy footer.
+   ========================================================= */
+
+function setupReportUserButton() {
+    if (reportUserBtn) {
+        reportUserBtn.addEventListener("click", () => {
+            openReportUserModal();
+        });
+    }
+}
+
+function createReportUserModal() {
+    if (document.getElementById("reportUserModal")) return;
+
+    const modal = document.createElement("div");
+    modal.id = "reportUserModal";
+    modal.className = "agreement-modal";
+
+    modal.innerHTML = `
+        <div class="agreement-modal-content" role="dialog" aria-modal="true">
+            <button type="button" id="closeReportUserModal" class="agreement-modal-close" aria-label="Close">&times;</button>
+
+            <div class="agreement-modal-header">
+                <i class="fas fa-flag" style="color:#d9534f;"></i>
+                <h2>Report User</h2>
+                <p id="reportUserTargetText">Tell us what happened. Reports are sent to ReFoundly admins for review.</p>
+            </div>
+
+            <div style="text-align:left; margin-bottom:12px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#333; margin-bottom:6px;">Reason</label>
+                <select id="reportReason" style="width:100%; box-sizing:border-box; padding:9px 10px; border:1px solid #ccc; border-radius:8px; font-size:13px; background:white;">
+                    <option value="">Select a reason...</option>
+                    <option value="scam">Scam or fraud attempt</option>
+                    <option value="harassment">Harassment or abusive behavior</option>
+                    <option value="fake_item">Fake or misleading item claim</option>
+                    <option value="no_show">Didn't show up / broke the agreement</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div style="text-align:left; margin-bottom:6px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#333; margin-bottom:6px;">Additional details (optional)</label>
+                <textarea id="reportDetails" maxlength="500" rows="4" placeholder="Add anything that can help admins review this report..." style="width:100%; box-sizing:border-box; padding:9px 10px; border:1px solid #ccc; border-radius:8px; font-size:13px; resize:vertical; font-family:inherit;"></textarea>
+            </div>
+
+            <p id="reportUserError" style="display:none; color:#d9534f; font-size:12px; margin:4px 0 0; text-align:left;"></p>
+
+            <div class="agreement-modal-actions">
+                <button type="button" class="agreement-cancel-btn" id="cancelReportUserBtn">Cancel</button>
+                <button type="button" class="agreement-confirm-btn" id="submitReportUserBtn">Submit Report</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("closeReportUserModal").addEventListener("click", closeReportUserModal);
+    document.getElementById("cancelReportUserBtn").addEventListener("click", closeReportUserModal);
+    document.getElementById("submitReportUserBtn").addEventListener("click", submitUserReport);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeReportUserModal();
+    });
+}
+
+function openReportUserModal() {
+    if (!currentConversation || !currentConversation.other_user_id) {
+        showToast("Open a conversation first to report this user.");
+        return;
+    }
+
+    const modal = document.getElementById("reportUserModal");
+    if (!modal) return;
+
+    const targetText = document.getElementById("reportUserTargetText");
+    const otherName = currentConversation.other_user_name || currentConversation.other_user_email || "this user";
+    if (targetText) {
+        targetText.textContent = `Reporting ${otherName}. This is sent to ReFoundly admins for review.`;
+    }
+
+    const reasonSelect = document.getElementById("reportReason");
+    const detailsField = document.getElementById("reportDetails");
+    const errorText = document.getElementById("reportUserError");
+
+    if (reasonSelect) reasonSelect.value = "";
+    if (detailsField) detailsField.value = "";
+    if (errorText) {
+        errorText.style.display = "none";
+        errorText.textContent = "";
+    }
+
+    modal.classList.add("show");
+    document.body.classList.add("agreement-modal-open");
+}
+
+function closeReportUserModal() {
+    const modal = document.getElementById("reportUserModal");
+    if (modal) modal.classList.remove("show");
+    document.body.classList.remove("agreement-modal-open");
+}
+
+async function submitUserReport() {
+    const reasonSelect = document.getElementById("reportReason");
+    const detailsField = document.getElementById("reportDetails");
+    const errorText = document.getElementById("reportUserError");
+    const submitBtn = document.getElementById("submitReportUserBtn");
+
+    const reason = reasonSelect ? reasonSelect.value : "";
+    const details = detailsField ? detailsField.value.trim() : "";
+
+    if (!reason) {
+        if (errorText) {
+            errorText.textContent = "Please select a reason for this report.";
+            errorText.style.display = "block";
+        }
+        return;
+    }
+
+    if (!currentConversation || !currentConversation.other_user_id) {
+        closeReportUserModal();
+        return;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+    }
+
+    try {
+        const response = await fetch(`/api/users/${encodeURIComponent(currentConversation.other_user_id)}/report`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                conversationId: currentConversationId,
+                reason,
+                details
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Failed to submit report.");
+        }
+
+        closeReportUserModal();
+        showToast(data.message || "Report submitted. Our team will review it shortly.");
+
+    } catch (error) {
+        console.error("submitUserReport:", error);
+        if (errorText) {
+            errorText.textContent = error.message || "Failed to submit report. Please try again.";
+            errorText.style.display = "block";
+        }
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Report";
+        }
     }
 }
 
@@ -1781,6 +2604,7 @@ function showEmptyState(customMessage = null) {
     resetAgreementStatus();
     closeAgreementModal();
     closeItemDetailsModal();
+    closeReportUserModal();
 
     if (currentUserName) {
         currentUserName.textContent = "Select a conversation";
@@ -1789,6 +2613,8 @@ function showEmptyState(customMessage = null) {
     if (currentItemName) {
         currentItemName.textContent = "";
     }
+
+    if (chatHeaderActions) chatHeaderActions.style.display = "none";
 
     renderItemFloatingCard();
 

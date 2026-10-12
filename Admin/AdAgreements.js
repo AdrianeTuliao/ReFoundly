@@ -10,6 +10,46 @@ let currentPage = 1;
 let currentStage = 'all';
 const itemsPerPage = 8;
 
+/* =========================================================
+   STAGES & BARANGAY CONTACTS
+   ========================================================= */
+
+const STAGES = {
+    review:            { label: 'Awaiting Review',                style: 'background:#fff3cd; color:#856404;' },
+    awaiting_barangay: { label: 'Waiting for Barangay Approval',  style: 'background:#e0f2fe; color:#0369a1;' },
+    approved:          { label: 'Ready for Handover',             style: 'background:#d1fae5; color:#047857;' },
+    resched:           { label: 'Rescheduling',                   style: 'background:#ede9fe; color:#6d28d9;' },
+    completed:         { label: 'Completed',                      style: 'background:#d1fae5; color:#047857;' },
+    disputed:          { label: 'Disputed',                       style: 'background:#fde2e1; color:#b3261e;' },
+    pending:           { label: 'Pending Both Parties',           style: 'background:#eee; color:#666;' }
+};
+
+// One place that maps backend agreement_status -> UI stage.
+function getStage(item) {
+    const s = item.agreement_status;
+    if (s === 'both_agreed' || s === 'admin_reviewing') return 'review';
+    // Admin confirmed + PDF generated. The barangay is contacted manually outside the system,
+    // so this stays "waiting" until the handover is completed or rescheduled.
+    if (s === 'confirmed' || s === 'awaiting_barangay') return 'awaiting_barangay';
+    // Only set after the admin records that the barangay replied with approval.
+    if (s === 'barangay_approved') return 'approved';
+    if (s === 'completed') return 'completed';
+    if (s === 'reschedule_requested') return 'resched';
+    if (s === 'disputed') return 'disputed';
+    return 'pending';
+}
+
+function formatMeetup(item) {
+    if (!item.meetup_date) return 'Not set';
+    const d = new Date(item.meetup_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    let t = '';
+    if (item.meetup_time) {
+        const parsed = new Date(`1970-01-01T${item.meetup_time}`);
+        t = isNaN(parsed) ? item.meetup_time : parsed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+    return t ? `${d}, ${t}` : d;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.getElementById("agreements-wrapper") || document.querySelector(".content-wrapper");
 
@@ -112,12 +152,7 @@ async function fetchAgreements() {
 
 function matchesStage(item, stage) {
     if (stage === 'all') return true;
-    const status = item.agreement_status;
-    if (stage === 'Scheduled') return status === 'both_agreed' || status === 'admin_reviewing';
-    if (stage === 'Pending Clearance') return status === 'admin_reviewing' || status === 'both_agreed';
-    if (stage === 'Completed') return status === 'confirmed' || status === 'completed';
-    if (stage === 'Disputed') return status === 'disputed';
-    return true;
+    return getStage(item) === stage;
 }
 
 // Search Filter Logic
@@ -173,31 +208,19 @@ function renderTable() {
     if (nextBtn) nextBtn.disabled = currentPage === totalPages;
 
     container.innerHTML = paginatedItems.map(item => {
-        let statusBadge = "";
-        let actionBtn = "";
+        const stage = getStage(item);
+        const statusBadge = `<span class="log-badge" style="${STAGES[stage].style}">${STAGES[stage].label}</span>`;
 
-        if (item.agreement_status === 'confirmed' || item.agreement_status === 'completed') {
-            statusBadge = `<span class="log-badge badge-admin">Confirmed</span>`;
-            actionBtn = `
-                <a href="${item.transaction_report_path}" target="_blank" class="btn-action view-btn" style="padding:5px 10px; background:#5D8252; color:white; border-radius:4px; text-decoration:none; font-size:0.8rem; margin-right:4px;"><i class="fa-solid fa-file-pdf"></i> Report</a>
-                <button onclick="openHandoverModal(${item.conversation_id})" class="btn-action" style="padding:5px 10px; background:#eef2eb; color:#333; border:1px solid #ccc; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-eye"></i></button>
-            `;
-        } else if (item.agreement_status === 'disputed') {
-            statusBadge = `<span class="log-badge" style="background:#fde2e1; color:#b3261e;">Disputed</span>`;
-            actionBtn = `<button onclick="openHandoverModal(${item.conversation_id})" class="btn-action" style="padding:5px 10px; background:#b3261e; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-magnifying-glass"></i> Review</button>`;
-        } else if (item.agreement_status === 'admin_reviewing' || item.agreement_status === 'both_agreed') {
-            statusBadge = `<span class="log-badge badge-security" style="background:#fff3cd; color:#856404;">Awaiting Review</span>`;
-            actionBtn = `<button onclick="openHandoverModal(${item.conversation_id})" class="btn-action confirm-btn" style="padding:5px 10px; background:#7aa340; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-magnifying-glass"></i> Review</button>`;
-        } else {
-            statusBadge = `<span class="log-badge badge-report">${item.agreement_status}</span>`;
-            actionBtn = `<span style="color:#999; font-size:0.8rem;">Pending Both Parties</span>`;
-        }
+        const reportBtn = item.transaction_report_path
+            ? `<a href="${escapeAttr(item.transaction_report_path)}" target="_blank" class="btn-action view-btn" style="padding:5px 10px; background:#5D8252; color:white; border-radius:4px; text-decoration:none; font-size:0.8rem; margin-right:4px;"><i class="fa-solid fa-file-pdf"></i> Report</a>`
+            : '';
 
-        const formattedDate = item.meetup_date
-            ? new Date(item.meetup_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : (item.admin_notified_at ? new Date(item.admin_notified_at).toLocaleDateString() : 'TBD');
+        const btnLabel = stage === 'review' ? 'Review' : 'View';
+        const btnColor = stage === 'disputed' ? '#b3261e' : '#7aa340';
 
-        const formattedTime = item.meetup_time || (item.admin_notified_at ? new Date(item.admin_notified_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+        const actionBtn = stage === 'pending'
+            ? `<span style="color:#999; font-size:0.8rem;">Pending Both Parties</span>`
+            : `${reportBtn}<button onclick="openHandoverModal(${item.conversation_id})" class="btn-action" style="padding:5px 10px; background:${btnColor}; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-magnifying-glass"></i> ${btnLabel}</button>`;
 
         const roles = getPartyRoles(item);
 
@@ -214,8 +237,7 @@ function renderTable() {
                 </td>
                 <td><strong>${escapeHtml(item.meetup_barangay || 'Not specified')}</strong></td>
                 <td>
-                    <strong>${formattedDate}</strong><br>
-                    <small style="color:#666;">${formattedTime}</small>
+                    <strong>${escapeHtml(formatMeetup(item))}</strong>
                 </td>
                 <td>${statusBadge}</td>
                 <td>${actionBtn}</td>
@@ -278,9 +300,11 @@ async function openHandoverModal(conversationId) {
         <div class="handover-meetup">
             <i class="fa-solid fa-map-marker-alt"></i>
             <strong>${escapeHtml(item.meetup_barangay || 'Not specified')}</strong>
-            ${item.meetup_date ? `&middot; ${escapeHtml(item.meetup_date)}` : ''}
-            ${item.meetup_time ? `${escapeHtml(item.meetup_time)}` : ''}
+            &middot; ${escapeHtml(formatMeetup(item))}
         </div>
+
+        ${item.reschedule_reason ? `<p style="font-size:0.82rem; color:#6d28d9; margin-bottom:12px;"><strong>Last reschedule reason:</strong> ${escapeHtml(item.reschedule_reason)}</p>` : ''}
+
 
         <div class="handover-transcript">
             <h4><i class="fa-solid fa-comments"></i> Chat transcript (read-only)</h4>
@@ -289,20 +313,7 @@ async function openHandoverModal(conversationId) {
             </div>
         </div>
 
-        <div class="handover-actions">
-            ${item.agreement_status !== 'confirmed' && item.agreement_status !== 'completed' ? `
-                <button class="btn-dispute" onclick="disputeTransaction(${item.conversation_id})">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Flag as Disputed
-                </button>
-                <button class="btn-confirm" onclick="confirmTransaction(${item.conversation_id})">
-                    <i class="fa-solid fa-check"></i> Confirm & Generate PDF
-                </button>
-            ` : `
-                <a href="${item.transaction_report_path}" target="_blank" class="btn-confirm" style="text-decoration:none; text-align:center;">
-                    <i class="fa-solid fa-file-pdf"></i> View Transaction Report
-                </a>
-            `}
-        </div>
+        <div class="handover-actions">${buildModalActions(item)}</div>
     `;
 
     modal.style.display = 'flex';
@@ -322,26 +333,235 @@ async function loadTranscript(conversationId) {
             return;
         }
 
-        container.innerHTML = data.messages.map(m => `
-            <div class="handover-msg">
-                <strong>${escapeHtml(m.sender_name || 'User')}:</strong>
-                ${m.image_path
-                    ? `<a href="${escapeAttr(m.image_path)}" target="_blank">[photo]</a>`
-                    : `<span>${escapeHtml(m.message || '')}</span>`}
-                <small>${new Date(m.created_at).toLocaleString()}</small>
-            </div>
-        `).join('');
+        container.innerHTML = data.messages.map(m => {
+            let bodyHtml;
+
+            if (m.message_type === 'image' && m.image_url) {
+                const sensitiveTag = m.is_sensitive
+                    ? `<span style="color:#b3261e; font-weight:600; font-size:0.75rem;">[Sensitive document]</span> `
+                    : '';
+                bodyHtml = `${sensitiveTag}<a href="${escapeAttr(m.image_url)}" target="_blank">
+                    <img src="${escapeAttr(m.image_url)}" alt="Attached photo" style="max-width:160px; max-height:160px; border-radius:8px; display:block; margin-top:4px;">
+                </a>`;
+            } else {
+                bodyHtml = `<span>${escapeHtml(m.message || '')}</span>`;
+            }
+
+            return `
+                <div class="handover-msg">
+                    <strong>${escapeHtml(m.sender_name || 'User')}:</strong>
+                    ${bodyHtml}
+                    <small>${new Date(m.created_at).toLocaleString()}</small>
+                </div>
+            `;
+        }).join('');
     } catch (err) {
         console.error("Transcript load failed:", err);
         container.innerHTML = `<div style="padding:14px; color:#b3261e; text-align:center; font-size:0.85rem;">Could not load the conversation.</div>`;
     }
 }
 
+/* =========================================================
+   THEMED DIALOG (replaces native confirm() / prompt() / alert())
+   ========================================================= */
+
+function showAgrDialog({ title = "Are you sure?", message = "", type = "confirm", danger = false, confirmText = "Confirm", cancelText = "Cancel", placeholder = "" } = {}) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById("agrDialog");
+        const iconEl = document.getElementById("agrDialogIcon");
+        const titleEl = document.getElementById("agrDialogTitle");
+        const messageEl = document.getElementById("agrDialogMessage");
+        const inputWrap = document.getElementById("agrDialogInputWrap");
+        const input = document.getElementById("agrDialogInput");
+        const cancelBtn = document.getElementById("agrDialogCancel");
+        const confirmBtn = document.getElementById("agrDialogConfirm");
+
+        if (!overlay) {
+            // Fallback if the dialog markup isn't present for some reason.
+            if (type === "alert") { alert(message); return resolve(true); }
+            if (type === "prompt") return resolve(prompt(message));
+            return resolve(confirm(message));
+        }
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        iconEl.className = `agr-dialog-icon${danger ? " danger" : ""}`;
+        iconEl.innerHTML = `<i class="fa-solid ${danger ? "fa-triangle-exclamation" : (type === "alert" ? "fa-circle-check" : "fa-circle-question")}"></i>`;
+
+        confirmBtn.textContent = confirmText;
+        confirmBtn.className = `agr-dialog-btn agr-dialog-confirm${danger ? " danger" : ""}`;
+
+        if (type === "prompt") {
+            inputWrap.style.display = "block";
+            input.value = "";
+            input.placeholder = placeholder;
+        } else {
+            inputWrap.style.display = "none";
+        }
+
+        cancelBtn.style.display = type === "alert" ? "none" : "inline-block";
+
+        overlay.classList.add("active");
+
+        const cleanup = () => {
+            overlay.classList.remove("active");
+            confirmBtn.removeEventListener("click", onConfirm);
+            cancelBtn.removeEventListener("click", onCancel);
+        };
+
+        function onConfirm() {
+            cleanup();
+            if (type === "prompt") return resolve(input.value.trim());
+            if (type === "alert") return resolve(true);
+            resolve(true);
+        }
+
+        function onCancel() {
+            cleanup();
+            resolve(type === "prompt" ? null : false);
+        }
+
+        confirmBtn.addEventListener("click", onConfirm);
+        cancelBtn.addEventListener("click", onCancel);
+
+        if (type === "prompt") {
+            setTimeout(() => input.focus(), 50);
+        }
+    });
+}
+
+/* =========================================================
+   MODAL ACTIONS PER STAGE
+   ========================================================= */
+
+function buildModalActions(item) {
+    const id = item.conversation_id;
+    const stage = getStage(item);
+
+    const pdfLink = item.transaction_report_path
+        ? `<a href="${escapeAttr(item.transaction_report_path)}" target="_blank" class="btn-confirm" style="text-decoration:none; text-align:center;"><i class="fa-solid fa-file-pdf"></i> View Transaction Report</a>`
+        : '';
+
+    const reschedBtn = `<button class="btn-dispute" style="background:#ede9fe; color:#6d28d9; border-color:#d4c8f7;" onclick="rescheduleTransaction(${id})"><i class="fa-solid fa-calendar-xmark"></i> Re-schedule</button>`;
+
+    if (stage === 'review' || stage === 'disputed') {
+        return `
+            <button class="btn-dispute" onclick="disputeTransaction(${id})"><i class="fa-solid fa-triangle-exclamation"></i> Flag as Disputed</button>
+            <button class="btn-confirm" onclick="confirmTransaction(${id})"><i class="fa-solid fa-check"></i> Confirm & Generate PDF</button>`;
+    }
+    if (stage === 'awaiting_barangay') {
+        // Barangay replied "yes"  -> Barangay Approved (notifies users it is ready)
+        // Barangay replied "no"   -> Re-schedule (reason required)
+        return `
+            ${reschedBtn}
+            <button class="btn-confirm" onclick="markBarangayApproved(${id})"><i class="fa-solid fa-building-circle-check"></i> Barangay Approved</button>
+            ${pdfLink}`;
+    }
+    if (stage === 'approved') {
+        return `${reschedBtn}${pdfLink}`;
+    }
+    return pdfLink; // completed / rescheduling / pending: nothing more for the admin to do
+}
+
+// Shared POST helper for the new admin actions
+async function postAdminAction(conversationId, action, body, successTitle, successMsg) {
+    try {
+        const response = await fetch(`/api/admin/transactions/${conversationId}/${action}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body || {})
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || "Unknown error occurred.");
+
+        closeHandoverModal();
+        await fetchAgreements();
+        await showAgrDialog({ type: "alert", title: successTitle, message: successMsg, confirmText: "Got it" });
+        return true;
+    } catch (err) {
+        console.error(`${action} Error:`, err);
+        await showAgrDialog({ type: "alert", danger: true, title: "Something went wrong", message: err.message || "Request failed.", confirmText: "Okay" });
+        return false;
+    }
+}
+
+// Admin records that the barangay replied (email / call / message) and approved the schedule.
+async function markBarangayApproved(conversationId) {
+    const ok = await showAgrDialog({
+        title: "Barangay approved this schedule?",
+        message: "Only confirm after the barangay hall has replied with their approval. Both users will be told the handover is ready.",
+        confirmText: "Yes, barangay approved"
+    });
+    if (!ok) return;
+
+    await postAdminAction(conversationId, 'barangay-approved', {},
+        "Handover is ready", "Both parties were notified that the barangay approved the schedule.");
+}
+
+/* =========================================================
+   RE-SCHEDULE (reason required)
+   ========================================================= */
+
+function showRescheduleDialog(item) {
+    return new Promise((resolve) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'agr-dialog-overlay active';
+        wrap.innerHTML = `
+        <div class="agr-dialog-card" style="max-width:420px;">
+            <div class="agr-dialog-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+            <h3>Re-schedule #AGR-${item.conversation_id}</h3>
+            <p>Both users will be asked to agree to a new schedule.</p>
+            <div class="agr-dialog-input-wrap">
+                <textarea id="rsReason" rows="2" maxlength="300" placeholder="Reason (required), e.g. Barangay hall is unavailable that day"></textarea>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <input type="date" id="rsDate" style="flex:1; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">
+                    <input type="time" id="rsTime" style="flex:1; padding:8px; border:1px solid #e2e8f0; border-radius:8px;">
+                </div>
+                <small style="color:#94a3b8;">Date and time are optional. Leave blank to let the users pick.</small>
+            </div>
+            <div class="agr-dialog-actions">
+                <button type="button" class="agr-dialog-btn agr-dialog-cancel" id="rsCancel">Cancel</button>
+                <button type="button" class="agr-dialog-btn agr-dialog-confirm" id="rsOk">Send to users</button>
+            </div>
+        </div>`;
+        document.body.appendChild(wrap);
+
+        const done = (value) => { wrap.remove(); resolve(value); };
+        wrap.querySelector('#rsCancel').onclick = () => done(null);
+        wrap.querySelector('#rsOk').onclick = () => {
+            const reasonEl = wrap.querySelector('#rsReason');
+            const reason = reasonEl.value.trim();
+            if (!reason) { reasonEl.style.borderColor = '#dc2626'; reasonEl.focus(); return; }
+            done({
+                reason,
+                newDate: wrap.querySelector('#rsDate').value || null,
+                newTime: wrap.querySelector('#rsTime').value || null
+            });
+        };
+        setTimeout(() => wrap.querySelector('#rsReason').focus(), 50);
+    });
+}
+
+async function rescheduleTransaction(conversationId) {
+    const item = allAgreements.find(a => Number(a.conversation_id) === Number(conversationId));
+    if (!item) return;
+
+    const data = await showRescheduleDialog(item);
+    if (!data) return;
+
+    await postAdminAction(conversationId, 'reschedule', data,
+        "Re-schedule sent", "Both parties were notified and asked to agree to a new schedule.");
+}
+
 // Confirm transaction and trigger backend PDF generation
 async function confirmTransaction(conversationId) {
-    if (!confirm("Are you sure you want to confirm this agreement and generate the transaction PDF?")) {
-        return;
-    }
+    const confirmed = await showAgrDialog({
+        title: "Confirm this agreement?",
+        message: "This generates the official transaction PDF and tells both parties it is now waiting for barangay approval.",
+        confirmText: "Confirm & Generate PDF"
+    });
+    if (!confirmed) return;
 
     try {
         const response = await fetch(`/api/admin/transactions/${conversationId}/confirm`, {
@@ -352,24 +572,48 @@ async function confirmTransaction(conversationId) {
         const result = await response.json();
 
         if (result.success) {
-            alert("Transaction confirmed successfully! PDF report generated.");
+            await showAgrDialog({
+                type: "alert",
+                title: "Confirmed",
+                message: "The PDF was generated and both parties were told it is waiting for barangay approval.",
+                confirmText: "Got it"
+            });
             closeHandoverModal();
             if (result.reportPath) {
                 window.open(result.reportPath, '_blank');
             }
             fetchAgreements();
         } else {
-            alert("Failed to confirm transaction: " + (result.message || "Unknown error"));
+            await showAgrDialog({
+                type: "alert",
+                title: "Couldn't confirm",
+                danger: true,
+                message: result.message || "Unknown error occurred.",
+                confirmText: "Okay"
+            });
         }
     } catch (err) {
         console.error("Confirmation Error:", err);
-        alert("An error occurred while confirming the transaction.");
+        await showAgrDialog({
+            type: "alert",
+            title: "Something went wrong",
+            danger: true,
+            message: "An error occurred while confirming the transaction.",
+            confirmText: "Okay"
+        });
     }
 }
 
 // Flag a transaction as disputed
 async function disputeTransaction(conversationId) {
-    const reason = prompt("Briefly describe the issue with this agreement:");
+    const reason = await showAgrDialog({
+        type: "prompt",
+        title: "Flag as disputed",
+        message: "Briefly describe the issue with this agreement.",
+        placeholder: "e.g. Item description doesn't match what was discussed...",
+        confirmText: "Flag Transaction",
+        danger: true
+    });
     if (reason === null) return;
 
     try {
@@ -381,22 +625,44 @@ async function disputeTransaction(conversationId) {
         const result = await response.json();
 
         if (result.success) {
-            alert("Transaction flagged as disputed. Both parties have been notified.");
+            await showAgrDialog({
+                type: "alert",
+                title: "Transaction flagged",
+                message: "Both parties have been notified of the dispute.",
+                confirmText: "Got it"
+            });
             closeHandoverModal();
             fetchAgreements();
         } else {
-            alert("Failed to flag transaction: " + (result.message || "Unknown error"));
+            await showAgrDialog({
+                type: "alert",
+                title: "Couldn't flag transaction",
+                danger: true,
+                message: result.message || "Unknown error occurred.",
+                confirmText: "Okay"
+            });
         }
     } catch (err) {
         console.error("Dispute Error:", err);
-        alert("An error occurred while flagging the transaction.");
+        await showAgrDialog({
+            type: "alert",
+            title: "Something went wrong",
+            danger: true,
+            message: "An error occurred while flagging the transaction.",
+            confirmText: "Okay"
+        });
     }
 }
 
 // Simple client-side CSV export of the current filtered view
-function exportAgreementsCsv() {
+async function exportAgreementsCsv() {
     if (filteredAgreements.length === 0) {
-        alert("No agreement records to export.");
+        await showAgrDialog({
+            type: "alert",
+            title: "Nothing to export",
+            message: "No agreement records match your current filters.",
+            confirmText: "Okay"
+        });
         return;
     }
 
@@ -414,7 +680,7 @@ function exportAgreementsCsv() {
             item.meetup_barangay || '',
             item.meetup_date || '',
             item.meetup_time || '',
-            item.agreement_status || ''
+            STAGES[getStage(item)].label
         ];
     });
 
@@ -558,9 +824,12 @@ function clearAllNotifs() {
 }
 
 function updateStatCards(data) {
-    const scheduled = data.filter(i => i.agreement_status === 'confirmed' || i.agreement_status === 'completed').length;
-    const pending = data.filter(i => i.agreement_status === 'admin_reviewing' || i.agreement_status === 'both_agreed').length;
-    const disputes = data.filter(i => i.agreement_status === 'disputed').length;
+    const stages = data.map(getStage);
+    // Scheduled = barangay-approved handovers (and completed)
+    const scheduled = stages.filter(s => s === 'approved' || s === 'completed').length;
+    // Pending = still needs admin action: review, or waiting on the barangay's reply
+    const pending = stages.filter(s => s === 'review' || s === 'awaiting_barangay').length;
+    const disputes = stages.filter(s => s === 'disputed').length;
 
     const scheduledEl = document.getElementById('metric-scheduled');
     const clearanceEl = document.getElementById('metric-clearance');

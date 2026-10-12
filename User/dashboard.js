@@ -3,7 +3,6 @@
     let filteredItems = []; 
     let currentPage = 1;
     const itemsPerPage = 3; 
-    let currentNotifTab = 'all';
 
 // 1. Setup Dropdown Search Logic
 function setupSearch(inputId, listId) {
@@ -123,109 +122,7 @@ function renderPage(page) {
     updatePaginationUI();
 }
 
-// 5. Updated Notification Logic (Admin-Style)
-async function updateNotificationsUI() {
-    const list = document.getElementById("notifList");
-    const badge = document.getElementById("notifBadge");
-    if (!list) return;
-
-    try {
-        const res = await fetch('/api/user/notifications');
-
-        // 1. Check if the HTTP response is OK (prevents JSON syntax errors on HTML 404/500 responses)
-        if (!res.ok) {
-            console.warn(`Notifications fetch failed with status: ${res.status}`);
-            return;
-        }
-
-        const data = await res.json();
-
-        // 2. Validate that data is an array before processing
-        if (!Array.isArray(data)) {
-            console.error("Notifications response was not an array:", data);
-            return;
-        }
-
-        // Update Badge Count (Unread only)
-        const unreadCount = data.filter(n => !n.is_read).length;
-        if (badge) {
-            badge.innerText = unreadCount;
-            // Use 'flex' so the centering CSS works, 'none' to hide if 0
-            badge.style.display = unreadCount > 0 ? "flex" : "none";
-        }
-
-        // Filter list based on active tab
-        let displayList = currentNotifTab === 'unread' ? data.filter(n => !n.is_read) : data;
-
-        if (displayList.length === 0) {
-            list.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: #999; font-size: 0.85rem;">
-                No ${currentNotifTab === 'unread' ? 'unread' : ''} notifications
-            </div>`;
-            return;
-        }
-
-        list.innerHTML = displayList.map(n => {
-            const date = new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            // 3. Escape the message content to prevent potential XSS issues
-            const safeMessage = (n.message || "Notification updated")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-
-            return `
-                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleNotifClick(${n.id}, ${n.item_id || 'null'})">
-                    <div class="notif-icon-circle" style="background: #7aa340; width:35px; height:35px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
-                    </div>
-                    <div style="flex-grow:1;">
-                        <div style="font-size:0.85rem; color:#1c1e21; font-weight:${n.is_read ? '600' : '700'}">${safeMessage}</div>
-                        <div style="font-size:0.75rem; color:#65676b;">${date}</div>
-                    </div>
-                    ${!n.is_read ? '<div class="unread-dot-small"></div>' : ''}
-                </div>
-            `;
-        }).join('');
-    } catch (err) {
-        console.error("Notification Load Error:", err);
-    }
-}
-
-function switchNotifTab(type) {
-    currentNotifTab = type;
-    document.getElementById('tabAll')?.classList.toggle('active', type === 'all');
-    document.getElementById('tabUnread')?.classList.toggle('active', type === 'unread');
-    updateNotificationsUI();
-}
-
-async function handleNotifClick(id, itemId) {
-    try {
-        await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
-    } catch (err) {
-        console.error("Failed to mark notification as read:", err);
-    }
-    if (!itemId) {
-        window.location.href = 'history.html';
-        return;
-    }
-    try {
-        const res = await fetch(`/api/items/${itemId}`);
-        if (res.ok) {
-            const item = await res.json();
-            const dbType = (item.report_type || "").toLowerCase().trim();
-            finalRedirect(itemId, dbType);
-        } else {
-            window.location.href = 'history.html';
-        }
-    } catch (err) {
-        console.error("Could not resolve matched item:", err);
-        window.location.href = 'history.html';
-    }
-}
-
-// 6. Navigation & UI Helpers
+// 5. Navigation & UI Helpers
 window.finalRedirect = function(id, type) {
     const verifiedType = String(type || "").toLowerCase().trim();
     if (verifiedType === "lost") {
@@ -276,70 +173,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof loadPublishedItems === 'function') loadPublishedItems(); 
     if (typeof loadFoundItems === 'function') loadFoundItems();
 
-    // --- NOTIFICATION INITIALIZATION ---
-    const bell = document.getElementById('notifBell');
-    const dropdown = document.getElementById('notifDropdown');
-    const markReadBtn = document.getElementById('markAllRead');
-
-    // CRITICAL: Explicitly hide dropdown on load to prevent auto-opening
-    if (dropdown) dropdown.style.display = "none";
-    
-    updateNotificationsUI(); // Initial count/load
-
-    // Toggle Dropdown
-    bell?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // Check if it's currently hidden
-        const isHidden = dropdown.style.display === "none";
-        dropdown.style.display = isHidden ? "flex" : "none"; 
-        
-        // Refresh data only when opening
-        if (isHidden) updateNotificationsUI();
-    });
-
-    // Tab Listeners (Using your existing switchNotifTab function)
-    document.getElementById('tabAll')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (typeof switchNotifTab === 'function') {
-            switchNotifTab('all');
-        } else {
-            // Fallback if switchNotifTab isn't global
-            currentNotifTab = 'all';
-            document.getElementById('tabAll').classList.add('active');
-            document.getElementById('tabUnread').classList.remove('active');
-            updateNotificationsUI();
-        }
-    });
-
-    document.getElementById('tabUnread')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (typeof switchNotifTab === 'function') {
-            switchNotifTab('unread');
-        } else {
-            currentNotifTab = 'unread';
-            document.getElementById('tabUnread').classList.add('active');
-            document.getElementById('tabAll').classList.remove('active');
-            updateNotificationsUI();
-        }
-    });
-
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (dropdown && !dropdown.contains(e.target) && e.target !== bell) {
-            dropdown.style.display = "none";
-        }
-    });
-
-    // Mark All as Read
-    markReadBtn?.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        try {
-            const res = await fetch('/api/user/notifications/read-all', { method: 'POST' });
-            if (res.ok) updateNotificationsUI();
-        } catch (err) {
-            console.error("Error marking read:", err);
-        }
-    });
+    // NOTE: notification bell/dropdown/tabs are handled globally by
+    // notifications.js (loaded after this file). Dashboard used to have
+    // its own duplicate copy of that logic here, which fought with
+    // notifications.js over the same #notifBell/#notifDropdown elements —
+    // both would toggle the dropdown open/closed on the same click,
+    // closing it again immediately. Removed to avoid that conflict.
 
     // --- OTHER LISTENERS ---
     // Pagination, Search, and Session checks...

@@ -1,4 +1,4 @@
-    let allItems = [];
+let allItems = [];
     let filteredItems = [];
     let currentPage = 1;
     const itemsPerPage = 4; // Number of items per page
@@ -85,8 +85,16 @@
             card.setAttribute('data-id', item.id);
             card.onclick = () => openModal(item.id);
 
-            const imgHtml = item.image_path     
-                ? `<img src="${item.image_path}" style="width:100%; height:50px; object-fit:cover; border-radius: 8px 8px 0 0;">`
+            const isSensitive = Boolean(item.is_sensitive_image);
+
+            const imgHtml = item.image_path
+                ? (isSensitive
+                    ? `<div class="card-img-wrapper sensitive-img-wrapper" data-item-id="${item.id}">
+                           <img src="${item.image_path}" class="sensitive-img" draggable="false" oncontextmenu="return false;">
+                           <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy — verify in direct message</span></div>
+                       </div>`
+                    : `<img src="${item.image_path}" style="width:100%; height:50px; object-fit:cover; border-radius: 8px 8px 0 0;">`
+                  )
                 : `<div class="card-img-placeholder">No Image Provided</div>`;
 
             card.innerHTML = `
@@ -162,13 +170,21 @@
         const item = allItems.find(i => i.id === id);
         if (!item) return;
 
+        const isSensitive = Boolean(item.is_sensitive_image);
+        const modalImgHtml = isSensitive
+            ? `<div class="card-img-wrapper sensitive-img-wrapper modal-sensitive-img" id="modalSensitiveImg">
+                   <img src="${item.image_path || 'placeholder.png'}" class="sensitive-img" draggable="false" oncontextmenu="return false;" style="width:100%; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                   <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy — verify in direct message</span></div>
+               </div>`
+            : `<img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+
         const body = document.getElementById("modalBody");
         body.innerHTML = `
             <div style="display: flex; gap: 40px; align-items: flex-start;">
                 <div style="flex: 1;">
                     <span class="status-badge-published">Published</span>
                     <h1 style="margin-top: 0;">${item.item_name}</h1>
-                    <img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    ${modalImgHtml}
                     <p style="margin-top:15px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
                 </div>
                 <div style="flex: 1;">

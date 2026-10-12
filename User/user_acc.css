@@ -385,6 +385,15 @@ footer {
     text-decoration: underline;
 }
 
+/* Footer popups: keep inside the screen on phones */
+@media (max-width: 768px) {
+    .footer-links { position: relative; flex-wrap: wrap; row-gap: 6px; }
+    .popup-item { position: static; }
+    .popup-box { box-sizing: border-box; width: min(340px, calc(100vw - 24px)); padding: 18px; }
+    .popup-box::after { display: none; }
+}
+
+
 /* --- Socials & P --- */
 
 footer p {
@@ -537,4 +546,192 @@ footer p {
     border-bottom: 2px solid var(--primary-green);
     background: #fdfdfd;
     padding: 5px;
+}
+
+@media (max-width: 1024px) {
+    .steps-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .step-connector {
+        width: auto;
+        height: 30px;
+    }
+
+    .step-connector i {
+        transform: rotate(90deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar h1 {
+        font-size: 1.2rem;
+    }
+
+    .nav-icons {
+        gap: 15px;
+        padding-right: 0;
+    }
+
+    .hero {
+        padding: 30px 20px;
+        min-height: auto;
+    }
+
+    .hero h2 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .hero .btn-main {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 20px auto 30px;
+        padding: 20px;
+        width: 95%;
+        background: white;
+    }
+
+    .search-container .btn-main1 {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+    }
+
+    /* Fixed side-by-side layout for mobile pagination */
+    .pagination-container {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 12px;
+        padding: 0 10px;
+    }
+
+    .notif-dropdown {
+        width: 300px;
+        right: -60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h2 {
+        font-size: 24px;
+    }
+
+    .search-group label {
+        font-size: 15px;
+    }
+
+    .notif-dropdown {
+        width: 280px;
+        right: -80px;
+    }
+}
+
+/* =========================================================
+   ACCOUNT PAGE - MOBILE LAYOUT
+   Stack the sidebar above the form instead of side by side
+========================================================= */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 12px;
+        box-sizing: border-box;
+        margin: 12px auto;
+    }
+
+    .breadcrumb {
+        margin-bottom: 15px;
+        font-size: 1.05rem;
+    }
+
+    .account-card {
+        flex-direction: column;
+        padding: 20px 16px;
+    }
+
+    .sidebar {
+        flex: none;              /* the 300px basis would become a 300px HEIGHT in a column */
+        width: 100%;
+        box-sizing: border-box;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding: 0 0 20px;
+        margin-bottom: 20px;
+    }
+
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 15px;
+    }
+
+    .sidebar h2 { font-size: 1.3rem; margin: 0 0 5px; }
+    .sidebar p  { word-break: break-all; margin: 0; }
+
+    .content {
+        flex: none;
+        width: 100%;
+        padding-left: 0;
+        font-size: 16px;
+        min-width: 0;
+    }
+
+    .content h3,
+    .section-header {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .info-box {
+        box-sizing: border-box;
+        min-height: 0;
+        padding: 15px;
+    }
+
+    .info-box input { min-width: 0; }
+
+    /* Change Password link sits under the label instead of floating over it */
+    .change-pw {
+        position: static;
+        display: inline-block;
+        margin-top: 8px;
+    }
+
+    .actions { justify-content: stretch; }
+    .actions .primary-edit-btn { flex: 1; }
+}
+
+@media (max-width: 480px) {
+    .navbar { padding: 0.5rem 0.8rem; }
+    .account-card { padding: 16px 12px; }
 }

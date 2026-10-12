@@ -1,6 +1,18 @@
 // --- GLOBAL USER NOTIFICATION ENGINE ---
 let currentNotifTab = 'all';
 
+// Escapes text before it's injected into innerHTML. Notification messages
+// can originate from another user's raw input (e.g. chat message previews),
+// so this MUST run before any notification text touches the DOM — without
+// it, a message like "<img src=x onerror=alert(1)>" executes the moment
+// the recipient opens their notification bell or sees the toast popup.
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
 // Toast Storage & State Setup
 if (!window.shownToastIds) {
     window.shownToastIds = new Set(JSON.parse(sessionStorage.getItem('shownNotifToasts') || '[]'));
@@ -24,8 +36,8 @@ function showRefoundlyToast(title, message, iconClass = 'fa-solid fa-bell') {
             <i class="${iconClass}"></i>
         </div>
         <div class="refoundly-toast-content">
-            <h4 class="refoundly-toast-title">${title}</h4>
-            <p class="refoundly-toast-body">${message}</p>
+            <h4 class="refoundly-toast-title">${escapeHtml(title)}</h4>
+            <p class="refoundly-toast-body">${escapeHtml(message)}</p>
         </div>
         <button class="refoundly-toast-close" onclick="this.parentElement.remove()">&times;</button>
     `;
@@ -96,11 +108,11 @@ async function updateNotificationsUI() {
         }
 
         list.innerHTML = displayList.map(n => {
-            const safeMessage = n.message || '';
+            const safeMessage = escapeHtml(n.message || '');
             const date = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
 
             return `
-                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleGlobalNotifClick(${n.id}, ${n.item_id || 'null'})">
+                <div class="notif-item-modern ${n.is_read ? '' : 'unread-bg'}" onclick="handleGlobalNotifClick(${n.id}, ${n.item_id || 'null'}, ${n.conversation_id || 'null'})">
                     <div class="notif-icon-circle" style="background: #7aa340; width:35px; height:35px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                         <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
                     </div>
@@ -118,14 +130,24 @@ async function updateNotificationsUI() {
 }
 
 // Click & Tab Helpers
-async function handleGlobalNotifClick(id, itemId) {
+async function handleGlobalNotifClick(id, itemId, conversationId) {
     try {
         await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
-        await updateNotificationsUI(); 
+        await updateNotificationsUI();
+
+        // A conversation-linked notification (new message, agreement update,
+        // dispute, confirmed transaction) always goes straight to that chat —
+        // item_id alone can't tell us WHICH conversation about that item.
+        if (conversationId) {
+            window.location.href = `message.html?conversation=${conversationId}`;
+            return;
+        }
+
         if (!itemId) {
             window.location.href = 'history.html';
             return;
         }
+
         const res = await fetch(`/api/items/${itemId}`);
         if (res.ok) {
             const item = await res.json();

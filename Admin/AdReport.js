@@ -9,6 +9,12 @@ let notifications = JSON.parse(localStorage.getItem('refoundly_notifications')) 
 let knownItemIds = new Set(JSON.parse(localStorage.getItem('refoundly_known_ids')) || []);
 let isInitialLoad = true;
 
+// --- USER REPORTS STATE (separate "Report User" chat feature) ---
+let userReportsData = [];
+let filteredUserReports = [];
+let userReportsPage = 1;
+const userReportsPerPage = 6;
+
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.querySelector(".content-wrapper");
@@ -26,11 +32,23 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('tabAll')?.addEventListener('click', (e) => { e.stopPropagation(); switchTab('all'); });
     document.getElementById('tabUnread')?.addEventListener('click', (e) => { e.stopPropagation(); switchTab('unread'); });
 
+    // Report-type tabs (Item Reports / User Reports)
+    document.getElementById("itemReportsTabBtn")?.addEventListener("click", () => switchReportType('items'));
+    document.getElementById("userReportsTabBtn")?.addEventListener("click", () => switchReportType('users'));
+
+    // User reports controls
+    document.getElementById("userReportStatusFilter")?.addEventListener("change", filterUserReportsTable);
+    document.getElementById("userReportSearchInput")?.addEventListener("input", filterUserReportsTable);
+    document.getElementById("urPrevBtn")?.addEventListener("click", () => changeUserReportsPage(-1));
+    document.getElementById("urNextBtn")?.addEventListener("click", () => changeUserReportsPage(1));
+    document.getElementById("closeUserReportModal")?.addEventListener("click", closeUserReportModal);
+
     // Modal backdrop click
     window.addEventListener("click", (event) => {
         if (event.target.classList.contains('modal')) {
             closeModal();
             closeConfirmModal();
+            closeUserReportModal();
         }
     });
 
@@ -38,8 +56,26 @@ document.addEventListener("DOMContentLoaded", () => {
         checkUrlForHighlight();
     });
 
+    fetchUserReports();
+    setInterval(fetchUserReports, 20000);
+
     updateNotifBadge();
 });
+
+// --- REPORT TYPE TAB SWITCHING ---
+function switchReportType(type) {
+    const itemSection = document.getElementById("itemReportsSection");
+    const userSection = document.getElementById("userReportsSection");
+    const itemBtn = document.getElementById("itemReportsTabBtn");
+    const userBtn = document.getElementById("userReportsTabBtn");
+
+    const showUsers = type === 'users';
+
+    if (itemSection) itemSection.style.display = showUsers ? "none" : "block";
+    if (userSection) userSection.style.display = showUsers ? "block" : "none";
+    itemBtn?.classList.toggle("active", !showUsers);
+    userBtn?.classList.toggle("active", showUsers);
+}
 
 function switchTab(type) {
     currentNotifTab = type;
@@ -445,7 +481,230 @@ function executeArchive(item) {
         localStorage.setItem('refoundly_archived_items', JSON.stringify(archived));
 
         document.getElementById("itemModal").style.display = "none";
-        location.reload(); 
+        location.reload();
     })
     .catch(error => console.error('Error archiving item:', error));
+}
+
+
+/* =========================================================
+   USER REPORTS
+   Reports submitted from the "Report User" flag button inside
+   a chat conversation (separate from the item reports above).
+   ========================================================= */
+
+async function fetchUserReports() {
+    try {
+        const response = await fetch('/api/admin/user-reports');
+
+        if (response.status === 401 || response.redirected) {
+            window.location.href = "AdLogin.html";
+            return;
+        }
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+        userReportsData = await response.json();
+        filteredUserReports = [...userReportsData];
+
+        renderUserReportsTable();
+        updateUserReportsCounts();
+    } catch (error) {
+        console.error("Error loading user reports:", error);
+    }
+}
+
+function renderUserReportsTable() {
+    const tbody = document.getElementById("userReportsTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const start = (userReportsPage - 1) * userReportsPerPage;
+    const end = start + userReportsPerPage;
+    const pageItems = filteredUserReports.slice(start, end);
+
+    if (pageItems.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No user reports found.</td></tr>";
+    } else {
+        pageItems.forEach(report => {
+            const statusText = report.status || "pending";
+            const reasonLabel = formatReportReason(report.reason);
+
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-id", report.id);
+            tr.innerHTML = `
+                <td><strong>${escapeHtmlAdmin(report.reported_user_name || "Unknown")}</strong><br><small style="color:#777;">${escapeHtmlAdmin(report.reported_user_email || "")}</small></td>
+                <td>${escapeHtmlAdmin(report.reporter_name || "Unknown")}</td>
+                <td>${escapeHtmlAdmin(reasonLabel)}</td>
+                <td>${escapeHtmlAdmin(report.item_name || "—")}</td>
+                <td><span class="badge ${statusText}">${statusText}</span></td>
+                <td>${report.formattedDate || "N/A"}</td>
+                <td class="action-cell"></td>`;
+
+            const actionCell = tr.querySelector('.action-cell');
+            actionCell.appendChild(createButton("View", "btn-view", () => showUserReportDetails(report.id)));
+
+            if (statusText === "pending") {
+                actionCell.appendChild(createButton("Mark Reviewed", "btn-resolve", () => updateUserReportStatus(report.id, "reviewed")));
+                actionCell.appendChild(createButton("Dismiss", "btn-deny", () => updateUserReportStatus(report.id, "dismissed")));
+            }
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    updateUserReportsPaginationUI();
+}
+
+function formatReportReason(reason) {
+    const labels = {
+        scam: "Scam or fraud attempt",
+        harassment: "Harassment / abusive behavior",
+        fake_item: "Fake or misleading item claim",
+        no_show: "Didn't show up / broke agreement",
+        other: "Other"
+    };
+    return labels[reason] || reason || "Unspecified";
+}
+
+function escapeHtmlAdmin(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function showUserReportDetails(id) {
+    const report = userReportsData.find(r => r.id === id);
+    if (!report) return;
+
+    const statusText = report.status || "pending";
+
+    document.getElementById("userReportModalBody").innerHTML = `
+        <div style="padding:25px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
+                <div>
+                    <span style="display:block; font-size:0.75rem; color:#888; margin-bottom:3px;">REPORTED USER</span>
+                    <strong style="font-size:1.05rem;">${escapeHtmlAdmin(report.reported_user_name || "Unknown")}</strong>
+                    <div style="font-size:0.85rem; color:#666;">${escapeHtmlAdmin(report.reported_user_email || "")}</div>
+                </div>
+                <span class="badge ${statusText}">${statusText}</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; color: #444; margin-bottom: 15px;">
+                <div><strong>Reported By:</strong> ${escapeHtmlAdmin(report.reporter_name || "Unknown")}</div>
+                <div><strong>Reporter Email:</strong> ${escapeHtmlAdmin(report.reporter_email || "N/A")}</div>
+                <div><strong>Reason:</strong> ${escapeHtmlAdmin(formatReportReason(report.reason))}</div>
+                <div><strong>Related Item:</strong> ${escapeHtmlAdmin(report.item_name || "N/A")}</div>
+                <div><strong>Date Filed:</strong> ${report.formattedDate || "N/A"}</div>
+                <div><strong>Reported User's Account:</strong> ${escapeHtmlAdmin(report.reported_user_account_status || "active")}</div>
+            </div>
+
+            <div style="padding: 10px; background: #f9f9f9; border-left: 4px solid #c0392b;">
+                <strong>Additional Details:</strong>
+                <p style="margin-top: 5px; font-size: 0.85rem; white-space: pre-wrap;">${escapeHtmlAdmin(report.details) || 'No additional details provided.'}</p>
+            </div>
+
+            ${statusText === "pending" ? `
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button class="btn-deny" id="modalDismissReportBtn">Dismiss</button>
+                    <button class="btn-resolve" id="modalReviewReportBtn">Mark Reviewed</button>
+                </div>
+            ` : ""}
+        </div>
+    `;
+
+    if (statusText === "pending") {
+        document.getElementById("modalReviewReportBtn")?.addEventListener("click", () => {
+            updateUserReportStatus(report.id, "reviewed");
+            closeUserReportModal();
+        });
+        document.getElementById("modalDismissReportBtn")?.addEventListener("click", () => {
+            updateUserReportStatus(report.id, "dismissed");
+            closeUserReportModal();
+        });
+    }
+
+    document.getElementById("userReportModal").style.display = "block";
+}
+
+function closeUserReportModal() {
+    const modal = document.getElementById("userReportModal");
+    if (modal) modal.style.display = "none";
+}
+
+async function updateUserReportStatus(id, newStatus) {
+    try {
+        const response = await fetch(`/api/admin/user-reports/${id}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            fetchUserReports();
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (error) {
+        console.error("updateUserReportStatus:", error);
+    }
+}
+
+function filterUserReportsTable() {
+    const statusFilter = document.getElementById("userReportStatusFilter").value;
+    const searchInput = document.getElementById("userReportSearchInput").value.toLowerCase();
+
+    filteredUserReports = userReportsData.filter(report => {
+        const matchesStatus = statusFilter === "all" || report.status === statusFilter;
+        const searchPool = [
+            report.reported_user_name,
+            report.reported_user_email,
+            report.reporter_name,
+            report.item_name,
+            formatReportReason(report.reason)
+        ].join(' ').toLowerCase();
+        return matchesStatus && searchPool.includes(searchInput);
+    });
+
+    userReportsPage = 1;
+    renderUserReportsTable();
+}
+
+function updateUserReportsPaginationUI() {
+    const totalPages = Math.ceil(filteredUserReports.length / userReportsPerPage) || 1;
+    document.getElementById("urPageDisplay").innerText = `Page ${userReportsPage} of ${totalPages}`;
+    document.getElementById("urPrevBtn").disabled = userReportsPage === 1;
+    document.getElementById("urNextBtn").disabled = userReportsPage === totalPages;
+}
+
+function changeUserReportsPage(step) {
+    userReportsPage += step;
+    renderUserReportsTable();
+}
+
+function updateUserReportsCounts() {
+    const total = userReportsData.length;
+    const pending = userReportsData.filter(r => r.status === "pending").length;
+    const reviewed = userReportsData.filter(r => r.status === "reviewed").length;
+
+    const totalElem = document.getElementById("ur-total-count");
+    if (totalElem) totalElem.innerText = total;
+
+    const pendingElem = document.getElementById("ur-pending-count");
+    if (pendingElem) pendingElem.innerText = pending;
+
+    const reviewedElem = document.getElementById("ur-reviewed-count");
+    if (reviewedElem) reviewedElem.innerText = reviewed;
+
+    const badge = document.getElementById("userReportsTabBadge");
+    if (badge) {
+        badge.innerText = pending;
+        badge.style.display = pending > 0 ? "inline-flex" : "none";
+    }
 }

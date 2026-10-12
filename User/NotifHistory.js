@@ -5,6 +5,16 @@ let currentUserId = localStorage.getItem('userId') || localStorage.getItem('id')
 
 document.addEventListener("DOMContentLoaded", renderFullHistory);
 
+// Escapes text before it's injected into innerHTML — see notifications.js
+// for why this matters (notification text can carry another user's raw
+// chat input, e.g. via "New message from X: <preview>").
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
 // Date Formatting
 function formatNiceDate(dateString) {
     if (!dateString || dateString === "Just now") return "Just now";
@@ -111,17 +121,18 @@ async function renderFullHistory() {
     // List Rendering
     listContainer.innerHTML = paginatedItems.map(n => {
         const isRead = n.is_read == 1 || n.read === true;
-        const messageContent = n.message || n.text || "Notification updated";
+        const messageContent = escapeHtml(n.message || n.text || "Notification updated");
         const timeContent = formatNiceDate(n.created_at || n.time);
         
         const targetId = n.item_id || n.itemId || null;
+        const conversationId = n.conversation_id || null;
 
         const iconBg = isRead ? '#f0f2f5' : '#7aa340';
         const iconColor = isRead ? '#65676b' : '#ffffff';
 
         return `
             <div class="notif-list-item ${isRead ? '' : 'unread'}" 
-                 onclick="handleNotifClick(${n.id}, ${targetId ?? 'null'})">
+                 onclick="handleNotifClick(${n.id}, ${targetId ?? 'null'}, ${conversationId ?? 'null'})">
                 <div class="icon-box" style="background: ${iconBg}; color: ${iconColor};">
                     <i class="fa-solid fa-bell"></i>
                 </div>
@@ -135,8 +146,42 @@ async function renderFullHistory() {
     }).join('');
 }
 
+// Mark every notification as read in one go
+async function markAllAsRead() {
+    const btn = document.getElementById('markAllReadBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Marking...`;
+    }
+
+    try {
+        // Preferred path: a single bulk request, if the backend supports it.
+        const res = await fetch('/api/user/notifications/read-all', { method: 'POST' });
+        if (!res.ok) throw new Error('Bulk read-all endpoint unavailable');
+    } catch (err) {
+        // Fallback: mark each currently-unread notification individually
+        // using the endpoint we know exists (/read/:id). Slower, but works
+        // even if /read-all hasn't been added to the server yet.
+        const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || [];
+        const unread = notifications.filter(n => !(n.is_read == 1 || n.read === true));
+
+        await Promise.all(
+            unread.map(n =>
+                fetch(`/api/user/notifications/read/${n.id}`, { method: 'POST' }).catch(() => {})
+            )
+        );
+    }
+
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-check-double"></i> Mark All as Read`;
+    }
+
+    renderFullHistory();
+}
+
 // Notification Click Handler
-async function handleNotifClick(notifId, itemId) {
+async function handleNotifClick(notifId, itemId, conversationId) {
     try {
         // 🟢 FIX: correct route is /api/user/notifications/read/:id
         await fetch(`/api/user/notifications/read/${notifId}`, { method: 'POST' });
@@ -146,6 +191,13 @@ async function handleNotifClick(notifId, itemId) {
         localStorage.setItem('refoundly_user_private', JSON.stringify(updated));
     } catch (err) {
         console.error("Failed to mark notification as read:", err);
+    }
+
+    // Conversation-linked notifications (new message, agreement update,
+    // dispute, confirmed transaction) always go straight to that chat.
+    if (conversationId) {
+        window.location.href = `message.html?conversation=${conversationId}`;
+        return;
     }
 
     // No linked item (e.g. a general/system notice) -> just go to history

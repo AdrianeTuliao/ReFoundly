@@ -1,5 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
     let originalUserData = {};
+    let otpPurpose = null; // 'email' | 'password' — which flow the OTP modal is currently serving
+    let pendingNewPassword = null; // held only in memory, never persisted client-side
+
+    // Site-wide "little pop on the side" toast, with an alert() fallback
+    // for safety if notifications.js hasn't loaded for some reason.
+    function notify(title, message, iconClass = 'fa-solid fa-bell') {
+        if (typeof showRefoundlyToast === 'function') {
+            showRefoundlyToast(title, message, iconClass);
+        } else {
+            alert(message || title);
+        }
+    }
 
     const nameInput = document.getElementById('input-name');
     const emailInput = document.getElementById('input-email');
@@ -15,6 +27,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const otpModal = document.getElementById('otp-modal');
     const otpInput = document.getElementById('otp-input');
     const verifyOtpBtn = document.getElementById('verify-otp-btn');
+
+    // Retitles/re-describes the shared OTP modal so it reads correctly
+    // whether it's confirming an email change or a password change.
+    function setOtpModalCopy(title, description) {
+        const titleEl = otpModal ? otpModal.querySelector('h2, h3, .otp-modal-title') : null;
+        const descEl = otpModal ? otpModal.querySelector('p, .otp-modal-desc') : null;
+        if (titleEl) titleEl.textContent = title;
+        if (descEl) descEl.textContent = description;
+    }
 
     // Fetch and populate data
     function loadUserData() {
@@ -88,12 +109,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await res.json();
 
                 if (res.ok && result.success) {
+                    otpPurpose = 'email';
+                    setOtpModalCopy(
+                        'Email Change Verification',
+                        `Enter the 6-digit code we sent to ${updatedData.email} to confirm your new email.`
+                    );
                     otpModal.style.display = 'flex';
                 } else {
-                    alert(result.message || "Failed to send verification code.");
+                    notify("Verification Failed", result.message || "Failed to send verification code.", "fa-solid fa-circle-exclamation");
                 }
             } catch (err) {
                 console.error("Error requesting OTP:", err);
+                notify("Error", "An error occurred sending the verification code. Please try again.", "fa-solid fa-circle-exclamation");
             }
         } else {
             saveProfileChanges(updatedData);
@@ -110,25 +137,63 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await res.json();
 
             if (res.ok && result.success) {
-                alert("Profile updated successfully!");
-                location.reload();
+                notify("Profile Updated", "Your profile was updated successfully!", "fa-solid fa-circle-check");
+                setTimeout(() => location.reload(), 1200);
             } else {
-                alert(result.message || "Update failed.");
+                notify("Update Failed", result.message || "Update failed.", "fa-solid fa-circle-exclamation");
             }
         } catch (err) {
             console.error("Save error:", err);
+            notify("Error", "An error occurred while saving your profile. Please try again.", "fa-solid fa-circle-exclamation");
         }
     }
 
-    // Verify OTP for Email Change
+    // Verify OTP — shared by both the email-change and password-change flows
     verifyOtpBtn.addEventListener('click', async () => {
         const otp = otpInput.value.trim();
-        const newEmail = emailInput.value.trim();
 
         if (otp.length !== 6) {
-            alert("Please enter a valid 6-digit code.");
+            notify("Invalid Code", "Please enter a valid 6-digit code.", "fa-solid fa-circle-exclamation");
             return;
         }
+
+        if (otpPurpose === 'password') {
+            try {
+                const res = await fetch('/api/user/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp })
+                });
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    otpModal.style.display = 'none';
+                    otpInput.value = '';
+                    pendingNewPassword = null;
+
+                    // Hide the password form and show the green checkmark UI
+                    const formContainer = document.getElementById('password-form-container');
+                    const successContainer = document.getElementById('password-success-container');
+                    if (formContainer) formContainer.style.display = 'none';
+                    if (successContainer) successContainer.style.display = 'block';
+
+                    if (changePasswordForm) changePasswordForm.reset();
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    notify("Verification Failed", result.message || "Invalid or expired verification code.", "fa-solid fa-circle-exclamation");
+                }
+            } catch (err) {
+                console.error("Password OTP verification error:", err);
+                notify("Error", "An error occurred verifying the code. Please try again.", "fa-solid fa-circle-exclamation");
+            }
+            return;
+        }
+
+        // Default / 'email' purpose
+        const newEmail = emailInput.value.trim();
 
         try {
             const res = await fetch('/api/user/verify-email-change', {
@@ -150,13 +215,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 });
 
-                alert("Profile and email updated successfully!");
-                location.reload();
+                notify("Profile Updated", "Your profile and email were updated successfully!", "fa-solid fa-circle-check");
+                setTimeout(() => location.reload(), 1200);
             } else {
-                alert(result.message || "Invalid or expired verification code.");
+                notify("Verification Failed", result.message || "Invalid or expired verification code.", "fa-solid fa-circle-exclamation");
             }
         } catch (err) {
             console.error("OTP verification error:", err);
+            notify("Error", "An error occurred updating your profile. Please try again.", "fa-solid fa-circle-exclamation");
         }
     });
 
@@ -267,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                const response = await fetch('/api/user/change-password', {
+                const response = await fetch('/api/user/request-password-change-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ currentPassword, newPassword }),
@@ -276,27 +342,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    // Hide the form and show the green checkmark UI
-                    const formContainer = document.getElementById('password-form-container');
-                    const successContainer = document.getElementById('password-success-container');
+                    // Current password was correct and a code has been
+                    // emailed. The new password itself is never sent again —
+                    // the server already holds it (hashed) pending OTP.
+                    pendingNewPassword = true;
 
-                    if (formContainer) formContainer.style.display = 'none';
-                    if (successContainer) successContainer.style.display = 'block';
-
-                    // Redirect to index.html after 1.5 seconds
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1500);
-
+                    if (pwModal) pwModal.style.display = 'none';
+                    otpPurpose = 'password';
+                    setOtpModalCopy(
+                        'Password Change Verification',
+                        'Enter the 6-digit code we sent to your email to confirm your new password.'
+                    );
+                    if (otpModal) otpModal.style.display = 'flex';
                 } else {
                     // Show backend error inline (e.g., incorrect current password)
                     showPasswordError(
-                        data.message || 'Failed to update password.',
+                        data.message || 'Failed to send verification code.',
                         data.message && data.message.toLowerCase().includes('current') ? ['currentPassword'] : ['newPassword']
                     );
                 }
             } catch (err) {
-                console.error('Error changing password:', err);
+                console.error('Error requesting password change:', err);
                 showPasswordError('An error occurred. Please try again.');
             }
         });

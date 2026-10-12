@@ -505,6 +505,74 @@ body {
 }
 
 /* =========================================================
+   CHAT HEADER ROW + REPORT USER BUTTON
+   A plain, labeled flag button next to the conversation name —
+   recognizable at a glance, with nothing hidden behind a menu —
+   instead of crowding the footer (which already holds the
+   attach button, the input and the send button).
+========================================================= */
+
+.chat-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.chat-header-actions {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.report-user-btn {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 7px 12px;
+
+    border: 1px solid #f3cfc9;
+    border-radius: 18px;
+
+    background: #fff5f4;
+
+    color: #c0392b;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.15s ease;
+}
+
+.report-user-btn:hover {
+    background: #ffe9e7;
+    border-color: #e8a79e;
+}
+
+.report-user-btn i {
+    font-size: 12px;
+}
+
+/* On narrow screens, keep just the flag icon so the header
+   doesn't get tight next to a long conversation name. */
+@media (max-width: 480px) {
+    .report-user-btn {
+        padding: 7px 9px;
+        border-radius: 50%;
+    }
+
+    .report-user-label {
+        display: none;
+    }
+}
+
+/* =========================================================
    ITEM FLOATING CARD
 ========================================================= */
 
@@ -1490,6 +1558,15 @@ footer {
     transform: translateX(-50%) translateY(0);
 }
 
+/* Footer popups: keep inside the screen on phones */
+@media (max-width: 768px) {
+    .footer-links { position: relative; flex-wrap: wrap; row-gap: 6px; }
+    .popup-item { position: static; }
+    .popup-box { box-sizing: border-box; width: min(340px, calc(100vw - 24px)); padding: 18px; }
+    .popup-box::after { display: none; }
+}
+
+
 .socials {
     margin: 10px 0;
 }
@@ -1743,9 +1820,6 @@ footer p {
         font-size: 12px;
     }
 
-    .popup-box {
-        width: 260px;
-    }
 }
 
 /* =========================================================
@@ -2822,5 +2896,414 @@ body.item-details-modal-open {
 
     .agreement-count {
         font-size: 10px;
+    }
+}
+
+
+/* =========================================================
+   TOAST NOTIFICATIONS (message.js showToast)
+   Root cause of "text showing below the page": this element
+   was appended to <body> with no CSS at all, so it rendered
+   as plain flowing text under the footer instead of a floating
+   toast. Fixed by pinning it off-screen/invisible by default and
+   only revealing it — as a proper floating pill — while ".show"
+   is applied.
+========================================================= */
+
+.message-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+
+    transform: translate(-50%, 16px);
+
+    max-width: 90vw;
+
+    background: #2c2c2c;
+    color: #fff;
+
+    padding: 12px 20px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: center;
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+    z-index: 9999;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+}
+
+.message-toast.show {
+    opacity: 1;
+    visibility: visible;
+
+    transform: translate(-50%, 0);
+}
+
+@media (max-width: 480px) {
+    .message-toast {
+        bottom: 16px;
+        font-size: 12px;
+        padding: 10px 16px;
+    }
+}
+
+
+/* =========================================================
+   CHAT ATTACH ("+") BUTTON + IMAGE MESSAGES
+========================================================= */
+
+.attach-btn {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #ddd;
+
+    border-radius: 50%;
+
+    background: white;
+
+    color: var(--dark-green, #33513f);
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.attach-btn:hover {
+    background: #f2f6f0;
+    border-color: var(--primary-green);
+}
+
+.attach-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.message-image-wrapper {
+    display: inline-block;
+    max-width: 220px;
+}
+
+.message-image {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    border-radius: 12px;
+    cursor: pointer;
+    object-fit: cover;
+}
+
+/* Sensitive attachments (IDs, cash, etc.) stay blurred in-chat too
+   until the viewer chooses to reveal them. */
+.message-image-wrapper.sensitive .message-image {
+    filter: blur(18px);
+}
+
+.message-image-wrapper.sensitive {
+    position: relative;
+}
+
+.message-image-wrapper.sensitive::after {
+    content: "\f070  Sensitive photo — tap to view";
+    font-family: "Font Awesome 6 Free", sans-serif;
+    font-weight: 900;
+
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    padding: 8px;
+
+    color: #fff;
+    font-size: 11px;
+
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 12px;
+
+    cursor: pointer;
+}
+
+.message-image-wrapper.sensitive.revealed .message-image {
+    filter: none;
+}
+
+.message-image-wrapper.sensitive.revealed::after {
+    content: none;
+}
+
+/* Gated state (recipient hasn't revealed it yet, or has none left):
+   no <img> exists in the DOM at all until reveal-image succeeds, so this
+   needs its own placeholder box instead of relying on the ::after overlay
+   above (which sits on top of a real <img>). */
+.message-image-wrapper.sensitive:not(.revealed) {
+    width: 180px;
+    height: 140px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: repeating-linear-gradient(
+        45deg,
+        #2c2c2c,
+        #2c2c2c 10px,
+        #3a3a3a 10px,
+        #3a3a3a 20px
+    );
+
+    border-radius: 12px;
+
+    cursor: pointer;
+}
+
+.message-image-wrapper.sensitive.exhausted {
+    cursor: not-allowed;
+}
+
+.sensitive-lock-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+
+    color: #fff;
+    text-align: center;
+
+    padding: 10px;
+
+    font-size: 11px;
+}
+
+.sensitive-lock-overlay i {
+    font-size: 20px;
+}
+
+.message-image-wrapper.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   IMAGE CONSENT MODAL
+========================================================= */
+
+.upload-consent-modal {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    z-index: 10000;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 16px;
+}
+
+.upload-consent-modal.open {
+    display: flex;
+}
+
+.upload-consent-content {
+    background: #fff;
+
+    max-width: 380px;
+    width: 100%;
+
+    border-radius: 14px;
+
+    padding: 22px;
+
+    text-align: center;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.upload-consent-content i.upload-consent-icon {
+    font-size: 34px;
+    color: #b8860b;
+
+    margin-bottom: 10px;
+}
+
+.upload-consent-content h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+}
+
+.upload-consent-content p {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+
+    margin-bottom: 18px;
+}
+
+.upload-consent-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.upload-consent-actions button {
+    flex: 1;
+
+    padding: 10px 14px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    border: 1px solid #ddd;
+
+    background: #fff;
+}
+
+.upload-consent-actions .consent-confirm-btn {
+    background: var(--primary-green, #4a7a5d);
+    color: #fff;
+    border-color: transparent;
+}
+
+.upload-consent-actions .consent-confirm-btn:hover {
+    background: var(--dark-green, #33513f);
+}
+
+.upload-consent-actions .consent-cancel-btn:hover {
+    background: #f5f5f5;
+}
+
+@media (max-width: 1024px) {
+    .steps-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .step-connector {
+        width: auto;
+        height: 30px;
+    }
+
+    .step-connector i {
+        transform: rotate(90deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar h1 {
+        font-size: 1.2rem;
+    }
+
+    .nav-icons {
+        gap: 15px;
+        padding-right: 0;
+    }
+
+    .hero {
+        padding: 30px 20px;
+        min-height: auto;
+    }
+
+    .hero h2 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .hero .btn-main {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 20px auto 30px;
+        padding: 20px;
+        width: 95%;
+        background: white;
+    }
+
+    .search-container .btn-main1 {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+    }
+
+    /* Fixed side-by-side layout for mobile pagination */
+    .pagination-container {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 12px;
+        padding: 0 10px;
+    }
+
+    .notif-dropdown {
+        width: 300px;
+        right: -60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h2 {
+        font-size: 24px;
+    }
+
+    .search-group label {
+        font-size: 15px;
+    }
+
+    .notif-dropdown {
+        width: 280px;
+        right: -80px;
     }
 }

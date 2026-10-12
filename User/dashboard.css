@@ -683,20 +683,14 @@ body {
 
 .pagination-container {
     font-family: sans-serif;
-
     font-size: 14px;
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     max-width: 1220px;
-
     margin: 40px auto;
-
     padding: 0 55px;
+    width: 100%;
 }
 
 .page-info {
@@ -1190,6 +1184,15 @@ footer {
     text-decoration: underline;
 }
 
+/* Footer popups: keep inside the screen on phones */
+@media (max-width: 768px) {
+    .footer-links { position: relative; flex-wrap: wrap; row-gap: 6px; }
+    .popup-item { position: static; }
+    .popup-box { box-sizing: border-box; width: min(340px, calc(100vw - 24px)); padding: 18px; }
+    .popup-box::after { display: none; }
+}
+
+
 
 /* =========================
    FOOTER SOCIALS
@@ -1669,4 +1672,113 @@ footer p {
     gap: 20px;
 
     padding-right: 30px;
+}
+
+@media (max-width: 1024px) {
+    .steps-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .step-connector {
+        width: auto;
+        height: 30px;
+    }
+
+    .step-connector i {
+        transform: rotate(90deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar h1 {
+        font-size: 1.2rem;
+    }
+
+    .nav-icons {
+        gap: 15px;
+        padding-right: 0;
+    }
+
+    .hero {
+        padding: 30px 20px;
+        min-height: auto;
+    }
+
+    .hero h2 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .hero .btn-main {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 20px auto 30px;
+        padding: 20px;
+        width: 95%;
+        background: white;
+    }
+
+    /* white label on a white card was invisible, leaving an empty gap */
+    .search-group label {
+        color: var(--text-dark);
+    }
+
+    /* inputs were 95% wide while the button was 100% - make them line up */
+    .search-group input {
+        width: 100%;
+    }
+
+    /* smaller button: inline padding on the HTML needs !important to beat */
+    .search-container .btn-main1 {
+        width: 100%;
+        margin-top: 4px;
+        padding: 10px 20px !important;
+        font-size: 15px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+    }
+
+    /* Fixed side-by-side layout for mobile pagination */
+    .notif-dropdown {
+        width: 300px;
+        right: -60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h2 {
+        font-size: 24px;
+    }
+
+    .search-group label {
+        font-size: 15px;
+    }
+
+    .notif-dropdown {
+        width: 280px;
+        right: -80px;
+    }
 }
