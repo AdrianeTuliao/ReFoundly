@@ -620,3 +620,47 @@ footer p {
     font-weight: bold;
     cursor: pointer;
 }
+
+/* --- Mobile layout fix ---
+   .form-column previously had a hard `min-width: 400px` with zero
+   breakpoint anywhere in this file. On any viewport narrower than
+   ~880px (two 400px columns + the 80px gap), that floor made the
+   columns overflow instead of shrink. Because html/body suppress
+   overflow-x, that overflow was invisible — it just showed up as
+   misplaced/overlapping fields instead of a scrollbar. */
+@media (max-width: 900px) {
+    .container {
+        width: 100%;
+        margin: 20px auto;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
+
+    .form-card {
+        padding: 24px 18px;
+    }
+
+    .form-row {
+        gap: 0;
+        margin-bottom: 0;
+    }
+
+    .form-column {
+        min-width: 0;
+        width: 100%;
+        flex: 1 1 100%;
+    }
+
+    .input-group label {
+        font-size: 16px;
+    }
+
+    .submit-section {
+        text-align: center;
+    }
+
+    .btn-main {
+        width: 100%;
+        padding: 14px;
+    }
+}
