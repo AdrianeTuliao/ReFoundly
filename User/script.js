@@ -228,11 +228,11 @@ function handleRegistrationSubmit() {
         };
 
         try {
-            const response = await fetch('`${API_URL}/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
+            const response = await fetch(`${API_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+});
             const result = await response.json();
 
             if (result.otpSent) {
@@ -313,11 +313,11 @@ function handleLoginSubmit() {
             submitBtn.style.opacity = "0.7";
 
             try {
-                const response = await fetch('`${API_URL}/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
-                });
+                const response = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
+});
 
                 // --- 1. HANDLE BRUTE FORCE LOGGING ---
                 if (response.status === 429) {
