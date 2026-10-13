@@ -228,7 +228,7 @@ function handleRegistrationSubmit() {
         };
 
         try {
-            const response = await fetch('http://localhost:3000/register', {
+            const response = await fetch('${API_URL}/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -313,7 +313,7 @@ function handleLoginSubmit() {
             submitBtn.style.opacity = "0.7";
 
             try {
-                const response = await fetch('http://localhost:3000/login', {
+                const response = await fetch('${API_URL}/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
@@ -324,7 +324,7 @@ function handleLoginSubmit() {
                     const rateLimitData = await response.json();
                     
                     // Send to Audit Log
-                    await fetch('http://localhost:3000/api/admin/audit_logs', {
+                    await fetch('${API_URL}/api/admin/audit_logs', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -348,7 +348,7 @@ function handleLoginSubmit() {
 
                 // --- 3. HANDLE INVALID CREDENTIALS LOGGING ---
                 if (!response.ok) {
-                    await fetch('http://localhost:3000/api/admin/audit_logs', {
+                    await fetch('${API_URL}/api/admin/audit_logs', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -429,7 +429,7 @@ function initializeOTPHandler() {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000${endpoint}`, {
+            const response = await fetch(`${API_URL}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
