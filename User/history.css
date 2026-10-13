@@ -459,15 +459,128 @@ footer {
     backdrop-filter: blur(4px);
 }
 
-.modal-content-alert {
-    background: white;
+/* =========================
+   MODAL BACKGROUND OVERLAY
+========================= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+}
+.modal-content.item-detail-content {
+    width: 50% !important;
+    max-width: 600px !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: start !important;
+    margin: 5% auto !important;
+    position: relative;
+    z-index: 1001;
+    border-radius: 20px;
     padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    width: 90%;
-    max-width: 380px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    border-top: 8px solid #78A454;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-body-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.modal-col-left, 
+.modal-col-right {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.close-button {
+    position: absolute;
+    right: 18px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #888;
+    z-index: 10;
+    line-height: 1;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover {
+    color: #333;
+}
+
+.modal-title-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    padding-right: 35px;
+}
+
+.modal-item-title {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    color: #222;
+}
+
+.status-badge-published {
+    background-color: #8dbb69;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    white-space: nowrap;
+    float: none !important;
+}
+
+.info-header {
+    border-bottom: 2px solid #6B9E45;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+/* Mobile Responsive Modal */
+@media (max-width: 768px) {
+    .modal-content.item-detail-content {
+        width: 92% !important;
+        max-width: 480px !important;
+        margin: 5% auto !important;
+        padding: 24px 18px !important;
+        box-sizing: border-box;
+        overflow-y: auto;
+        max-height: 88vh;
+    }
+
+    .modal-body-grid {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .modal-col-left, 
+    .modal-col-right {
+        width: 100%;
+        flex: none;
+    }
 }
 
 .exclamation-icon {
@@ -599,8 +712,8 @@ footer {
 }
 
     .notif-dropdown {
-        width: 300px;
-        right: -60px;
+        width: min(320px, calc(100vw - 24px));
+        right: 12px;
     }
 }
 
@@ -614,7 +727,54 @@ footer {
     }
 
     .notif-dropdown {
-        width: 280px;
-        right: -80px;
+        width: min(280px, calc(100vw - 24px));
+        right: 12px;
     }
+}
+
+/* --- History Grid & Centered Layout --- */
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 40px auto;
+    justify-content: center;
+    justify-items: center;
+    min-height: 680px;
+    transition: opacity 0.3s ease;
+}
+
+.item-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    overflow: hidden;
+    width: 100%;
+    max-width: 280px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer; /* Shows it's clickable */
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-container {
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
+    background-color: #f0f0f0;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 11px;
+    font-style: italic;
 }

@@ -73,6 +73,7 @@ function applyFilters() {
 }
 
 // 4. Render Grid (CSP SECURE VERSION)
+// 4. Render Grid (CSP SECURE VERSION)
 function renderPage(page) {
     const grid = document.querySelector(".grid");
     if(!grid) return;
@@ -96,8 +97,16 @@ function renderPage(page) {
         tempDiv.textContent = item.item_name; 
         const safeItemName = tempDiv.innerHTML; 
 
+        const isSensitive = Boolean(item.is_sensitive_image);
+
         const imageHtml = item.image_path 
-            ? `<img src="${item.image_path}" alt="Item" style="width:100%; height:200px; object-fit:cover;">`
+            ? (isSensitive
+                ? `<div class="card-img-wrapper sensitive-img-wrapper" data-item-id="${item.id}">
+                       <img src="${item.image_path}" class="sensitive-img" draggable="false" oncontextmenu="return false;">
+                       <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy — verify in direct message</span></div>
+                   </div>`
+                : `<img src="${item.image_path}" alt="Item" style="width:100%; height:200px; object-fit:cover;">`
+              )
             : `<div class="card-img" style="height:200px; display:flex; align-items:center; justify-content:center; background:#eee;">No Image</div>`;
 
         const dbType = (item.report_type || item.type || "").toLowerCase().trim();
@@ -189,7 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentPage > 1) {
             currentPage--;
             renderPage ? renderPage(currentPage) : updateView();
-            window.scrollTo({ top: 400, behavior: 'smooth' });
         }
     });
 
@@ -199,7 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentPage < totalPages) {
             currentPage++;
             renderPage ? renderPage(currentPage) : updateView();
-            window.scrollTo({ top: 400, behavior: 'smooth' });
         }
     });
 

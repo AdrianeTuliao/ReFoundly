@@ -1,52 +1,53 @@
 let allItems = [];
-    let filteredItems = []; // Added to hold search results
+    let filteredItems = [];
     let currentPage = 1;
-    const itemsPerPage = 4;
+    const itemsPerPage = 4; // Number of items per page
 
     document.addEventListener("DOMContentLoaded", () => {
-        loadFoundItems();
-
+        loadLostItems();
+        
         // --- SEARCH LOGIC ---
         const searchInput = document.querySelector('.search-bar-pill input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                
-                filteredItems = allItems.filter(item => 
-                    (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
-                    (item.category && item.category.toLowerCase().includes(searchTerm)) ||
-                    (item.location && item.location.toLowerCase().includes(searchTerm))
-                );
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            // Filter by Name, Category, or Location
+            filteredItems = allItems.filter(item => 
+                (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
+                (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                (item.location && item.location.toLowerCase().includes(searchTerm))
+            );
 
-                currentPage = 1; // Reset to page 1 on new search
-                renderItems();
-                renderPagination();
-            });
-        }
-        
+            currentPage = 1; // Reset to page 1 on new search
+            renderItems();
+            renderPagination();
+        });
+
         window.onclick = (event) => {
             const modal = document.getElementById("itemModal");
             if (event.target == modal) closeModal();
         }
     });
 
-    async function loadFoundItems() {
+    async function loadLostItems() {
         try {
-            const response = await fetch('/api/items/found');
+            const response = await fetch('/api/items/lost');
             allItems = await response.json();
-            filteredItems = [...allItems]; // Initialize filteredItems with fetched data
+            filteredItems = [...allItems]; // Initialize filteredItems with all data
             
+            // Initial render
             renderItems();
             renderPagination();
 
-            // Highlight & Auto-open Logic
+            // RESTORED: Check URL for item to highlight (Green Light effect)
             const urlParams = new URLSearchParams(window.location.search);
             const itemIdToOpen = urlParams.get('open');
             if (itemIdToOpen) {
+                // Find which page the item belongs to
                 const itemIndex = allItems.findIndex(i => i.id == itemIdToOpen);
                 if (itemIndex !== -1) {
                     currentPage = Math.ceil((itemIndex + 1) / itemsPerPage);
-                    updateView(); // Refreshes grid to the right page
+                    updateView(); // Refresh to correct page
                     
                     setTimeout(() => {
                         const targetCard = document.querySelector(`[data-id="${itemIdToOpen}"]`);
@@ -57,8 +58,9 @@ let allItems = [];
                     }, 500);
                 }
             }
+
         } catch (error) {
-            console.error("Error fetching found items:", error);
+            console.error("Fetch error:", error);
         }
     }
 
@@ -66,15 +68,16 @@ let allItems = [];
         const grid = document.querySelector(".items-grid");
         grid.innerHTML = "";
 
-        // Check filteredItems instead of allItems
+        // Change: Check filteredItems instead of allItems
         if (filteredItems.length === 0) {
             grid.innerHTML = "<h3 style='grid-column: 1/-1; text-align:center;'>No items match your search.</h3>";
             return;
         }
 
+        // Pagination Logic: Slice the filtered array based on current page
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
-        const paginatedItems = filteredItems.slice(start, end); 
+        const paginatedItems = filteredItems.slice(start, end);
 
         paginatedItems.forEach(item => {
             const card = document.createElement("div");
@@ -102,23 +105,23 @@ let allItems = [];
                     <span class="badge" style="background:#D97706; color:white; padding:2px 8px; border-radius:4px;">${item.category}</span>
                     <div class="item-details">
                         <p><strong>Description:</strong> ${item.description || 'No description'}</p>
-                        <p><strong>Where Found:</strong> ${item.location}</p>
-                        <p><strong>Status:</strong> <span class="status-found">Found</span></p>
-                        <p><strong>Founder:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
-                        
+                        <p><strong>Where Lost:</strong> ${item.location}</p>
+                        <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
+                        <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                
                         <div class="post-time">
-                            <small>Date Found: ${item.formattedDate}</small><br>
-                            <small>Time Found: ${item.formattedTime || ''}</small>
+                            <small>Date Lost: ${item.formattedDate}</small><br>
+                            <small>Time Lost: ${item.formattedTime || ''}</small>
                         </div>
                     </div>
-                    <input type="text" class="comment-input" placeholder="Leave a comment..." onclick="event.stopPropagation()">
+                
                 </div>
             `;
             grid.appendChild(card);
         });
     }
 
-    function renderPagination() {
+     function renderPagination() {
     const paginationContainer = document.querySelector(".pagination");
     if (!paginationContainer) return;
     
@@ -157,7 +160,6 @@ let allItems = [];
     function updateView() {
         renderItems();
         renderPagination();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function openModal(id) {
@@ -177,14 +179,16 @@ let allItems = [];
 
         const body = document.getElementById("modalBody");
         body.innerHTML = `
-            <div style="display: flex; gap: 40px; align-items: flex-start;">
-                <div style="flex: 1;">
-                    <span class="status-badge-published">Published</span>
-                    <h1 style="margin-top: 0;">${item.item_name}</h1>
+            <div class="modal-body-grid">
+                <div class="modal-col-left">
+                    <div class="modal-title-header">
+                        <h1 class="modal-item-title">${item.item_name}</h1>
+                        <span class="status-badge-published">Published</span>
+                    </div>
                     ${modalImgHtml}
-                    <p style="margin-top:15px; color:#666;">Report Type: <strong>${item.status || 'Found'}</strong></p>
+                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
                 </div>
-                <div style="flex: 1;">
+                <div style="flex: 1 1 260px; min-width: 0;">
                     <h3 class="info-header">Item Information</h3>
                     <p><strong>Category:</strong> ${item.category}</p>
                     <p><strong>Brand:</strong> ${item.brand || 'N/A'}</p>
@@ -196,7 +200,8 @@ let allItems = [];
                 <div class="contact-box">
                     <h4 style="margin-top:0;">Contact Owner</h4>
                     <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
-            
+                   
+
                     <button 
                         class="chat-user-btn"
                         onclick="event.stopPropagation(); chatWithUser(${item.user_id}, ${item.id})">

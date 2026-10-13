@@ -1766,6 +1766,18 @@ footer p {
         width: 300px;
         right: -60px;
     }
+    .pagination-container {
+        padding: 0 15px; /* Reduces side padding from 55px to 15px */
+        gap: 8px;        /* Adds breathing room between items */
+    }
+    .btn-pagination {
+        padding: 8px 16px; /* Slightly smaller button padding for phones */
+        font-size: 14px;
+    }
+    .page-info {
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1781,4 +1793,65 @@ footer p {
         width: 280px;
         right: -80px;
     }
+}
+
+/* =========================================================
+   SENSITIVE PHOTO BLUR (auto-applied to ID/Documents items)
+========================================================= */
+
+.sensitive-img-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.sensitive-img-wrapper .sensitive-img {
+    filter: blur(16px);
+}
+
+.sensitive-img-wrapper.revealed .sensitive-img {
+    filter: none;
+}
+
+.sensitive-img-overlay {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+
+    padding: 8px;
+}
+
+.sensitive-img-overlay i {
+    font-size: 20px;
+}
+
+.sensitive-img-wrapper.revealed .sensitive-img-overlay {
+    display: none;
+}
+
+/* Card thumbnail wrapper to match dashboard card sizes */
+.card .sensitive-img-wrapper {
+    width: 100%;
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
+    border-radius: 6px 6px 0 0;
+}
+
+.card .sensitive-img-wrapper .sensitive-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }

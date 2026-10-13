@@ -862,17 +862,71 @@ footer p {
    CLOSE BUTTON
 ========================= */
 
+/* =========================================================
+   MODAL HEADER & CLOSE BUTTON FIX (NO OVERLAP)
+========================================================= */
+
+/* Fix close button safely in top-right with clear z-index */
 .close-button {
     position: absolute;
-
-    right: 25px;
-    top: 20px;
-
-    font-size: 30px;
-
+    right: 18px;
+    top: 15px;
+    font-size: 28px;
     cursor: pointer;
+    color: #888;
+    z-index: 10;
+    line-height: 1;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
 
-    color: #999;
+.close-button:hover {
+    color: #333;
+}
+
+/* Ensure title and badge stay below/clear of top-right close button */
+.modal-title-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    padding-right: 35px; /* Keeps title & badge away from close (x) button */
+}
+
+.modal-item-title {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    color: #222;
+}
+
+/* Updated badge: no floating, fits smoothly in flex flow */
+.status-badge-published {
+    background-color: #8dbb69;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    white-space: nowrap;
+    float: none !important; /* Removes float to prevent positioning conflicts */
+}
+
+@media (max-width: 480px) {
+    .modal-title-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding-right: 30px;
+    }
+
+    .modal-item-title {
+        font-size: 1.3rem;
+    }
 }
 
 
@@ -1209,8 +1263,8 @@ footer p {
 }
 
     .notif-dropdown {
-        width: 300px;
-        right: -60px;
+        width: min(320px, calc(100vw - 24px));
+        right: 12px;
     }
 }
 
@@ -1224,7 +1278,48 @@ footer p {
     }
 
     .notif-dropdown {
-        width: 280px;
-        right: -80px;
+        width: min(280px, calc(100vw - 24px));
+        right: 12px;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE MODAL FIX (MOBILE STACK / SCROLL)
+========================================================= */
+
+.modal-body-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.modal-col-left, 
+.modal-col-right {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+/* Mobile Screen Override (Phones / Nothing 3a) */
+@media (max-width: 768px) {
+    .modal-content.item-detail-content {
+        width: 92% !important;
+        max-width: 480px !important;
+        margin: 5% auto !important;
+        padding: 24px 18px !important;
+        box-sizing: border-box;
+        overflow-y: auto;
+        max-height: 88vh;
+    }
+
+    .modal-body-grid {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .modal-col-left, 
+    .modal-col-right {
+        width: 100%;
+        flex: none;
     }
 }

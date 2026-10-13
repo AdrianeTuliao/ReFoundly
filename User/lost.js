@@ -114,7 +114,7 @@ let allItems = [];
                             <small>Time Lost: ${item.formattedTime || ''}</small>
                         </div>
                     </div>
-                    <input type="text" class="comment-input" placeholder="Leave a comment..." onclick="event.stopPropagation()">
+                
                 </div>
             `;
             grid.appendChild(card);
@@ -160,7 +160,6 @@ let allItems = [];
     function updateView() {
         renderItems();
         renderPagination();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function openModal(id) {
@@ -180,12 +179,14 @@ let allItems = [];
 
         const body = document.getElementById("modalBody");
         body.innerHTML = `
-            <div style="display: flex; gap: 40px; align-items: flex-start;">
-                <div style="flex: 1;">
-                    <span class="status-badge-published">Published</span>
-                    <h1 style="margin-top: 0;">${item.item_name}</h1>
+            <div class="modal-body-grid">
+                <div class="modal-col-left">
+                    <div class="modal-title-header">
+                        <h1 class="modal-item-title">${item.item_name}</h1>
+                        <span class="status-badge-published">Published</span>
+                    </div>
                     ${modalImgHtml}
-                    <p style="margin-top:15px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
+                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
                 </div>
                 <div style="flex: 1;">
                     <h3 class="info-header">Item Information</h3>
