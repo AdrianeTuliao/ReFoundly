@@ -4,7 +4,9 @@ const loginBtn = document.getElementById('login');
 const loginForm = document.querySelector('.sign-in form');
 const signUpForm = document.querySelector('.sign-up form');
 const errorDiv = document.getElementById('login-error');
-
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : window.location.origin;
 /* FORM SIDE TOGGLE */
 function handleFormToggle() {
     registerBtn.addEventListener('click', () => container.classList.add("active"));
@@ -226,11 +228,11 @@ function handleRegistrationSubmit() {
         };
 
         try {
-            const response = await fetch('http://localhost:3000/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
+            const response = await fetch(`${API_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+});
             const result = await response.json();
 
             if (result.otpSent) {
@@ -311,18 +313,18 @@ function handleLoginSubmit() {
             submitBtn.style.opacity = "0.7";
 
             try {
-                const response = await fetch('http://localhost:3000/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
-                });
+                const response = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, isTrustedDevice: isTrusted })
+});
 
                 // --- 1. HANDLE BRUTE FORCE LOGGING ---
                 if (response.status === 429) {
                     const rateLimitData = await response.json();
                     
                     // Send to Audit Log
-                    await fetch('http://localhost:3000/api/admin/audit_logs', {
+                    await fetch('${API_URL}/api/admin/audit_logs', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -346,7 +348,7 @@ function handleLoginSubmit() {
 
                 // --- 3. HANDLE INVALID CREDENTIALS LOGGING ---
                 if (!response.ok) {
-                    await fetch('http://localhost:3000/api/admin/audit_logs', {
+                    await fetch('${API_URL}/api/admin/audit_logs', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -427,11 +429,11 @@ function initializeOTPHandler() {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
+            const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestData)
+});
 
             const result = await response.json();
 

@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '';
 
 // Helper to get CSRF token (Required by your backend csurf middleware)
 async function getCsrfToken() {

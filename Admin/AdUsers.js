@@ -4,7 +4,7 @@ let selectedUserId = null;
 let selectedUserRole = null;
 let currentUserId = null
 
-const BACKEND_URL = 'http://localhost:3000'; // Change 3000 to your actual Backend Port    
+const API_BASE = '';    
 
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
