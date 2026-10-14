@@ -4,7 +4,7 @@ let selectedUserId = null;
 let selectedUserRole = null;
 let currentUserId = null
 
-const API_BASE = '';    
+const BACKEND_URL = "";  
 
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
