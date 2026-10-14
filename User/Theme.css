@@ -614,3 +614,18 @@ body, .navbar, .how-it-works, .card, .step-card, .search-container, .nav-menu, .
 :root[data-theme="dark"] .item-detail-content [class*="contact"] strong { color: var(--d-text); }
 :root[data-theme="dark"] .item-detail-content [class*="contact"] p,
 :root[data-theme="dark"] .item-detail-content [class*="contact"] span { color: var(--d-muted); }
+
+/* ---------- Lost / Found / History: Previous / Next buttons now match the dashboard ---------- */
+:root[data-theme="dark"] .pag-btn-large {
+    background: var(--d-green-btn);
+    color: #fff;
+    border: none;
+}
+:root[data-theme="dark"] .pag-btn-large:hover:not(:disabled) { background: var(--d-green-btn-hover); }
+:root[data-theme="dark"] .pag-btn-large:disabled {
+    background: var(--d-green-btn);
+    color: #fff;
+    opacity: 0.45;              /* dimmed, instead of the pale washed-out green */
+    cursor: not-allowed;
+}
+:root[data-theme="dark"] .page-indicator { color: var(--d-muted); }

@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Move the popup out of <body> so no transformed/animated page wrapper can trap its
+    // "position: fixed" (that is what made it open at the top of the page instead of on screen).
+    const itemModalEl = document.getElementById("itemModal");
+    if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
+        document.documentElement.appendChild(itemModalEl);
+    }
     const grid = document.getElementById("history-grid");
     const paginationContainer = document.getElementById("pagination-container");
     const searchInput = document.getElementById("history-search");
@@ -189,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modal) {
         modal.classList.add("show");
         document.body.classList.add("item-details-modal-open");
+        document.documentElement.classList.add("item-details-modal-open");
     }
 };
 
@@ -198,6 +205,7 @@ window.closeModal = function() {
         modal.classList.remove("show");
     }
     document.body.classList.remove("item-details-modal-open");
+    document.documentElement.classList.remove("item-details-modal-open");
 };
     const closeBtn = document.getElementById("closeModalBtn");
     const modal = document.getElementById("itemModal");

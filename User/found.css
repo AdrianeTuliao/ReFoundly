@@ -794,3 +794,14 @@ body.item-details-modal-open {
         flex: none;
     }
 }
+
+/* =========================
+   ITEM POPUP: stay on screen + stop the page scrolling behind it
+========================= */
+html.item-details-modal-open,
+body.item-details-modal-open {
+    overflow: hidden !important;
+}
+.modal-content.item-detail-content {
+    overscroll-behavior: contain;
+}

@@ -4,6 +4,12 @@ let currentPage = 1;
 const itemsPerPage = 4; // Number of items per page
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Move the popup out of <body> so no transformed/animated page wrapper can trap its
+    // "position: fixed" (that is what made it open at the top of the page instead of on screen).
+    const itemModalEl = document.getElementById("itemModal");
+    if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
+        document.documentElement.appendChild(itemModalEl);
+    }
     loadFoundItems();
     
     // --- SEARCH LOGIC ---
@@ -214,6 +220,7 @@ function openModal(id) {
     if (modal) {
         modal.classList.add("show");
         document.body.classList.add("item-details-modal-open");
+        document.documentElement.classList.add("item-details-modal-open");
     }
 }
 
@@ -224,6 +231,7 @@ function closeModal() {
         modal.style.display = "";
     }
     document.body.classList.remove("item-details-modal-open");
+    document.documentElement.classList.remove("item-details-modal-open");
 }
 
 function checkSession() {

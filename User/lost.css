@@ -538,11 +538,6 @@ body.item-details-modal-open {
     overflow: hidden;
 }
 
-@keyframes modalSlideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
 /* =========================
    MODAL HEADER & CLOSE BUTTON
 ========================= */
@@ -598,6 +593,30 @@ body.item-details-modal-open {
     .modal-item-title {
         font-size: 1.3rem;
     }
+}
+
+.notif-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background-color: #ff4d4f;
+    color: white;
+    font-size: 9px;          
+    font-weight: 700;
+    min-width: 15px;         
+    height: 15px;            
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #fff;
+    z-index: 10;
 }
 
 /* =========================
@@ -774,4 +793,15 @@ body.item-details-modal-open {
         width: 100%;
         flex: none;
     }
+}
+
+/* =========================
+   ITEM POPUP: stay on screen + stop the page scrolling behind it
+========================= */
+html.item-details-modal-open,
+body.item-details-modal-open {
+    overflow: hidden !important;
+}
+.modal-content.item-detail-content {
+    overscroll-behavior: contain;
 }

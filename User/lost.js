@@ -4,7 +4,13 @@ let currentPage = 1;
 const itemsPerPage = 4; // Number of items per page
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadLostItems();
+    // Move the popup out of <body> so no transformed/animated page wrapper can trap its
+    // "position: fixed" (that is what made it open at the top of the page instead of on screen).
+    const itemModalEl = document.getElementById("itemModal");
+    if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
+        document.documentElement.appendChild(itemModalEl);
+    }
+    loadFoundItems();
     
     // --- SEARCH LOGIC ---
     const searchInput = document.querySelector('.search-bar-pill input');
@@ -31,9 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 });
 
-async function loadLostItems() {
+async function loadFoundItems() {
     try {
-        const response = await fetch('/api/items/lost');
+        const response = await fetch('/api/items/found');
         allItems = await response.json();
         filteredItems = [...allItems]; // Initialize filteredItems with all data
         
@@ -41,15 +47,14 @@ async function loadLostItems() {
         renderItems();
         renderPagination();
 
-        // RESTORED: Check URL for item to highlight (Green Light effect)
+        // Check URL for item to highlight (Green Light effect)
         const urlParams = new URLSearchParams(window.location.search);
         const itemIdToOpen = urlParams.get('open');
         if (itemIdToOpen) {
-            // Find which page the item belongs to
             const itemIndex = allItems.findIndex(i => i.id == itemIdToOpen);
             if (itemIndex !== -1) {
                 currentPage = Math.ceil((itemIndex + 1) / itemsPerPage);
-                updateView(); // Refresh to correct page
+                updateView();
                 
                 setTimeout(() => {
                     const targetCard = document.querySelector(`[data-id="${itemIdToOpen}"]`);
@@ -71,13 +76,11 @@ function renderItems() {
     if (!grid) return;
     grid.innerHTML = "";
 
-    // Change: Check filteredItems instead of allItems
     if (filteredItems.length === 0) {
         grid.innerHTML = "<h3 style='grid-column: 1/-1; text-align:center;'>No items match your search.</h3>";
         return;
     }
 
-    // Pagination Logic: Slice the filtered array based on current page
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     const paginatedItems = filteredItems.slice(start, end);
@@ -108,13 +111,13 @@ function renderItems() {
                 <span class="badge" style="background:#D97706; color:white; padding:2px 8px; border-radius:4px;">${item.category}</span>
                 <div class="item-details">
                     <p><strong>Description:</strong> ${item.description || 'No description'}</p>
-                    <p><strong>Where Lost:</strong> ${item.location}</p>
-                    <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
-                    <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                    <p><strong>Where Found:</strong> ${item.location}</p>
+                    <p><strong>Status:</strong> <span class="status-found">Found</span></p>
+                    <p><strong>Finder:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
             
                     <div class="post-time">
-                        <small>Date Lost: ${item.formattedDate}</small><br>
-                        <small>Time Lost: ${item.formattedTime || ''}</small>
+                        <small>Date Found: ${item.formattedDate}</small><br>
+                        <small>Time Found: ${item.formattedTime || ''}</small>
                     </div>
                 </div>
             </div>
@@ -130,9 +133,8 @@ function renderPagination() {
     paginationContainer.innerHTML = "";
     const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
 
-    // 1. Previous Button
     const prevBtn = document.createElement("button");
-    prevBtn.className = "pag-btn-large"; // New class for the green button style
+    prevBtn.className = "pag-btn-large";
     prevBtn.textContent = "Previous";
     prevBtn.disabled = currentPage === 1;
     prevBtn.onclick = (e) => { 
@@ -141,13 +143,11 @@ function renderPagination() {
     };
     paginationContainer.appendChild(prevBtn);
 
-    // 2. Page Indicator Text
     const pageIndicator = document.createElement("span");
     pageIndicator.className = "page-indicator";
     pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
     paginationContainer.appendChild(pageIndicator);
 
-    // 3. Next Button
     const nextBtn = document.createElement("button");
     nextBtn.className = "pag-btn-large";
     nextBtn.textContent = "Next";
@@ -189,9 +189,9 @@ function openModal(id) {
                         <span class="status-badge-published">Published</span>
                     </div>
                     ${modalImgHtml}
-                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
+                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.status || 'Found'}</strong></p>
                 </div>
-                <div style="flex: 1;">
+                <div style="flex: 1 1 260px; min-width: 0;">
                     <h3 class="info-header">Item Information</h3>
                     <p><strong>Category:</strong> ${item.category}</p>
                     <p><strong>Brand:</strong> ${item.brand || 'N/A'}</p>
@@ -201,7 +201,7 @@ function openModal(id) {
                     <h3 class="info-header" style="margin-top:30px;">Description</h3>
                     <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
                     <div class="contact-box">
-                        <h4 style="margin-top:0;">Contact Owner</h4>
+                        <h4 style="margin-top:0;">Contact Finder</h4>
                         <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
 
                         <button 
@@ -220,6 +220,7 @@ function openModal(id) {
     if (modal) {
         modal.classList.add("show");
         document.body.classList.add("item-details-modal-open");
+        document.documentElement.classList.add("item-details-modal-open");
     }
 }
 
@@ -230,6 +231,7 @@ function closeModal() {
         modal.style.display = "";
     }
     document.body.classList.remove("item-details-modal-open");
+    document.documentElement.classList.remove("item-details-modal-open");
 }
 
 function checkSession() {
