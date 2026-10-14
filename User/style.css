@@ -713,3 +713,51 @@ input:not(:placeholder-shown) + label {
         opacity: 1;
     }
 }
+
+/* Tablets & iPads (769px to 1024px): Larger right-panel font & logo, locked login form */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        max-width: 96% !important;
+        width: 96% !important;
+        height: 670px !important;
+    }
+
+    .form-container {
+        width: 50% !important;
+        left: 0 !important;
+    }
+
+    .toggle-container {
+        width: 50% !important;
+        left: 50% !important;
+    }
+
+    form {
+        max-width: 350px !important;
+        padding: 22px !important;
+        height: 550px !important;
+    }
+
+    form h1 {
+        font-size: 30px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .toggle-panel {
+        padding: 40px 20px !important;
+    }
+
+    .welcome-title {
+        font-size: 55px !important; 
+    }
+
+    .welcome-desc {
+        font-size: 13.5px !important;
+    }
+
+    .logo-area img {
+        width: 550px !important; 
+        max-width: none !important;
+        transform: translateY(-20px) !important;
+    }
+}
