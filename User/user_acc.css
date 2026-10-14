@@ -657,7 +657,8 @@ footer p {
    ACCOUNT PAGE - MOBILE LAYOUT
    Stack the sidebar above the form instead of side by side
 ========================================================= */
-@media (max-width: 768px) {
+/* Stacks up to 900px so iPad portrait (768 / 810 / 820 / 834) gets the stacked layout too */
+@media (max-width: 900px) {
     .container {
         padding: 0 12px;
         box-sizing: border-box;
@@ -685,8 +686,8 @@ footer p {
     }
 
     .avatar-large {
-        width: 120px;
-        height: 120px;
+        width: 150px;
+        height: 150px;
         margin: 0 auto 15px;
     }
 
@@ -708,8 +709,7 @@ footer p {
     }
 
     .info-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
+        gap: 14px;   /* stays 2 columns on tablets; 1 column on phones (see 600px block) */
     }
 
     .info-box {
@@ -729,6 +729,11 @@ footer p {
 
     .actions { justify-content: stretch; }
     .actions .primary-edit-btn { flex: 1; }
+}
+
+@media (max-width: 600px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .avatar-large { width: 120px; height: 120px; }
 }
 
 @media (max-width: 480px) {

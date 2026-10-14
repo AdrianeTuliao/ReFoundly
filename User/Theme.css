@@ -1,0 +1,616 @@
+/* =========================================================
+   ReFoundly - DARK THEME
+   Load this LAST (after dashboard.css / GlobalU.css).
+   Nothing here changes the light theme; it only applies when
+   <html data-theme="dark"> is set by theme.js.
+   Palette: dark forest green.
+========================================================= */
+
+/* ---- toggle button (both themes) ---- */
+.theme-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.4rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    transition: color 0.3s, transform 0.2s;
+}
+.theme-toggle:hover { color: var(--accent-green, #94D85D); transform: scale(1.1); }
+.theme-toggle i { cursor: pointer; }
+
+/* ---- palette ---- */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --d-bg: #0e140f;
+    --d-surface: #172019;
+    --d-surface-2: #1e2a20;
+    --d-border: #2c3d2f;
+    --d-text: #e7ede5;
+    --d-muted: #9aa99a;
+    --d-green: #8fc46a;          /* green text / accents */
+    --d-green-btn: #5f8f4f;      /* green buttons */
+    --d-green-btn-hover: #77a965;
+
+    --bg-gray: var(--d-bg);
+    --text-dark: var(--d-text);
+    --primary-green: var(--d-green);
+}
+
+/* ---- page ---- */
+:root[data-theme="dark"] body {
+    background-color: var(--d-bg);
+    color: var(--d-text);
+}
+
+/* ---- navbar & footer: same green family, darker ---- */
+:root[data-theme="dark"] .navbar {
+    background: linear-gradient(90deg, #243a28 0%, #2f4a33 50%, #3d5a40 100%);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="dark"] footer {
+    background: linear-gradient(90deg, #1b2c1f 0%, #26392a 50%, #324a36 100%);
+}
+
+/* ---- hero: a bit darker photo overlay ---- */
+:root[data-theme="dark"] .hero {
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+        url('bgheader1.png');
+    background-size: cover;
+    background-position: center 30%;
+}
+
+/* ---- search bar (glass) ---- */
+:root[data-theme="dark"] .search-container {
+    background: linear-gradient(
+        180deg,
+        rgba(10, 16, 11, 0.70) 0%,
+        rgba(20, 30, 22, 0.70) 55%,
+        rgba(23, 32, 25, 0.92) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+:root[data-theme="dark"] .main-wrapper .search-container {
+    background: linear-gradient(
+        180deg,
+        rgba(10, 16, 11, 0.70) 0%,
+        rgba(20, 30, 22, 0.70) 55%,
+        rgba(23, 32, 25, 0.92) 100%
+    ) !important;
+}
+:root[data-theme="dark"] .search-group input,
+:root[data-theme="dark"] .search-group select {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+:root[data-theme="dark"] .search-group input::placeholder { color: var(--d-muted); }
+:root[data-theme="dark"] .search-group input:focus,
+:root[data-theme="dark"] .search-group select:focus {
+    background: #26352a;
+    border-color: var(--d-green);
+    box-shadow: 0 0 10px rgba(143, 196, 106, 0.25);
+}
+
+/* dropdown lists (category / location) */
+:root[data-theme="dark"] .dropdown-menu {
+    background: var(--d-surface-2);
+    color: var(--d-text);
+    border: 1px solid var(--d-border);
+}
+:root[data-theme="dark"] .dropdown-menu li { border-bottom-color: var(--d-border); }
+:root[data-theme="dark"] .dropdown-menu li:hover {
+    background-color: var(--d-green-btn);
+    color: #fff;
+}
+
+/* ---- buttons ---- */
+:root[data-theme="dark"] .btn-main2,
+:root[data-theme="dark"] .btn-pagination {
+    background: var(--d-green-btn);
+}
+:root[data-theme="dark"] .btn-main2:hover,
+:root[data-theme="dark"] .btn-pagination:hover {
+    background: var(--d-green-btn-hover);
+}
+
+/* ---- How it works ---- */
+:root[data-theme="dark"] .how-it-works {
+    background: var(--d-surface);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="dark"] .how-it-works-header h2,
+:root[data-theme="dark"] .step-card h3 { color: var(--d-text); }
+:root[data-theme="dark"] .how-it-works-header p,
+:root[data-theme="dark"] .step-card p { color: var(--d-muted); }
+:root[data-theme="dark"] .step-card,
+:root[data-theme="dark"] .step-card.featured-step {
+    background: linear-gradient(145deg, #1c2a1f 0%, #223426 100%);
+    border-color: #3d5c3f;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+:root[data-theme="dark"] .step-icon,
+:root[data-theme="dark"] .step-number,
+:root[data-theme="dark"] .step-connector i {
+    background: #2a3f2d;
+    color: var(--d-green);
+}
+
+/* ---- items ---- */
+:root[data-theme="dark"] .content-wrapper > h4,
+:root[data-theme="dark"] .content-wrapper h4 { color: var(--d-text); }
+:root[data-theme="dark"] .card {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    color: var(--d-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+:root[data-theme="dark"] .card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6); }
+:root[data-theme="dark"] .card-body h4 { color: var(--d-text); }
+:root[data-theme="dark"] .card-body p { color: var(--d-muted) !important; }
+:root[data-theme="dark"] .card-img { background: var(--d-surface-2) !important; color: var(--d-muted); }
+:root[data-theme="dark"] .card img { background: #ffffff; } /* keeps white-background product photos clean */
+:root[data-theme="dark"] .page-info { color: var(--d-muted); }
+
+/* ---- hamburger menu ---- */
+:root[data-theme="dark"] .nav-menu {
+    background-color: var(--d-surface);
+    border: 1px solid var(--d-border);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+:root[data-theme="dark"] .nav-menu a {
+    color: var(--d-text);
+    border-bottom-color: var(--d-border);
+}
+:root[data-theme="dark"] .nav-menu a i { color: var(--d-green); }
+:root[data-theme="dark"] .nav-menu a:hover { background-color: var(--d-surface-2); color: var(--d-green); }
+:root[data-theme="dark"] .nav-menu a.logout-btn,
+:root[data-theme="dark"] .nav-menu a.logout-btn i { color: #ff7a6e; }
+
+/* ---- notifications ---- */
+:root[data-theme="dark"] .notif-dropdown {
+    background: var(--d-surface);
+    border: 1px solid var(--d-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+:root[data-theme="dark"] .notif-header-modern,
+:root[data-theme="dark"] .notif-footer,
+:root[data-theme="dark"] .notif-item-modern { border-color: var(--d-border); }
+:root[data-theme="dark"] .notif-title-row span { color: var(--d-text); }
+:root[data-theme="dark"] .tab-pill { background: var(--d-surface-2); color: var(--d-muted); }
+:root[data-theme="dark"] .tab-pill.active { background: #24402b; color: var(--d-green); }
+:root[data-theme="dark"] .notif-item-modern { color: var(--d-text); }
+:root[data-theme="dark"] .unread-bg { background: #1f3123; }
+:root[data-theme="dark"] .notif-footer button,
+:root[data-theme="dark"] .clear-notifs-btn { color: var(--d-green); }
+
+/* ---- footer popups & alert modal ---- */
+:root[data-theme="dark"] .popup-box {
+    background-color: var(--d-surface);
+    color: var(--d-text);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+:root[data-theme="dark"] .popup-box::after { border-color: var(--d-surface) transparent transparent transparent; }
+:root[data-theme="dark"] .popup-box strong { color: var(--d-green); }
+:root[data-theme="dark"] .modal-content-alert {
+    background: var(--d-surface);
+    color: var(--d-text);
+}
+
+/* smooth switch */
+body, .navbar, .how-it-works, .card, .step-card, .search-container, .nav-menu, .notif-dropdown {
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+
+/* =========================================================
+   PART 2 - EVERY OTHER PAGE
+   (Messages, Lost, Found, History, Report, Account, Notification History)
+   Each page has its own CSS with hard-coded light colours, so each
+   needs its own dark overrides here.
+========================================================= */
+
+/* ---------- Form controls everywhere ---------- */
+:root[data-theme="dark"] input:not([type]),
+:root[data-theme="dark"] input[type="text"],
+:root[data-theme="dark"] input[type="email"],
+:root[data-theme="dark"] input[type="password"],
+:root[data-theme="dark"] input[type="tel"],
+:root[data-theme="dark"] input[type="date"],
+:root[data-theme="dark"] input[type="time"],
+:root[data-theme="dark"] input[type="number"],
+:root[data-theme="dark"] input[type="search"],
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+    background-color: var(--d-surface-2);
+    color: var(--d-text);
+    border-color: var(--d-border);
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder { color: var(--d-muted); }
+:root[data-theme="dark"] input:focus,
+:root[data-theme="dark"] select:focus,
+:root[data-theme="dark"] textarea:focus { border-color: var(--d-green); }
+:root[data-theme="dark"] input:disabled {
+    background-color: #151d17;
+    color: var(--d-muted);
+    -webkit-text-fill-color: var(--d-muted);
+    opacity: 1;
+}
+
+/* ---------- Breadcrumb ---------- */
+:root[data-theme="dark"] .breadcrumb { color: var(--d-muted); }
+:root[data-theme="dark"] .breadcrumb a { color: var(--d-green); }
+:root[data-theme="dark"] .breadcrumb a:hover { color: #b1d985; }
+:root[data-theme="dark"] .breadcrumb span { color: var(--d-text); }
+
+/* ---------- Lost / Found / History: search + pagination + cards ---------- */
+:root[data-theme="dark"] .search-section {
+    background: linear-gradient(90deg, #243a28 0%, #2f4a33 50%, #3d5a40 100%);
+}
+:root[data-theme="dark"] .search-bar-pill,
+:root[data-theme="dark"] .search-bar-pill-small {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+}
+:root[data-theme="dark"] .search-bar-pill i,
+:root[data-theme="dark"] .search-bar-pill-small i { color: var(--d-muted); }
+:root[data-theme="dark"] .search-bar-pill input,
+:root[data-theme="dark"] .search-bar-pill-small input {
+    background-color: transparent;
+    color: var(--d-text);
+    border: none;
+}
+
+:root[data-theme="dark"] .item-card {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    color: var(--d-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .pag-btn {
+    background: var(--d-surface-2);
+    color: var(--d-text);
+    border-color: var(--d-border);
+}
+:root[data-theme="dark"] .pag-btn:hover:not(.active) { background: var(--d-green-btn); color: #fff; }
+:root[data-theme="dark"] .pag-btn.active { background: var(--d-green-btn) !important; color: #fff !important; }
+:root[data-theme="dark"] .pagination span { color: var(--d-muted); }
+:root[data-theme="dark"] .page-arrow { color: var(--d-muted); }
+:root[data-theme="dark"] .page-arrow:hover:not(:disabled) { background-color: rgba(143, 196, 106, 0.15); color: var(--d-green); }
+:root[data-theme="dark"] .page-num { color: var(--d-muted); }
+
+/* item detail popup (Lost / Found / History) */
+:root[data-theme="dark"] .modal-content,
+:root[data-theme="dark"] .item-detail-content {
+    background: var(--d-surface);
+    color: var(--d-text);
+    border-color: var(--d-border);
+}
+:root[data-theme="dark"] .item-detail-content h1,
+:root[data-theme="dark"] .item-detail-content h2,
+:root[data-theme="dark"] .item-detail-content h3,
+:root[data-theme="dark"] .item-detail-content h4,
+:root[data-theme="dark"] .item-detail-content strong { color: var(--d-text); }
+:root[data-theme="dark"] .item-detail-content p,
+:root[data-theme="dark"] .item-detail-content small,
+:root[data-theme="dark"] .item-detail-content label { color: var(--d-muted); }
+:root[data-theme="dark"] .close-button { color: var(--d-muted); }
+:root[data-theme="dark"] .close-button:hover { color: var(--d-text); }
+
+/* ---------- Notification History ---------- */
+:root[data-theme="dark"] .notif-card {
+    background: var(--d-surface);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="dark"] .notif-header-section {
+    background: var(--d-surface);
+    border-bottom-color: var(--d-border);
+}
+:root[data-theme="dark"] .header-top h2 { color: var(--d-text); }
+:root[data-theme="dark"] .btn-clear-history { background: #3a1f1d; color: #ff8a80; border-color: #6b3531; }
+:root[data-theme="dark"] .btn-clear-history:hover { background: #d9534f; color: #fff; }
+:root[data-theme="dark"] .btn-mark-read { background: #1f3123; color: var(--d-green); border-color: #3d5c3f; }
+:root[data-theme="dark"] .btn-mark-read:hover { background: var(--d-green-btn); color: #fff; border-color: var(--d-green-btn); }
+:root[data-theme="dark"] .notif-list-item { border-bottom-color: var(--d-border); }
+:root[data-theme="dark"] .notif-list-item:hover { background: var(--d-surface-2); }
+:root[data-theme="dark"] .notif-list-item.unread { background: #1f3123; border-left-color: var(--d-green); }
+:root[data-theme="dark"] .notif-card .icon-box { background: var(--d-surface-2); color: var(--d-muted); }
+:root[data-theme="dark"] .notif-info p { color: var(--d-text); }
+:root[data-theme="dark"] .notif-info span { color: var(--d-muted); }
+:root[data-theme="dark"] .notif-card .pagination-controls { border-top-color: var(--d-border); }
+
+/* ---------- Account page ---------- */
+:root[data-theme="dark"] .account-card {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="dark"] .account-card .sidebar {
+    background: transparent;
+    color: var(--d-text);
+    border-color: var(--d-border);
+}
+:root[data-theme="dark"] .account-card .sidebar h2 { color: var(--d-text); }
+:root[data-theme="dark"] .account-card .sidebar p { color: var(--d-muted); }
+:root[data-theme="dark"] .account-card .content { background: var(--d-surface); color: var(--d-text); }
+:root[data-theme="dark"] .section-header { color: var(--d-green); border-color: var(--d-border); }
+:root[data-theme="dark"] .info-box label { color: var(--d-muted); }
+:root[data-theme="dark"] .change-pw { color: var(--d-green); }
+:root[data-theme="dark"] .primary-edit-btn { background: var(--d-green-btn); color: #fff; }
+:root[data-theme="dark"] .primary-edit-btn:hover { background: var(--d-green-btn-hover); }
+:root[data-theme="dark"] .expiry-modal .modal-content-alert { color: var(--d-text); }
+:root[data-theme="dark"] .expiry-modal h3 { color: var(--d-text); }
+
+/* ---------- Report page ---------- */
+:root[data-theme="dark"] .form-card {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    color: var(--d-text);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="dark"] .form-card h3,
+:root[data-theme="dark"] .form-card label,
+:root[data-theme="dark"] .form-card strong { color: var(--d-text); }
+:root[data-theme="dark"] .form-card small { color: var(--d-muted); }
+:root[data-theme="dark"] .separator { background: var(--d-border); border-color: var(--d-border); }
+:root[data-theme="dark"] .image-upload-box { background: var(--d-surface-2); border-color: #3d5c3f; color: var(--d-muted); }
+:root[data-theme="dark"] .upload-placeholder { color: var(--d-muted); }
+:root[data-theme="dark"] .checkbox-group { background: var(--d-surface-2); border-color: var(--d-border); }
+:root[data-theme="dark"] .submit-section .btn-main { background: var(--d-green-btn); color: #fff; border-color: transparent; }
+:root[data-theme="dark"] .submit-section .btn-main:hover { background: var(--d-green-btn-hover); }
+:root[data-theme="dark"] #custom-toast .toast-content { background: var(--d-surface-2); color: var(--d-text); }
+:root[data-theme="dark"] .toast-title { color: var(--d-text); }
+:root[data-theme="dark"] .toast-body { color: var(--d-muted); }
+
+/* ---------- Messages page ---------- */
+:root[data-theme="dark"] { --border: var(--d-border); }
+
+:root[data-theme="dark"] .messaging-wrapper { background: var(--d-surface); border-color: var(--d-border); }
+:root[data-theme="dark"] .inbox-sidebar { background: var(--d-surface); border-right-color: var(--d-border); }
+:root[data-theme="dark"] .sidebar-header-box { border-bottom-color: var(--d-border); }
+:root[data-theme="dark"] .sidebar-header-box h3 { color: var(--d-green); }
+:root[data-theme="dark"] .search-inbox { background: var(--d-surface-2); }
+:root[data-theme="dark"] .search-inbox .search-bar-pill-small { background: var(--d-bg); }
+:root[data-theme="dark"] .chat-item { border-bottom-color: var(--d-border); }
+:root[data-theme="dark"] .chat-item:hover { background: var(--d-surface-2); }
+:root[data-theme="dark"] .chat-item.active { background: #1f3123; border-left-color: var(--d-green); }
+:root[data-theme="dark"] .preview-text h4 { color: var(--d-text); }
+:root[data-theme="dark"] .preview-text p { color: var(--d-muted); }
+:root[data-theme="dark"] .chat-view,
+:root[data-theme="dark"] .chat-body { background: var(--d-bg); }
+:root[data-theme="dark"] .chat-view-header { background: var(--d-surface); border-bottom-color: var(--d-border); }
+:root[data-theme="dark"] .current-user h4 { color: var(--d-text); }
+:root[data-theme="dark"] .current-user small { color: var(--d-muted); }
+:root[data-theme="dark"] .report-user-btn { background: #3a1f1d; border-color: #6b3531; color: #ff8a80; }
+:root[data-theme="dark"] .report-user-btn:hover { background: #4a2724; border-color: #8a443e; }
+:root[data-theme="dark"] .conversation-start,
+:root[data-theme="dark"] .conversation-loading { color: var(--d-muted); }
+:root[data-theme="dark"] .conversation-start h3 { color: var(--d-text); }
+
+/* message bubbles */
+:root[data-theme="dark"] .received { background: var(--d-surface-2); color: var(--d-text); }
+:root[data-theme="dark"] .sent { background: var(--d-green-btn); color: #fff; }
+:root[data-theme="dark"] .message-time { color: var(--d-muted); }
+:root[data-theme="dark"] .sent .message-time { color: rgba(255, 255, 255, 0.75); }
+
+/* composer */
+:root[data-theme="dark"] .chat-footer { background: var(--d-surface); border-top-color: var(--d-border); }
+:root[data-theme="dark"] .attach-btn { background: var(--d-surface-2); border-color: var(--d-border); color: var(--d-green); }
+:root[data-theme="dark"] .attach-btn:hover { background: #26352a; border-color: var(--d-green); }
+
+/* these used --primary-green as a BACKGROUND; in dark mode that variable is the light text-green,
+   so give them the proper button green instead */
+:root[data-theme="dark"] .send-btn,
+:root[data-theme="dark"] #agreeDealBtn,
+:root[data-theme="dark"] .agreement-confirm-btn,
+:root[data-theme="dark"] .chat-unread,
+:root[data-theme="dark"] .chat-avatar-placeholder,
+:root[data-theme="dark"] .consent-confirm-btn { background: var(--d-green-btn); color: #fff; }
+:root[data-theme="dark"] .send-btn:hover,
+:root[data-theme="dark"] #agreeDealBtn:hover:not(:disabled),
+:root[data-theme="dark"] .agreement-confirm-btn:hover { background: var(--d-green-btn-hover); }
+:root[data-theme="dark"] #agreeDealBtn:disabled { background: #2a332b; color: #6f7b70; }
+
+/* item card floating above the chat */
+:root[data-theme="dark"] .item-floating-card { background: var(--d-surface-2); border-color: var(--d-border); }
+:root[data-theme="dark"] .item-floating-image { background: #ffffff; }
+:root[data-theme="dark"] .item-floating-label { color: var(--d-muted); }
+:root[data-theme="dark"] .item-floating-name { color: var(--d-text); }
+:root[data-theme="dark"] .item-floating-subtitle,
+:root[data-theme="dark"] .item-floating-arrow,
+:root[data-theme="dark"] .item-floating-loading,
+:root[data-theme="dark"] .item-floating-detail-row,
+:root[data-theme="dark"] .item-floating-detail-desc { color: var(--d-muted); }
+:root[data-theme="dark"] .item-floating-expanded { border-top-color: var(--d-border); color: var(--d-text); }
+:root[data-theme="dark"] .item-floating-detail-row i { color: var(--d-green); }
+:root[data-theme="dark"] .item-floating-full-btn { background: #1f3123; color: var(--d-green); border-color: #3d5c3f; }
+:root[data-theme="dark"] .item-floating-full-btn:hover { background: #26402b; }
+
+/* agreement bar / meetup details */
+:root[data-theme="dark"] .deal-agreement { background: #1a2a1d; border-bottom-color: #2f4a33; }
+:root[data-theme="dark"] .deal-agreement h4,
+:root[data-theme="dark"] .agreement-count { color: var(--d-green); }
+:root[data-theme="dark"] .deal-agreement p { color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-bar { background: #1a2a1d; border-color: #2f4a33; border-left-color: var(--d-green); }
+:root[data-theme="dark"] .agreement-icon { background: #2a3f2d; color: var(--d-green); }
+:root[data-theme="dark"] .agreement-main strong { color: var(--d-text); }
+:root[data-theme="dark"] .agreement-main p { color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-main p strong { color: var(--d-green); }
+:root[data-theme="dark"] .agreement-instruction { background: var(--d-surface-2); border-color: var(--d-border); color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-instruction i { color: var(--d-green); }
+:root[data-theme="dark"] .agreement-instruction strong { color: var(--d-text); }
+:root[data-theme="dark"] .agreement-count { background: var(--d-surface-2); border-color: var(--d-border); }
+:root[data-theme="dark"] .agreement-barangay-box { background: var(--d-surface-2); border-color: var(--d-border); }
+:root[data-theme="dark"] .agreement-barangay-box label { color: var(--d-text); }
+:root[data-theme="dark"] .agreement-barangay-box label i { color: var(--d-green); }
+:root[data-theme="dark"] .agreement-barangay-hint { color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-barangay-readonly {
+    background: var(--d-bg) !important;
+    border-color: var(--d-border) !important;
+    color: var(--d-text) !important;
+}
+:root[data-theme="dark"] .transaction-ready-barangay { color: var(--d-green); }
+
+/* "confirmed / waiting for barangay" panels */
+:root[data-theme="dark"] .transaction-ready-panel { background: #1a2a1d; border-color: #2f4a33; }
+:root[data-theme="dark"] .transaction-ready-icon { background: #2a3f2d; }
+:root[data-theme="dark"] .transaction-ready-content strong { color: var(--d-text); }
+:root[data-theme="dark"] .transaction-ready-content p { color: var(--d-muted); }
+:root[data-theme="dark"] .transaction-ready-status small { color: var(--d-muted); }
+:root[data-theme="dark"] .reschedule-link-btn { color: var(--d-muted) !important; border-color: var(--d-border) !important; }
+
+/* agreement + item details popups */
+:root[data-theme="dark"] .agreement-modal-content,
+:root[data-theme="dark"] .item-details-modal,
+:root[data-theme="dark"] .item-details-modal-content,
+:root[data-theme="dark"] .upload-consent-content { background: var(--d-surface) !important; color: var(--d-text); }
+:root[data-theme="dark"] .agreement-modal-header h2,
+:root[data-theme="dark"] .item-details-header h2,
+:root[data-theme="dark"] .item-details-title h3,
+:root[data-theme="dark"] .agreement-detail-row strong,
+:root[data-theme="dark"] .item-detail-row strong { color: var(--d-text); }
+:root[data-theme="dark"] .agreement-modal-header p,
+:root[data-theme="dark"] .item-details-header p,
+:root[data-theme="dark"] .item-details-loading,
+:root[data-theme="dark"] .item-details-title span,
+:root[data-theme="dark"] .item-detail-label,
+:root[data-theme="dark"] .agreement-detail-row span:first-child,
+:root[data-theme="dark"] .item-details-description p,
+:root[data-theme="dark"] .upload-consent-content p { color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-details,
+:root[data-theme="dark"] .item-detail-row,
+:root[data-theme="dark"] .item-details-description,
+:root[data-theme="dark"] .item-details-no-image { background: var(--d-surface-2); border-color: var(--d-border); }
+:root[data-theme="dark"] .item-details-no-image { color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-detail-row { border-bottom-color: var(--d-border); }
+:root[data-theme="dark"] .item-details-header {
+    background: linear-gradient(135deg, #1e2f21, #172019);
+    border-bottom-color: var(--d-border);
+}
+:root[data-theme="dark"] .item-details-header-icon { background: #2a3f2d; color: var(--d-green); }
+:root[data-theme="dark"] .item-details-image-wrapper { background: #ffffff; }
+:root[data-theme="dark"] .item-details-description h4 { color: var(--d-green); }
+:root[data-theme="dark"] .item-details-close { background: rgba(23, 32, 25, 0.95); color: var(--d-muted); }
+:root[data-theme="dark"] .item-details-close:hover { background: #26402b; color: var(--d-green); }
+:root[data-theme="dark"] .view-item-details-btn { background: #1f3123; color: var(--d-green); border-color: #3d5c3f; }
+:root[data-theme="dark"] .view-item-details-btn:hover { background: #26402b; border-color: var(--d-green); }
+:root[data-theme="dark"] .agreement-warning { background: #2e2810; border-color: #6b5a1c; color: #e6cf7a; }
+:root[data-theme="dark"] .agreement-modal-status span { background: #1f3123; color: var(--d-green); }
+:root[data-theme="dark"] .agreement-cancel-btn { background: var(--d-surface-2); color: var(--d-muted); }
+:root[data-theme="dark"] .agreement-cancel-btn:hover { background: #26352a; }
+:root[data-theme="dark"] .upload-consent-actions button { background: var(--d-surface-2); color: var(--d-text); border-color: var(--d-border); }
+:root[data-theme="dark"] .upload-consent-actions .consent-cancel-btn:hover { background: #26352a; }
+
+/* ---------- Catch-all for INLINE styles (written inside the HTML/JS) ----------
+   Inline styles beat normal CSS, so these need !important. They only touch the
+   exact light colours your pages hard-code. */
+:root[data-theme="dark"] [style*="background:white"],
+:root[data-theme="dark"] [style*="background: white"],
+:root[data-theme="dark"] [style*="background:#fff;"],
+:root[data-theme="dark"] [style*="background: #fff;"],
+:root[data-theme="dark"] [style*="background:#fff "],
+:root[data-theme="dark"] [style*="background: #fff "],
+:root[data-theme="dark"] [style*="background:#f8f9fa"],
+:root[data-theme="dark"] [style*="background: #f8f9fa"] { background: var(--d-surface-2) !important; }
+
+:root[data-theme="dark"] [style*="background:#fff8e1"] { background: #2e2810 !important; color: #e6cf7a !important; }
+:root[data-theme="dark"] [style*="background-color: #fdf7f7"] { background-color: #3a1f1d !important; }
+:root[data-theme="dark"] [style*="background-color: #E8F5E9"] { background-color: #1f3123 !important; }
+
+:root[data-theme="dark"] [style*="color:#333"],
+:root[data-theme="dark"] [style*="color: #333"],
+:root[data-theme="dark"] [style*="color:#444"],
+:root[data-theme="dark"] [style*="color: #444"] { color: var(--d-text) !important; }
+
+:root[data-theme="dark"] [style*="color:#555"],
+:root[data-theme="dark"] [style*="color: #555"],
+:root[data-theme="dark"] [style*="color:#666"],
+:root[data-theme="dark"] [style*="color: #666"],
+:root[data-theme="dark"] [style*="color:#777"],
+:root[data-theme="dark"] [style*="color: #777"] { color: var(--d-muted) !important; }
+
+:root[data-theme="dark"] [style*="border:1px solid #ccc"],
+:root[data-theme="dark"] [style*="border: 1px solid #ccc"],
+:root[data-theme="dark"] [style*="border:1px solid #e0e0e0"],
+:root[data-theme="dark"] [style*="border: 1px solid #e0e0e0"] { border-color: var(--d-border) !important; }
+
+
+/* ---------- Added after reviewing screenshots ---------- */
+
+/* Bell dropdown on every page: item text was dark-on-dark */
+:root[data-theme="dark"] .notif-item-modern * { color: inherit; }
+:root[data-theme="dark"] .notif-item-modern small,
+:root[data-theme="dark"] .notif-item-modern time { color: var(--d-muted); }
+
+/* Lost / Found / History cards: white card with light text */
+:root[data-theme="dark"] .item-card h1,
+:root[data-theme="dark"] .item-card h2,
+:root[data-theme="dark"] .item-card h3,
+:root[data-theme="dark"] .item-card h4,
+:root[data-theme="dark"] .item-card h5 { color: var(--d-text); }
+:root[data-theme="dark"] .item-card p,
+:root[data-theme="dark"] .item-card small,
+:root[data-theme="dark"] .item-card label { color: var(--d-muted); }
+:root[data-theme="dark"] .item-card img { background: #ffffff; }
+
+/* ---------- Account info boxes (were still white, with a dark input inside) ---------- */
+:root[data-theme="dark"] .info-box {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    box-shadow: none;
+}
+:root[data-theme="dark"] .info-box input:disabled {
+    background-color: transparent;
+    color: var(--d-text);
+    -webkit-text-fill-color: var(--d-text);
+    border-color: transparent;
+}
+:root[data-theme="dark"] .info-box input:not(:disabled) {
+    background-color: var(--d-bg);
+    color: var(--d-text);
+    border-bottom-color: var(--d-green);
+}
+:root[data-theme="dark"] .change-pw { color: var(--d-green); }
+
+/* ---------- Bell dropdown text (colours now come from classes, not inline styles) ---------- */
+.notif-text { color: #1c1e21; }
+.notif-date { color: #65676b; }
+.notif-empty { color: #65676b; }
+:root[data-theme="dark"] .notif-text { color: var(--d-text); }
+:root[data-theme="dark"] .notif-date,
+:root[data-theme="dark"] .notif-empty { color: var(--d-muted); }
+/* safety net if an older cached notifications.js (inline colours) is still being served */
+:root[data-theme="dark"] [style*="color:#1c1e21"] { color: var(--d-text) !important; }
+:root[data-theme="dark"] [style*="color:#65676b"] { color: var(--d-muted) !important; }
+
+/* ---------- Item detail popup: "Contact Finder / Contact Owner" box ---------- */
+:root[data-theme="dark"] .item-detail-content [class*="contact"],
+:root[data-theme="dark"] .item-detail-content [class*="chat"]:not(button):not(a),
+:root[data-theme="dark"] .item-detail-content [style*="border-left"],
+:root[data-theme="dark"] .item-detail-content [style*="background:#f"],
+:root[data-theme="dark"] .item-detail-content [style*="background: #f"],
+:root[data-theme="dark"] .item-detail-content [style*="background-color:#f"],
+:root[data-theme="dark"] .item-detail-content [style*="background-color: #f"] {
+    background: var(--d-surface-2) !important;
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+:root[data-theme="dark"] .item-detail-content [class*="contact"] h1,
+:root[data-theme="dark"] .item-detail-content [class*="contact"] h2,
+:root[data-theme="dark"] .item-detail-content [class*="contact"] h3,
+:root[data-theme="dark"] .item-detail-content [class*="contact"] h4,
+:root[data-theme="dark"] .item-detail-content [class*="contact"] strong { color: var(--d-text); }
+:root[data-theme="dark"] .item-detail-content [class*="contact"] p,
+:root[data-theme="dark"] .item-detail-content [class*="contact"] span { color: var(--d-muted); }

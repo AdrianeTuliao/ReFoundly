@@ -103,7 +103,7 @@ async function updateNotificationsUI() {
             : data;
 
         if (displayList.length === 0) {
-            list.innerHTML = `<div class="notif-empty" style="padding:20px; text-align:center; color:#65676b;">No ${currentNotifTab === 'unread' ? 'unread' : ''} notifications</div>`;
+            list.innerHTML = `<div class="notif-empty" style="padding:20px; text-align:center;">No ${currentNotifTab === 'unread' ? 'unread' : ''} notifications</div>`;
             return;
         }
 
@@ -117,8 +117,8 @@ async function updateNotificationsUI() {
                         <i class="fa-solid fa-bell" style="font-size:0.8rem;"></i>
                     </div>
                     <div style="flex-grow:1;">
-                        <div style="font-size:0.85rem; color:#1c1e21; font-weight:${n.is_read ? '600' : '700'}">${safeMessage}</div>
-                        <div style="font-size:0.75rem; color:#65676b;">${date}</div>
+                        <div class="notif-text" style="font-size:0.85rem; font-weight:${n.is_read ? '600' : '700'}">${safeMessage}</div>
+                        <div class="notif-date" style="font-size:0.75rem;">${date}</div>
                     </div>
                     ${!n.is_read ? '<div class="unread-dot-small"></div>' : ''}
                 </div>
