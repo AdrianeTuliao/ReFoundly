@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
         document.documentElement.appendChild(itemModalEl);
     }
-    loadFoundItems();
+    loadLostItems();
     
     // --- SEARCH LOGIC ---
     const searchInput = document.querySelector('.search-bar-pill input');
@@ -37,9 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 });
 
-async function loadFoundItems() {
+async function loadLostItems() {
     try {
-        const response = await fetch('/api/items/found');
+        const response = await fetch('/api/items/lost');
         allItems = await response.json();
         filteredItems = [...allItems]; // Initialize filteredItems with all data
         
@@ -111,13 +111,13 @@ function renderItems() {
                 <span class="badge" style="background:#D97706; color:white; padding:2px 8px; border-radius:4px;">${item.category}</span>
                 <div class="item-details">
                     <p><strong>Description:</strong> ${item.description || 'No description'}</p>
-                    <p><strong>Where Found:</strong> ${item.location}</p>
-                    <p><strong>Status:</strong> <span class="status-found">Found</span></p>
-                    <p><strong>Finder:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
+                    <p><strong>Where Lost:</strong> ${item.location}</p>
+                    <p><strong>Status:</strong> <span class="status-lost">Lost</span></p>
+                    <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
             
                     <div class="post-time">
-                        <small>Date Found: ${item.formattedDate}</small><br>
-                        <small>Time Found: ${item.formattedTime || ''}</small>
+                        <small>Date Lost: ${item.formattedDate}</small><br>
+                        <small>Time Lost: ${item.formattedTime || ''}</small>
                     </div>
                 </div>
             </div>
@@ -189,7 +189,7 @@ function openModal(id) {
                         <span class="status-badge-published">Published</span>
                     </div>
                     ${modalImgHtml}
-                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.status || 'Found'}</strong></p>
+                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.status || 'Lost'}</strong></p>
                 </div>
                 <div style="flex: 1 1 260px; min-width: 0;">
                     <h3 class="info-header">Item Information</h3>
@@ -201,7 +201,7 @@ function openModal(id) {
                     <h3 class="info-header" style="margin-top:30px;">Description</h3>
                     <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
                     <div class="contact-box">
-                        <h4 style="margin-top:0;">Contact Finder</h4>
+                        <h4 style="margin-top:0;">Contact Owner</h4>
                         <p><strong>Name:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
 
                         <button 
