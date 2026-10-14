@@ -1,6 +1,6 @@
 /* =========================================================
    ReFoundly - Messages / Conversations
-   Complete clean replacement with Date & Time logic
+   Complete clean replacement with Mobile Slide-Over Fix
    ========================================================= */
 
 "use strict";
@@ -38,12 +38,6 @@ let agreementPollRunning = false;
 
 let lastMessageSignature = "";
 
-// Sensitive photos this viewer has already revealed *this page load*.
-// The GET /messages endpoint always returns image_url = null for a
-// sensitive photo the recipient hasn't (or has already used up their
-// views for), so without this cache, message polling every second would
-// re-lock an image right after it was revealed — and clicking it again
-// would burn another one of the 2 server-enforced views for nothing.
 const revealedImageCache = new Map();
 let currentUserConfirmedItem = false;
 
@@ -88,7 +82,6 @@ const DAGUPAN_BARANGAYS = [
     "Tebeng Barangay Hall"
 ];
 
-
 /* =========================================================
    DOM
    ========================================================= */
@@ -106,7 +99,6 @@ const chatSearch = document.getElementById("chatSearch");
 
 const chatHeaderActions = document.getElementById("chatHeaderActions");
 const reportUserBtn = document.getElementById("reportUserBtn");
-
 
 /* =========================================================
    INIT
@@ -128,6 +120,7 @@ async function init() {
         setupAgreementEvents();
         setupItemDetailsEvents();
         setupReportUserButton();
+        setupMobileBackButton();
 
         await loadCurrentUser();
 
@@ -145,8 +138,6 @@ async function init() {
         const itemId = params.get("itemId") || params.get("item") || null;
 
         if (directConversationId) {
-            // Came from a notification that already knows exactly which
-            // conversation to open (new message, agreement update, etc).
             await openConversation(directConversationId);
             window.history.replaceState({}, document.title, "message.html");
         } else if (targetUserId && itemId) {
@@ -164,6 +155,29 @@ async function init() {
     }
 }
 
+/* =========================================================
+   MOBILE BACK BUTTON SETUP
+   ========================================================= */
+
+function setupMobileBackButton() {
+    const currentUserContainer = document.querySelector(".current-user");
+    if (!currentUserContainer) return;
+
+    if (!document.getElementById("mobileBackBtn")) {
+        const backBtn = document.createElement("button");
+        backBtn.id = "mobileBackBtn";
+        backBtn.className = "mobile-back-btn";
+        backBtn.type = "button";
+        backBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+        backBtn.title = "Back to Inbox";
+        
+        backBtn.addEventListener("click", () => {
+            showEmptyState();
+        });
+
+        currentUserContainer.parentNode.insertBefore(backBtn, currentUserContainer);
+    }
+}
 
 /* =========================================================
    USER
@@ -196,7 +210,6 @@ async function loadCurrentUser() {
         console.error("loadCurrentUser:", error);
     }
 }
-
 
 /* =========================================================
    CONVERSATIONS
@@ -258,7 +271,6 @@ async function loadConversations(options = {}) {
     }
 }
 
-
 function conversationsChanged(oldList, newList) {
     if (oldList.length !== newList.length) {
         return true;
@@ -283,7 +295,6 @@ function conversationsChanged(oldList, newList) {
 
     return false;
 }
-
 
 function renderConversationList(list) {
     if (!chatList) return;
@@ -328,7 +339,6 @@ function renderConversationList(list) {
         chatList.appendChild(item);
     });
 }
-
 
 /* =========================================================
    START CONVERSATION
@@ -378,7 +388,6 @@ async function startConversationFromItem(targetUserId, itemId) {
     }
 }
 
-
 async function startConversationWithUser(targetUserId) {
     if (isSelf(targetUserId)) {
         showEmptyState();
@@ -422,11 +431,9 @@ async function startConversationWithUser(targetUserId) {
     }
 }
 
-
 function isSelf(userId) {
     return window.currentUserId && Number(window.currentUserId) === Number(userId);
 }
-
 
 /* =========================================================
    OPEN CONVERSATION
@@ -447,6 +454,10 @@ async function openConversation(conversationId) {
 
     resetAgreementStatus();
     updateConversationHeader();
+
+    // Trigger mobile slide over view
+    const wrapper = document.querySelector(".messaging-wrapper");
+    if (wrapper) wrapper.classList.add("mobile-chat-active");
 
     if (chatFooter) {
         chatFooter.style.display = "none";
@@ -511,7 +522,6 @@ async function openConversation(conversationId) {
     }
 }
 
-
 function updateConversationHeader() {
     if (!currentConversation) {
         if (currentUserName) currentUserName.textContent = "Select a conversation";
@@ -533,7 +543,6 @@ function updateConversationHeader() {
 
     renderItemFloatingCard();
 }
-
 
 /* =========================================================
    ITEM FLOATING CARD
@@ -627,7 +636,6 @@ async function populateItemFloatingExpanded() {
     }
 }
 
-
 /* =========================================================
    MESSAGES
    ========================================================= */
@@ -688,7 +696,6 @@ async function loadMessages(conversationId, initial = false) {
     }
 }
 
-
 function makeMessageSignature(messages) {
     if (!messages.length) return "empty";
 
@@ -703,7 +710,6 @@ function makeMessageSignature(messages) {
         ].join("|");
     }).join("||");
 }
-
 
 function renderMessages(messages, preserveScroll = true) {
     if (!chatBody) return;
@@ -723,11 +729,6 @@ function renderMessages(messages, preserveScroll = true) {
         chatBody.appendChild(agreementBar);
     }
 
-    // Re-attach whichever state panel currently applies. Only one of
-    // these should ever exist at a time (removeAgreementPanels() takes
-    // care of that), but each is only re-inserted while it still matches
-    // the live agreementStatus.status, so a stale panel from before a
-    // state change never gets carried back in here.
     if (confirmedPanel && agreementStatus.status === "confirmed") {
         chatBody.appendChild(confirmedPanel);
     } else if (disputedPanel && agreementStatus.status === "disputed") {
@@ -763,8 +764,6 @@ function renderMessages(messages, preserveScroll = true) {
             const alreadyHasUrl = Boolean(message.image_url) || Boolean(cachedUrl);
 
             if (isSensitive && !own && cachedUrl) {
-                // Already revealed this page load — show it as-is, no
-                // re-fetch, no extra view spent.
                 element.innerHTML = `
                     <div class="message-image-wrapper sensitive revealed">
                         <img src="${escapeAttribute(cachedUrl)}" alt="Shared item" class="message-image" loading="lazy" draggable="false" oncontextmenu="return false;">
@@ -774,10 +773,6 @@ function renderMessages(messages, preserveScroll = true) {
                 const wrapper = element.querySelector(".message-image-wrapper");
                 wrapper.addEventListener("click", () => wrapper.classList.toggle("revealed"));
             } else if (isSensitive && !own) {
-                // Recipient side of a sensitive photo: the server withholds
-                // the real URL until reveal-image is called, and caps it at
-                // MAX_SENSITIVE_VIEWS total (enforced server-side, survives
-                // a page refresh — this isn't a client-side toggle).
                 const exhausted = !alreadyHasUrl && remaining === 0;
 
                 element.innerHTML = `
@@ -797,7 +792,6 @@ function renderMessages(messages, preserveScroll = true) {
                     wrapper.addEventListener("click", () => revealSensitiveImage(message.id, wrapper));
                 }
             } else if (alreadyHasUrl) {
-                // Own sent photo, or a non-sensitive photo — no view limit.
                 element.innerHTML = `
                     <div class="message-image-wrapper${isSensitive ? " sensitive revealed" : ""}">
                         <img src="${escapeAttribute(message.image_url)}" alt="Shared item" class="message-image" loading="lazy" draggable="false" oncontextmenu="return false;">
@@ -807,8 +801,6 @@ function renderMessages(messages, preserveScroll = true) {
 
                 const img = element.querySelector(".message-image");
                 if (isSensitive) {
-                    // Even the sender sees their own sensitive photo blurred
-                    // by default in the thread, tap to reveal (no view cap).
                     const wrapper = element.querySelector(".message-image-wrapper");
                     wrapper.classList.remove("revealed");
                     wrapper.addEventListener("click", () => wrapper.classList.toggle("revealed"));
@@ -833,7 +825,6 @@ function renderMessages(messages, preserveScroll = true) {
     }
 }
 
-
 /* =========================================================
    MESSAGE POLLING
    ========================================================= */
@@ -851,14 +842,12 @@ function startMessagePolling() {
     }, MESSAGE_POLL_INTERVAL);
 }
 
-
 function stopMessagePolling() {
     if (messagePollingInterval !== null) {
         clearInterval(messagePollingInterval);
         messagePollingInterval = null;
     }
 }
-
 
 /* =========================================================
    CONVERSATION POLLING
@@ -874,14 +863,12 @@ function startConversationListPolling() {
     }, CONVERSATION_POLL_INTERVAL);
 }
 
-
 function stopConversationListPolling() {
     if (conversationPollingInterval !== null) {
         clearInterval(conversationPollingInterval);
         conversationPollingInterval = null;
     }
 }
-
 
 /* =========================================================
    AGREEMENT
@@ -915,7 +902,6 @@ function hasUserConfirmedItem(messages = currentMessages) {
         return senderId === Number(window.currentUserId) && text === REQUIRED_CONFIRM_MESSAGE;
     });
 }
-
 
 function renderAgreementBar() {
     if (!chatBody) return;
@@ -965,7 +951,6 @@ function renderAgreementBar() {
     updateAgreementUI();
 }
 
-
 async function loadAgreementStatus() {
     if (!currentConversationId || agreementPollRunning) return;
 
@@ -1003,10 +988,6 @@ async function loadAgreementStatus() {
             rescheduleReason: data.rescheduleReason || data.reschedule_reason || null
         };
 
-        // Trust whatever the server actually says — do NOT force this back
-        // to "both_agreed" once it's been reached once. That overwrite is
-        // what previously made "confirmed", "disputed", and
-        // "reschedule_requested" impossible to ever display.
         renderAgreementStateChange(previousStatus);
 
     } catch (error) {
@@ -1016,10 +997,6 @@ async function loadAgreementStatus() {
     }
 }
 
-
-// Renders the correct panel for whatever agreementStatus.status currently
-// is, and fires one-time side effects (toast, admin notification) only on
-// the specific transition into that state — not on every single poll.
 function renderAgreementStateChange(previousStatus) {
     const status = agreementStatus.status;
 
@@ -1034,8 +1011,6 @@ function renderAgreementStateChange(previousStatus) {
             notifyAdminAgreementReady();
         }
     } else if (status === "awaiting_barangay" || status === "confirmed") {
-        // Admin confirmed + PDF generated. The barangay is contacted by the admin separately,
-        // so users only ever see "waiting for barangay approval".
         showConfirmedPanel();
 
         if (previousStatus !== "awaiting_barangay" && previousStatus !== "confirmed") {
@@ -1059,22 +1034,15 @@ function renderAgreementStateChange(previousStatus) {
                 ? `Reschedule needed: ${agreementStatus.rescheduleReason}. Please agree to a new schedule.`
                 : "A reschedule was requested. Please review and agree again.");
         }
-        // Falls through to the plain agreement bar (0/2) rendered by
-        // updateAgreementUI() above — nothing else to show here.
     }
 }
 
-
-// Removes any of the state-specific panels below the agreement bar, so
-// switching between states (e.g. both_agreed -> confirmed) doesn't stack
-// multiple panels on top of each other.
 function removeAgreementPanels() {
     ["transactionReadyPanel", "confirmedPanel", "disputedPanel"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.remove();
     });
 }
-
 
 function updateAgreementUI() {
     const count = document.getElementById("agreementCount");
@@ -1111,7 +1079,6 @@ function updateAgreementUI() {
         }
     }
 }
-
 
 /* =========================================================
    AGREEMENT MODAL
@@ -1218,7 +1185,6 @@ function createAgreementModal() {
     });
 }
 
-
 function setupAgreementEvents() {
     document.addEventListener("click", event => {
         if (event.target.closest("#cancelAgreementBtn") || event.target.closest("#closeAgreementModal")) {
@@ -1230,7 +1196,6 @@ function setupAgreementEvents() {
         }
     });
 }
-
 
 function openAgreementModal() {
     if (!currentConversationId) {
@@ -1257,7 +1222,6 @@ function openAgreementModal() {
         count.textContent = `${agreementStatus.totalAgreed}/2`;
     }
 
-    // Barangay Box Setup
     const barangayBox = document.getElementById("agreementBarangayBox");
     if (barangayBox) {
         if (agreementStatus.barangay) {
@@ -1283,7 +1247,6 @@ function openAgreementModal() {
         }
     }
 
-    // Date & Time Box Setup
     const dateTimeBox = document.getElementById("agreementDateTimeBox");
     if (dateTimeBox) {
         if (agreementStatus.meetupDate) {
@@ -1326,17 +1289,13 @@ function openAgreementModal() {
     document.body.classList.add("agreement-modal-open");
 }
 
-
 function closeAgreementModal() {
     const modal = document.getElementById("agreementModal");
-
     if (modal) {
         modal.classList.remove("show");
     }
-
     document.body.classList.remove("agreement-modal-open");
 }
-
 
 /* =========================================================
    CONFIRM AGREEMENT
@@ -1442,7 +1401,6 @@ async function confirmAgreement() {
     }
 }
 
-
 /* =========================================================
    READY PANEL
    ========================================================= */
@@ -1511,7 +1469,6 @@ function showTransactionReadyPanel() {
     }
 }
 
-
 function showConfirmedPanel() {
     if (!chatBody) return;
 
@@ -1540,7 +1497,6 @@ function showConfirmedPanel() {
         meetupDetailsHtml += `</p>`;
     }
 
-    // "Approved" is only shown after the admin records the barangay's reply.
     const barangayApproved = agreementStatus.status === "barangay_approved";
     const panelTitle = barangayApproved ? "Ready for handover" : "Confirmed by admin, waiting for barangay approval";
     const panelBody = barangayApproved
@@ -1593,7 +1549,6 @@ function showConfirmedPanel() {
     }
 }
 
-
 function showDisputedPanel() {
     if (!chatBody) return;
 
@@ -1629,32 +1584,21 @@ function showDisputedPanel() {
     }
 }
 
-
 async function notifyAdminAgreementReady() {
     if (!currentConversationId) return;
 
     try {
-        const response = await fetch(`/api/conversations/${encodeURIComponent(currentConversationId)}/agreement/notify-admin`, {
+        await fetch(`/api/conversations/${encodeURIComponent(currentConversationId)}/agreement/notify-admin`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json"
             }
         });
-
-        if (response.status === 404) {
-            console.warn("Admin notification endpoint not found.");
-            return;
-        }
-
-        const data = await response.json();
-        console.log("Admin notification response:", data);
-
     } catch (error) {
         console.error("notifyAdminAgreementReady:", error);
     }
 }
-
 
 /* =========================================================
    RESCHEDULE
@@ -1735,7 +1679,6 @@ function createRescheduleModal() {
     document.getElementById("submitRescheduleBtn")?.addEventListener("click", submitReschedule);
 }
 
-
 function openRescheduleModal() {
     if (!currentConversationId) return;
 
@@ -1746,13 +1689,11 @@ function openRescheduleModal() {
     document.body.classList.add("agreement-modal-open");
 }
 
-
 function closeRescheduleModal() {
     const modal = document.getElementById("rescheduleModal");
     if (modal) modal.classList.remove("show");
     document.body.classList.remove("agreement-modal-open");
 }
-
 
 async function submitReschedule() {
     if (!currentConversationId) return;
@@ -1792,8 +1733,6 @@ async function submitReschedule() {
         closeRescheduleModal();
         removeAgreementPanels();
 
-        // Reset local state back to a fresh, pre-agreement state — both
-        // parties now need to agree again.
         agreementStatus.userAgreed = false;
         agreementStatus.otherUserAgreed = false;
         agreementStatus.totalAgreed = 0;
@@ -1806,7 +1745,6 @@ async function submitReschedule() {
         renderAgreementBar();
         showToast("Reschedule requested. Both parties need to agree again.");
 
-        // Pull in the system notice message the server dropped into the chat.
         if (typeof loadMessages === "function") {
             loadMessages(currentConversationId);
         }
@@ -1822,7 +1760,6 @@ async function submitReschedule() {
     }
 }
 
-
 /* =========================================================
    AGREEMENT POLLING
    ========================================================= */
@@ -1834,22 +1771,9 @@ function startAgreementPolling() {
 
     agreementPollingInterval = setInterval(async () => {
         if (document.hidden || !currentConversationId) return;
-
-        // NOTE: this used to `return` early once status hit "both_agreed",
-        // which permanently stopped checking the server from that point on.
-        // Since loadAgreementStatus() below ALSO used to force-overwrite
-        // agreementStatus.status back to "both_agreed" on every poll
-        // (regardless of what the server actually said), the two bugs
-        // combined meant the UI could never learn that admin later
-        // confirmed, disputed, or that a reschedule was requested — it was
-        // frozen showing "waiting for admin review" forever. Polling now
-        // continues for the life of the conversation.
-
         await loadAgreementStatus();
-
     }, AGREEMENT_POLL_INTERVAL);
 }
-
 
 function stopAgreementPolling() {
     if (agreementPollingInterval !== null) {
@@ -1857,7 +1781,6 @@ function stopAgreementPolling() {
         agreementPollingInterval = null;
     }
 }
-
 
 /* =========================================================
    SEND MESSAGE
@@ -1875,7 +1798,6 @@ function setupSendMessage() {
         }
     });
 }
-
 
 async function sendMessage() {
     if (!currentConversationId) {
@@ -1926,9 +1848,8 @@ async function sendMessage() {
     }
 }
 
-
 /* =========================================================
-   REVEAL A SENSITIVE PHOTO (view-limited, server-enforced)
+   REVEAL A SENSITIVE PHOTO
    ========================================================= */
 
 async function revealSensitiveImage(messageId, wrapper) {
@@ -1960,21 +1881,15 @@ async function revealSensitiveImage(messageId, wrapper) {
             return;
         }
 
-        // Cache it so the next poll (every 1s) re-renders this message as
-        // already-revealed instead of re-locking it and burning another view.
         revealedImageCache.set(messageId, data.imageUrl);
 
-        // Swap the lock overlay for the actual (still-blurred) image. A
-        // second tap on the wrapper just toggles the blur — it does NOT
-        // call the server again, so re-blurring/un-blurring within this
-        // same reveal doesn't burn another view.
         wrapper.classList.remove("loading");
         wrapper.innerHTML = `
             <img src="${escapeAttribute(data.imageUrl)}" alt="Shared item" class="message-image" loading="lazy" draggable="false" oncontextmenu="return false;">
         `;
         wrapper.classList.add("revealed");
 
-        const newWrapper = wrapper; // still the same node
+        const newWrapper = wrapper;
         newWrapper.onclick = () => newWrapper.classList.toggle("revealed");
 
         if (typeof data.remainingViews === "number") {
@@ -1989,7 +1904,6 @@ async function revealSensitiveImage(messageId, wrapper) {
         alert("Unable to load this photo.");
     }
 }
-
 
 /* =========================================================
    IMAGE UPLOAD + CONSENT
@@ -2145,12 +2059,8 @@ async function sendImageMessage(file, isSensitive) {
     }
 }
 
-
 /* =========================================================
    REPORT USER
-   A plain flag button in the chat header (so it reads at a
-   glance, with no hidden menu to discover) rather than another
-   control crammed into the already-busy footer.
    ========================================================= */
 
 function setupReportUserButton() {
@@ -2312,7 +2222,6 @@ async function submitUserReport() {
     }
 }
 
-
 /* =========================================================
    SEARCH
    ========================================================= */
@@ -2340,7 +2249,6 @@ function setupSearch() {
     });
 }
 
-
 /* =========================================================
    ITEM DETAILS
    ========================================================= */
@@ -2348,12 +2256,12 @@ function setupSearch() {
 function createItemDetailsModal() {
     if (document.getElementById("itemDetailsModal")) return;
 
-    const modal = document.createElement("div");
-    modal.id = "itemDetailsModal";
-    modal.className = "item-details-modal item-details-modal-overlay";
+    const overlay = document.createElement("div");
+    overlay.id = "itemDetailsModal";
+    overlay.className = "item-details-modal-overlay";
 
-    modal.innerHTML = `
-        <div class="item-details-modal-content" role="dialog" aria-modal="true" style="background:#fff; border-radius:12px; max-width:550px; width:90%; padding:24px; position:relative; margin:auto;">
+    overlay.innerHTML = `
+        <div class="item-details-modal" role="dialog" aria-modal="true">
             <button type="button" id="closeItemDetailsModal" class="item-details-close" aria-label="Close">&times;</button>
 
             <div class="item-details-header">
@@ -2374,15 +2282,14 @@ function createItemDetailsModal() {
         </div>
     `;
 
-    document.body.appendChild(modal);
+    document.body.appendChild(overlay);
 
-    modal.addEventListener("click", event => {
-        if (event.target === modal) {
+    overlay.addEventListener("click", event => {
+        if (event.target === overlay) {
             closeItemDetailsModal();
         }
     });
 }
-
 
 function setupItemDetailsEvents() {
     document.addEventListener("click", event => {
@@ -2396,7 +2303,6 @@ function setupItemDetailsEvents() {
     });
 }
 
-
 async function openItemDetailsModal() {
     const modal = document.getElementById("itemDetailsModal");
     const content = document.getElementById("itemDetailsContent");
@@ -2405,7 +2311,6 @@ async function openItemDetailsModal() {
 
     modal.classList.add("show");
     document.body.classList.add("item-details-modal-open");
-    modal.style.setProperty("display", "flex", "important");
 
     if (content) {
         content.innerHTML = `
@@ -2424,18 +2329,15 @@ async function openItemDetailsModal() {
     }
 }
 
-
 function closeItemDetailsModal() {
     const modal = document.getElementById("itemDetailsModal");
 
     if (modal) {
         modal.classList.remove("show");
-        modal.style.setProperty("display", "none", "important");
     }
 
     document.body.classList.remove("item-details-modal-open");
 }
-
 
 async function getItemDetails() {
     if (itemDetailsCache) {
@@ -2483,7 +2385,6 @@ async function getItemDetails() {
     return itemDetailsCache;
 }
 
-
 function renderItemDetails(item) {
     const content = document.getElementById("itemDetailsContent");
     if (!content) return;
@@ -2530,7 +2431,6 @@ function renderItemDetails(item) {
     `;
 }
 
-
 function createDetailRow(label, value, icon) {
     return `
         <div class="item-detail-row">
@@ -2542,7 +2442,6 @@ function createDetailRow(label, value, icon) {
         </div>
     `;
 }
-
 
 function firstValue(object, keys, fallback = "") {
     if (!object) return fallback;
@@ -2556,7 +2455,6 @@ function firstValue(object, keys, fallback = "") {
 
     return fallback;
 }
-
 
 function formatDetailDate(value) {
     if (!value) return "";
@@ -2573,7 +2471,6 @@ function formatDetailDate(value) {
     });
 }
 
-
 function formatTimeDisplay(timeStr) {
     if (!timeStr) return "";
     const [hours, minutes] = timeStr.split(":");
@@ -2584,7 +2481,6 @@ function formatTimeDisplay(timeStr) {
     h = h % 12 || 12;
     return `${h}:${m} ${ampm}`;
 }
-
 
 /* =========================================================
    EMPTY STATE
@@ -2605,6 +2501,10 @@ function showEmptyState(customMessage = null) {
     closeAgreementModal();
     closeItemDetailsModal();
     closeReportUserModal();
+
+    // Hide mobile chat view and return to inbox list
+    const wrapper = document.querySelector(".messaging-wrapper");
+    if (wrapper) wrapper.classList.remove("mobile-chat-active");
 
     if (currentUserName) {
         currentUserName.textContent = "Select a conversation";
@@ -2635,7 +2535,6 @@ function showEmptyState(customMessage = null) {
     renderConversationList(conversations);
 }
 
-
 /* =========================================================
    TOAST
    ========================================================= */
@@ -2658,7 +2557,6 @@ function showToast(message) {
     }, 3500);
 }
 
-
 /* =========================================================
    HELPERS
    ========================================================= */
@@ -2674,11 +2572,9 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
-
 function escapeAttribute(value) {
     return escapeHtml(value);
 }
-
 
 function formatMessageTime(value) {
     if (!value) return "";
@@ -2694,14 +2590,12 @@ function formatMessageTime(value) {
     });
 }
 
-
 function isChatNearBottom() {
     if (!chatBody) return true;
 
     const distance = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight;
     return distance <= 100;
 }
-
 
 function scrollChatToBottom() {
     if (!chatBody) return;

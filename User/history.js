@@ -150,50 +150,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Modal Functions (Inside DOMContentLoaded so they have access to `allData`)
     window.openModal = function(id) {
-        const item = allData.find(i => String(i.id) === String(id));
-        if (!item) return;
+    const item = allData.find(i => String(i.id) === String(id));
+    if (!item) return;
 
-        const isSensitive = Boolean(item.is_sensitive_image);
-        const modalImgHtml = isSensitive
-            ? `<div class="card-img-wrapper sensitive-img-wrapper modal-sensitive-img">
-                   <img src="${item.image_path || 'placeholder.png'}" class="sensitive-img" draggable="false" style="width:100%; border-radius:15px;">
-                   <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy</span></div>
-               </div>`
-            : `<img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+    const isSensitive = Boolean(item.is_sensitive_image);
+    const modalImgHtml = isSensitive
+        ? `<div class="card-img-wrapper sensitive-img-wrapper modal-sensitive-img">
+               <img src="${item.image_path || 'placeholder.png'}" class="sensitive-img" draggable="false" style="width:100%; border-radius:15px;">
+               <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy</span></div>
+           </div>`
+        : `<img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
 
-        const body = document.getElementById("modalBody");
-        if (body) {
-            body.innerHTML = `
-                <div class="modal-body-grid">
-                    <div class="modal-col-left">
-                        <div class="modal-title-header">
-                            <h1 class="modal-item-title">${item.item_name}</h1>
-                            <span class="status-badge-published">${item.status || 'Published'}</span>
-                        </div>
-                        ${modalImgHtml}
-                        <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.report_type || 'Item'}</strong></p>
+    const body = document.getElementById("modalBody");
+    if (body) {
+        body.innerHTML = `
+            <div class="modal-body-grid">
+                <div class="modal-col-left">
+                    <div class="modal-title-header">
+                        <h1 class="modal-item-title">${item.item_name}</h1>
+                        <span class="status-badge-published">${item.status || 'Published'}</span>
                     </div>
-                    <div class="modal-col-right">
-                        <h3 class="info-header">Item Information</h3>
-                        <p><strong>Category:</strong> ${item.category}</p>
-                        <p><strong>Location:</strong> ${item.location}</p>
-                        <p><strong>Date:</strong> ${item.formattedDate}</p>
-                        <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
-                        <h3 class="info-header" style="margin-top:20px;">Description</h3>
-                        <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
-                    </div>
+                    ${modalImgHtml}
+                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.report_type || 'Item'}</strong></p>
                 </div>
-            `;
-        }
-        const modal = document.getElementById("itemModal");
-        if (modal) modal.style.display = "block";
-    };
+                <div class="modal-col-right">
+                    <h3 class="info-header">Item Information</h3>
+                    <p><strong>Category:</strong> ${item.category}</p>
+                    <p><strong>Location:</strong> ${item.location}</p>
+                    <p><strong>Date:</strong> ${item.formattedDate}</p>
+                    <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
+                    <h3 class="info-header" style="margin-top:20px;">Description</h3>
+                    <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
+                </div>
+            </div>
+        `;
+    }
+    const modal = document.getElementById("itemModal");
+    if (modal) {
+        modal.classList.add("show");
+        document.body.classList.add("item-details-modal-open");
+    }
+};
 
-    window.closeModal = function() {
-        const modal = document.getElementById("itemModal");
-        if (modal) modal.style.display = "none";
-    };
-
+window.closeModal = function() {
+    const modal = document.getElementById("itemModal");
+    if (modal) {
+        modal.classList.remove("show");
+    }
+    document.body.classList.remove("item-details-modal-open");
+};
     const closeBtn = document.getElementById("closeModalBtn");
     const modal = document.getElementById("itemModal");
 

@@ -2,7 +2,14 @@
     let allItems = []; 
     let filteredItems = []; 
     let currentPage = 1;
-    const itemsPerPage = 3; 
+    // Items per page depends on screen size: phone 1, tablet 2, laptop/desktop 3
+    function getItemsPerPage() {
+        const w = window.innerWidth;
+        if (w <= 600) return 1;
+        if (w <= 1024) return 2;
+        return 3;
+    }
+    let itemsPerPage = getItemsPerPage();
 
 // 1. Setup Dropdown Search Logic
 function setupSearch(inputId, listId) {
@@ -218,6 +225,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     setInterval(checkSession, 60000);
+
+    // Re-paginate when the screen size changes (rotate phone, resize window),
+    // keeping the first visible item on screen.
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            const newCount = getItemsPerPage();
+            if (newCount === itemsPerPage) return;
+            const firstIndex = (currentPage - 1) * itemsPerPage;
+            itemsPerPage = newCount;
+            currentPage = Math.floor(firstIndex / itemsPerPage) + 1;
+            renderPage(currentPage);
+        }, 150);
+    });
 });
 
 })();

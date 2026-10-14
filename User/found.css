@@ -1,5 +1,4 @@
 /* Using your specific Color Variables */
-
 :root {
     --primary-green: #6B9E45;
     --accent-green: #94D85D;
@@ -11,13 +10,10 @@
 /* =========================
    GLOBAL
 ========================= */
-
-html,
-body {
+html, body {
     overflow-x: hidden;
     font-size: 90%;
 }
-
 body {
     margin: 0;
     min-height: 100vh;
@@ -28,11 +24,9 @@ body {
     color: var(--text-dark);
 }
 
-
 /* =========================
    HEADER & NAV
 ========================= */
-
 .navbar {
     background-color: var(--primary-green);
     padding: 1rem 3rem;
@@ -44,29 +38,24 @@ body {
     z-index: 100;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 .navbar h1 {
     color: white;
     margin: 0;
     font-size: 1.5rem;
 }
-
 .nav-icons {
     color: white;
     display: flex;
     gap: 15px;
     font-size: 1.7rem;
 }
-
 .nav-icons i {
     cursor: pointer;
     transition: 0.3s;
 }
-
 .nav-icons i:hover {
     color: var(--accent-green);
 }
-
 .icons-link {
     text-decoration: none;
     color: white;
@@ -75,26 +64,21 @@ body {
     gap: 20px;
     font-size: 1.7rem;
 }
-
 .icons-link:hover {
     color: var(--accent-green);
 }
 
-
 /* =========================
-   BURGER MENU
+   BURGER MENU & DROPDOWN
 ========================= */
-
 .burger-container {
     position: relative;
     display: flex;
     align-items: center;
 }
-
 #menu-toggle {
     display: none;
 }
-
 .hamburger {
     cursor: pointer;
     font-size: 1.7rem;
@@ -102,16 +86,9 @@ body {
     display: flex;
     align-items: center;
 }
-
 .hamburger:hover {
     color: var(--accent-green);
 }
-
-
-/* =========================
-   DROPDOWN MENU
-========================= */
-
 .nav-menu {
     display: none;
     position: absolute;
@@ -125,11 +102,9 @@ body {
     z-index: 1000;
     overflow: hidden;
 }
-
 #menu-toggle:checked ~ .nav-menu {
     display: flex;
 }
-
 .nav-menu a {
     text-decoration: none;
     color: #333;
@@ -141,89 +116,63 @@ body {
     border-bottom: 1px solid #f0f0f0;
     transition: 0.2s;
 }
-
 .nav-menu a i {
     font-size: 2rem;
     color: #5D8252;
     width: 40px;
 }
-
 .nav-menu a:hover {
     background-color: #f9f9f9;
     color: var(--primary-green);
 }
-
 .nav-menu a.logout-btn {
     color: #e74c3c;
     border-bottom: none;
 }
-
 .nav-menu a.logout-btn i {
     color: #e74c3c;
 }
 
-
 /* =========================
-   MAIN CONTAINER
+   MAIN CONTAINER & BREADCRUMB
 ========================= */
-
 .container {
     width: 100%;
     max-width: 1600px;
     margin: 40px auto;
     padding: 0 20px;
     box-sizing: border-box;
-
-    /* Important for footer + pagination positioning */
     flex: 1;
     display: flex;
     flex-direction: column;
 }
-
-
-/* =========================
-   BREADCRUMB
-========================= */
-
 .breadcrumb {
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 25px;
 }
-
 .breadcrumb a {
     color: var(--primary-green);
     text-decoration: none;
     transition: color 0.3s ease, text-decoration 0.3s ease;
 }
-
 .breadcrumb a:hover {
     color: var(--accent-green);
     text-decoration: underline;
 }
-
 .breadcrumb a:active {
     color: var(--dark-green);
 }
 
-
 /* =========================
    SEARCH BAR
 ========================= */
-
 .search-section {
-    background: linear-gradient(
-        90deg,
-        #5D8252 0%,
-        #7B9672 50%,
-        #A2B499 100%
-    );
-
+    background: linear-gradient(90deg, #5D8252 0%, #7B9672 50%, #A2B499 100%);
     padding: 15px 40px;
     border-radius: 5px;
     margin-bottom: 20px;
 }
-
 .search-bar-pill {
     background: white;
     display: flex;
@@ -231,12 +180,10 @@ body {
     padding: 10px 25px;
     border-radius: 50px;
 }
-
 .search-bar-pill i {
     color: #888;
     font-size: 18px;
 }
-
 .search-bar-pill input {
     border: none;
     outline: none;
@@ -246,627 +193,354 @@ body {
     color: #555;
 }
 
-
 /* =========================
-   ITEMS GRID
+   ITEMS GRID & CARD
 ========================= */
-
 .items-grid {
     display: grid;
-
-    /* Same stable layout as Found page */
     grid-template-columns: repeat(4, 280px);
-
     gap: 120px;
-
     width: fit-content;
     margin: 0 auto;
-
     justify-content: center;
-
-    /* IMPORTANT:
-       Keeps the content area from collapsing
-       when there are 0 search results. */
     min-height: 680px;
 }
-
 .items-grid.rise-up {
     opacity: 1;
     transform: translateY(0);
 }
-
-
-/* =========================
-   ITEM CARD
-========================= */
-
 .item-card {
     display: flex;
     flex-direction: column;
-
     background: #fff;
-
     border-radius: 12px;
     border: 1px solid #eee;
-
     overflow: hidden;
-
     width: 280px;
     height: 100%;
-
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-
     transition: transform 0.2s;
 }
-
 .item-card:hover {
     transform: translateY(-5px);
 }
-
-
-/* =========================
-   CARD CONTENT
-========================= */
-
 .card-content {
     padding: 10px;
-
     display: flex;
     flex-direction: column;
-
     flex-grow: 1;
     height: 100%;
 }
-
 .card-content h3 {
     font-family: sans-serif;
-
     margin: 15px 0 5px 0;
-
     color: black;
-
     font-size: 20px;
 }
-
 .title-line {
     border: 0;
     border-top: 1px solid var(--primary-green);
     margin-bottom: 10px;
 }
-
-
-/* =========================
-   CARD IMAGE
-========================= */
-
 .item-card img,
 .card-img-placeholder {
     width: 100%;
-
     height: 200px !important;
     min-height: 200px !important;
     max-height: 200px !important;
-
     object-fit: cover;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     background-color: #f0f0f0;
-
     border-radius: 12px 12px 0 0;
 }
-
 .card-img-placeholder {
     background-color: #d1d1d1;
-
     font-weight: bold;
     color: #888;
-
     border-radius: 4px;
 }
-
-
-/* =========================
-   ITEM DETAILS
-========================= */
-
-/* CLAMP #1
-   Used for longer item descriptions/details */
 .item-details p {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-
     overflow: hidden;
-
     min-height: 2.8em;
-
     margin: 4px 0;
-
     font-size: 16px;
     font-family: sans-serif;
     line-height: 1.4;
 }
-
-
-/* =========================
-   BADGE
-========================= */
-
 .badge {
     align-self: flex-start;
-
     width: fit-content;
-
     font-family: sans-serif;
-
     background-color: #D97706;
     color: white;
-
     padding: 3px 15px;
-
     border-radius: 5px;
-
     font-weight: bold;
-
     font-size: 14px;
-
     display: inline-block;
-
     margin-bottom: 10px;
 }
-
-
-/* =========================
-   STATUS & POST TIME
-========================= */
-
 .status-lost {
     color: red;
     font-weight: bold;
     font-family: sans-serif;
 }
-
 .status-found {
     color: #5D8252;
     font-weight: bold;
     font-family: sans-serif;
 }
-
 .post-time {
     margin-top: 8px;
-
     color: #636363;
-
     font-family: sans-serif;
-
     font-size: 14px;
 }
-
-
-/* =========================
-   COMMENT INPUT
-========================= */
-
 .comment-input {
     width: 100%;
-
     margin-top: auto;
-
     border: 1px solid #ddd;
-
     padding: 8px;
-
     border-radius: 4px;
-
     font-size: 14px;
-
     box-sizing: border-box;
 }
-
 
 /* =========================
    PAGINATION
 ========================= */
-
 .pagination {
     display: flex;
-
-    /* Same behavior as dashboard: Previous | Page X of Y | Next */
     justify-content: space-between;
     align-items: center;
-
     gap: 15px;
-
     width: 100%;
     max-width: 1220px;
-
     margin: 30px auto 0;
-
     padding: 10px 55px;
-
     box-sizing: border-box;
 }
-
 .pagination .pag-btn-large,
 .pagination .page-indicator {
     white-space: nowrap;
 }
-
 .pagination .pag-btn-large {
     flex-shrink: 0;
 }
-
 .pagination .page-indicator {
     text-align: center;
 }
-
 @media (max-width: 768px) {
     .pagination {
         gap: 8px;
         padding: 10px 0;
     }
-
     .pagination .pag-btn-large {
         padding: 10px 16px;
         font-size: 14px;
     }
-
     .pagination .page-indicator {
         font-size: 0.8rem;
     }
 }
-
 .pag-btn {
     border: 1px solid #ccc;
-
     background: white;
-
     padding: 5px 12px;
-
     cursor: pointer;
 }
-
 .pag-btn.active {
     background-color: #ddd;
     font-weight: bold;
 }
-
-
-/* Large Pagination Buttons */
-
 .pag-btn-large {
     background-color: #83b873;
-
     color: white;
-
     border: none;
-
     padding: 10px 25px;
-
     border-radius: 8px;
-
     font-weight: bold;
-
     cursor: pointer;
-
     transition: background 0.3s;
 }
-
 .pag-btn-large:hover:not(:disabled) {
     background-color: #5D8252;
 }
-
 .pag-btn-large:disabled {
     background-color: #c2d6c6;
-
     cursor: not-allowed;
 }
-
 .page-indicator {
     color: #666;
     font-size: 0.9rem;
 }
 
-
 /* =========================
-   FOOTER
+   FOOTER & POPUPS
 ========================= */
-
 footer {
     background: var(--primary-green);
-
     color: white;
-
     padding: 40px 0 20px;
-
     text-align: center;
-
     font-family: sans-serif;
 }
-
-
-/* =========================
-   FOOTER LINKS
-========================= */
-
 .footer-links {
     margin-bottom: 20px;
-
     display: flex;
-
     justify-content: center;
     align-items: center;
-
     gap: 10px;
 }
-
 .footer-links a {
     color: white;
-
     text-decoration: none;
-
     font-size: 18px;
-
     transition: 0.3s;
 }
-
-
-/* =========================
-   FOOTER POPUP
-========================= */
-
 .popup-item {
     position: relative;
-
     display: inline-block;
 }
-
 .popup-box {
     visibility: hidden;
-
     opacity: 0;
-
     width: 320px;
-
     background-color: white;
-
     color: var(--text-dark);
-
     text-align: left;
-
     border-radius: 12px;
-
     padding: 25px;
-
     position: absolute;
-
     z-index: 1000;
-
     bottom: 150%;
-
     left: 50%;
-
     transform: translateX(-50%) translateY(10px);
-
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-
     transition: all 0.3s ease;
-
     pointer-events: none;
-
     line-height: 1.6;
-
     border-bottom: 5px solid var(--accent-green);
 }
-
 .popup-box::after {
     content: "";
-
     position: absolute;
-
     top: 100%;
     left: 50%;
-
     margin-left: -8px;
-
     border-width: 8px;
-
     border-style: solid;
-
     border-color: white transparent transparent transparent;
 }
-
 .popup-box strong {
     display: block;
-
     color: var(--primary-green);
-
     margin-bottom: 5px;
-
     font-size: 16px;
 }
-
 .popup-item:hover .popup-box {
     visibility: visible;
-
     opacity: 1;
-
     transform: translateX(-50%) translateY(0);
 }
-
 .popup-item:hover a {
     color: var(--accent-green);
-
     text-decoration: underline;
 }
-
-/* Footer popups: keep inside the screen on phones */
 @media (max-width: 768px) {
     .footer-links { position: relative; flex-wrap: wrap; row-gap: 6px; }
     .popup-item { position: static; }
     .popup-box { box-sizing: border-box; width: min(340px, calc(100vw - 24px)); padding: 18px; }
     .popup-box::after { display: none; }
 }
-
-
-
-/* =========================
-   FOOTER TEXT & SOCIALS
-========================= */
-
 footer p {
     font-size: 14px;
-
     opacity: 0.8;
-
     margin-top: 20px;
 }
-
 .socials i {
     font-size: 35px;
-
     margin: 0 10px;
-
     cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        color 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
-
 .socials i:hover {
     transform: scale(1.2);
-
     color: var(--accent-green);
 }
-
 
 /* =========================
    HIGHLIGHT CARD
 ========================= */
-
 .highlight-card {
     border: 2px solid #6B9E45 !important;
-
     box-shadow: 0 0 20px rgba(107, 158, 69, 0.6) !important;
-
     transform: scale(1.02);
-
     transition: all 0.5s ease;
 }
 
-
 /* =========================
-   MODAL BACKGROUND
+   MODAL & SMOOTH SPRING TRANSITION
 ========================= */
-
 .modal {
-    display: none;
-
+    display: flex;
     position: fixed;
-
-    z-index: 9999;
-
-    left: 0;
-    top: 0;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: rgba(0, 0, 0, 0.6);
-
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(5px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
-
-
-/* =========================
-   MODAL CONTENT
-========================= */
-
-.modal-content {
-    background-color: #fff;
-
-    margin: 5% auto;
-
-    padding: 40px;
-
-    border-radius: 20px;
-
-    width: 80%;
-
-    max-width: 900px;
-
-    position: relative;
-
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-
-    animation: modalSlideUp 0.4s ease-out;
-
-    overflow-y: auto;
-
-    max-height: 90vh;
+.modal.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
-
-@keyframes modalSlideUp {
-    from {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-
-/* =========================
-   ITEM DETAIL MODAL
-========================= */
-
-.item-detail-content {
-    width: 50% !important;
-
+.modal-content.item-detail-content {
+    width: 100% !important;
     max-width: 600px !important;
-
     display: flex !important;
-
-    gap: 20px;
-
-    align-items: flex-start;
-
+    flex-direction: column;
+    align-items: stretch;
     text-align: start !important;
-
-    margin: 2% auto !important;
-
+    margin: auto !important;
     position: relative;
-
     z-index: 1001;
+    border-radius: 20px;
+    padding: 30px;
+    background: #fff;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+    max-height: 90vh;
+    overflow-y: auto;
 }
-
-.item-detail-content > div:first-child {
-    flex: 1;
-
-    min-width: 0;
+.modal.show .modal-content.item-detail-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
 }
-
-.item-detail-content > div:last-child {
-    flex: 1.2;
+body.item-details-modal-open {
+    overflow: hidden;
 }
-
 
 /* =========================
-   CLOSE BUTTON
+   MODAL HEADER & CLOSE BUTTON
 ========================= */
-
-/* =========================================================
-   MODAL HEADER & CLOSE BUTTON FIX (NO OVERLAP)
-========================================================= */
-
-/* Fix close button safely in top-right with clear z-index */
 .close-button {
     position: absolute;
     right: 18px;
@@ -879,29 +553,23 @@ footer p {
     padding: 5px;
     transition: color 0.2s ease;
 }
-
 .close-button:hover {
     color: #333;
 }
-
-/* Ensure title and badge stay below/clear of top-right close button */
 .modal-title-header {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
     margin-bottom: 12px;
-    padding-right: 35px; /* Keeps title & badge away from close (x) button */
+    padding-right: 35px;
 }
-
 .modal-item-title {
     margin: 0;
     font-size: 1.6rem;
     line-height: 1.2;
     color: #222;
 }
-
-/* Updated badge: no floating, fits smoothly in flex flow */
 .status-badge-published {
     background-color: #8dbb69;
     color: white;
@@ -913,9 +581,8 @@ footer p {
     letter-spacing: 0.5px;
     display: inline-block;
     white-space: nowrap;
-    float: none !important; /* Removes float to prevent positioning conflicts */
+    float: none !important;
 }
-
 @media (max-width: 480px) {
     .modal-title-header {
         flex-direction: column;
@@ -923,7 +590,6 @@ footer p {
         gap: 6px;
         padding-right: 30px;
     }
-
     .modal-item-title {
         font-size: 1.3rem;
     }
@@ -935,7 +601,6 @@ footer p {
     align-items: center;
     justify-content: center;
 }
-
 .notif-badge {
     position: absolute;
     top: -4px;
@@ -954,144 +619,62 @@ footer p {
     z-index: 10;
 }
 
-
 /* =========================
-   EXPIRY MODAL
+   EXPIRY MODAL & CONTACT BOX
 ========================= */
-
 .expiry-modal {
     display: none;
-
     position: fixed !important;
-
     top: 0;
     left: 0;
-
     width: 100vw;
     height: 100vh;
-
     background-color: rgba(0, 0, 0, 0.85) !important;
-
     z-index: 1000000 !important;
-
     justify-content: center;
     align-items: center;
-
     backdrop-filter: blur(4px);
 }
-
 .modal-content-alert {
     background: white;
-
     padding: 30px;
-
     border-radius: 15px;
-
     text-align: center;
-
     width: 90%;
-
     max-width: 380px;
-
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-
     border-top: 8px solid #78A454;
 }
-
 .exclamation-icon {
     font-size: 50px;
-
     color: #e74c3c;
-
     margin-bottom: 10px;
 }
-
-
-/* =========================
-   PUBLISHED STATUS
-========================= */
-
-.status-badge-published {
-    background-color: #8dbb69;
-
-    color: white;
-
-    padding: 5px 15px;
-
-    border-radius: 20px;
-
-    font-size: 12px;
-
-    text-transform: uppercase;
-
-    float: right;
-}
-
-
-/* =========================
-   CONTACT BOX
-========================= */
-
 .contact-box {
     background: #f8f9fa;
-
     padding: 20px;
-
     border-radius: 12px;
-
     border-left: 6px solid #6B9E45;
-
     margin-top: 20px;
 }
-
-
-/* =========================
-   INFO HEADER
-========================= */
-
 .info-header {
     border-bottom: 2px solid #6B9E45;
-
     padding-bottom: 5px;
-
     margin-bottom: 15px;
-
     color: #333;
 }
 
-
 /* =========================
-   RESPONSIVE
+   RESPONSIVE GRIDS
 ========================= */
-
 @media (max-width: 1300px) {
-
-    .items-grid {
-        grid-template-columns: repeat(3, 280px);
-    }
-
+    .items-grid { grid-template-columns: repeat(3, 280px); }
 }
-
-
 @media (max-width: 950px) {
-
-    .items-grid {
-        grid-template-columns: repeat(2, 280px);
-
-        gap: 30px;
-    }
-
+    .items-grid { grid-template-columns: repeat(2, 280px); gap: 30px; }
 }
-
-
 @media (max-width: 650px) {
-
-    .items-grid {
-        grid-template-columns: 280px;
-
-        gap: 20px;
-    }
-
+    .items-grid { grid-template-columns: 280px; gap: 20px; }
 }
 
 .chat-user-btn {
@@ -1111,61 +694,48 @@ footer p {
     gap: 8px;
     transition: 0.25s ease;
 }
-
 .chat-user-btn:hover {
     background: #5a853a;
     transform: translateY(-1px);
 }
-
 .chat-user-btn i {
     font-size: 15px;
 }
-/* =========================================================
-   SENSITIVE PHOTO BLUR (auto-applied to ID/Documents items)
-========================================================= */
 
+/* =========================================================
+   SENSITIVE PHOTO BLUR & MODAL BODY GRID
+========================================================= */
 .sensitive-img-wrapper {
     position: relative;
     overflow: hidden;
 }
-
 .sensitive-img-wrapper .sensitive-img {
     filter: blur(16px);
 }
-
 .sensitive-img-wrapper.revealed .sensitive-img {
     filter: none;
 }
-
 .sensitive-img-overlay {
     position: absolute;
     inset: 0;
-
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-
     background: rgba(0, 0, 0, 0.4);
     color: #fff;
-
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-
     padding: 8px;
 }
-
 .sensitive-img-overlay i {
     font-size: 20px;
 }
-
 .sensitive-img-wrapper.revealed .sensitive-img-overlay {
     display: none;
 }
-
-/* Card thumbnail: match the fixed card image box so it doesn't disturb layout */
 .item-card .sensitive-img-wrapper {
     width: 100%;
     height: 200px !important;
@@ -1173,159 +743,37 @@ footer p {
     max-height: 200px !important;
     border-radius: 12px 12px 0 0;
 }
-
 .item-card .sensitive-img-wrapper .sensitive-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
-
-/* Modal (full-size) version */
 .modal-sensitive-img {
     width: 100%;
     border-radius: 15px;
 }
-
 .modal-sensitive-img .sensitive-img {
     border-radius: 15px;
 }
-
 .modal-sensitive-img .sensitive-img-overlay {
     border-radius: 15px;
     font-size: 14px;
 }
-
 .modal-sensitive-img .sensitive-img-overlay i {
     font-size: 30px;
 }
-
-@media (max-width: 1024px) {
-    .steps-container {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .step-connector {
-        width: auto;
-        height: 30px;
-    }
-
-    .step-connector i {
-        transform: rotate(90deg);
-    }
-}
-
-@media (max-width: 768px) {
-    .navbar {
-        padding: 0.5rem 1rem;
-    }
-
-    .navbar h1 {
-        font-size: 1.2rem;
-    }
-
-    .nav-icons {
-        gap: 15px;
-        padding-right: 0;
-    }
-
-    .hero {
-        padding: 30px 20px;
-        min-height: auto;
-    }
-
-    .hero h2 {
-        font-size: 28px;
-    }
-
-    .hero p {
-        font-size: 15px;
-        margin-bottom: 20px;
-    }
-
-    .hero-actions {
-        flex-direction: column;
-        width: 100%;
-        gap: 10px;
-    }
-
-    .hero .btn-main {
-        width: 100%;
-        font-size: 16px;
-    }
-
-    .search-container {
-        flex-direction: column;
-        align-items: stretch;
-        margin: 20px auto 30px;
-        padding: 20px;
-        width: 95%;
-        background: white;
-    }
-
-    .search-container .btn-main1 {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-    }
-
-    /* Fixed side-by-side layout for mobile pagination */
-   .pagination-container {
-    font-family: sans-serif;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1220px;
-    margin: 40px auto;
-    padding: 0 55px;
-    width: 100%;
-}
-
-    .notif-dropdown {
-        width: min(320px, calc(100vw - 24px));
-        right: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero h2 {
-        font-size: 24px;
-    }
-
-    .search-group label {
-        font-size: 15px;
-    }
-
-    .notif-dropdown {
-        width: min(280px, calc(100vw - 24px));
-        right: 12px;
-    }
-}
-
-/* =========================================================
-   RESPONSIVE MODAL FIX (MOBILE STACK / SCROLL)
-========================================================= */
-
 .modal-body-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
     align-items: flex-start;
 }
-
 .modal-col-left, 
 .modal-col-right {
     flex: 1 1 260px;
     min-width: 0;
 }
-
-/* Mobile Screen Override (Phones / Nothing 3a) */
 @media (max-width: 768px) {
     .modal-content.item-detail-content {
         width: 92% !important;
@@ -1336,12 +784,10 @@ footer p {
         overflow-y: auto;
         max-height: 88vh;
     }
-
     .modal-body-grid {
         flex-direction: column;
         gap: 16px;
     }
-
     .modal-col-left, 
     .modal-col-right {
         width: 100%;

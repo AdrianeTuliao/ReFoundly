@@ -359,45 +359,46 @@ body {
 
 .search-container {
     font-family: sans-serif;
-
     font-size: 18px;
-
-    /*
-       ADJUST THIS VALUE
-       Example:
-       90% = wider
-       80% = narrower
-       1500px = fixed desktop width
-    */
-    width: 100%;
-
-    max-width: 1730px;
-
+    width: 92%;
+    max-width: 1610px; /* lines up with the How It Works box below */
     margin: -50px auto 50px;
-
-    background: var(--glass-white);
-
-    backdrop-filter: blur(25px);
-
-    -webkit-backdrop-filter: blur(25px);
-
+    /* True translucent glass: lets the background image blur through softly */
+    background: linear-gradient(
+        135deg,
+        rgba(30, 40, 30, 0.45) 0%,
+        rgba(50, 60, 50, 0.25) 100%
+    );
+    backdrop-filter: blur(45px);
+    -webkit-backdrop-filter: blur(45px);
     padding: 30px 40px;
-
-    border-radius: 12px;
-
-    border: 1px solid rgba(255, 255, 255, 0.3);
-
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     display: flex;
-
     gap: 20px;
-
     align-items: flex-end;
-
     position: relative;
-
     z-index: 10;
+}
+
+/* Completely eliminate any pseudo-element sparkle or icon on the right */
+.search-container::after,
+.search-container::before {
+    display: none !important;
+    content: none !important;
+}
+
+.search-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-group input,
+.search-group select {
+    width: 100%; /* Fills its group neatly without over-expanding */
 }
 
 .search-group {
@@ -1729,31 +1730,20 @@ footer p {
         font-size: 16px;
     }
 
+    /* Phone search bar: frosted glass that fades from the photo (top) into
+       soft white (bottom), like the original. Row layout comes from the base rules. */
     .search-container {
-        flex-direction: column;
-        align-items: stretch;
-        margin: 20px auto 30px;
-        padding: 20px;
-        width: 95%;
-        background: white;
-    }
-
-    /* white label on a white card was invisible, leaving an empty gap */
-    .search-group label {
-        color: var(--text-dark);
-    }
-
-    /* inputs were 95% wide while the button was 100% - make them line up */
-    .search-group input {
-        width: 100%;
-    }
-
-    /* smaller button: inline padding on the HTML needs !important to beat */
-    .search-container .btn-main1 {
-        width: 100%;
-        margin-top: 4px;
-        padding: 10px 20px !important;
-        font-size: 15px;
+        margin: -24px auto 30px;
+        width: 97%;
+        background: linear-gradient(
+            180deg,
+            rgba(30, 40, 30, 0.55) 0%,
+            rgba(60, 70, 60, 0.30) 28%,
+            rgba(255, 255, 255, 0.80) 62%,
+            rgba(255, 255, 255, 0.95) 100%
+        );
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
     }
 
     .grid {
@@ -1854,4 +1844,149 @@ footer p {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+@media (max-width: 1024px) {
+    .search-container {
+        flex-wrap: nowrap;
+        width: 97%;
+        max-width: none;
+        padding: 20px 24px;
+        gap: 12px;
+    }
+
+    .search-group {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-group input,
+    .search-group select {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .search-container .btn-main1 {
+        flex-shrink: 0;
+        width: auto;
+        margin-top: 0;
+        padding: 10px 20px !important;
+        font-size: 14px;
+    }
+}
+
+/* =========================================================
+   SEARCH BAR - PHONES (mimics the original glass row)
+========================================================= */
+@media (max-width: 768px) {
+    .search-container {
+        padding: 14px 12px;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .search-group {
+        gap: 6px;
+    }
+
+    .search-group label {
+        font-size: 12px;
+        line-height: 1.2;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+    }
+
+    .search-group input {
+        width: 100%;
+        font-size: 12px;
+        padding: 9px 8px;
+    }
+
+    .search-container .btn-main1 {
+        padding: 9px 14px !important;
+        font-size: 13px;
+    }
+
+    /* options need to stay readable even though the field is narrow */
+    .dropdown-menu {
+        min-width: 180px;
+        max-width: calc(100vw - 24px);
+    }
+}
+
+/* Keep "Search for an Item" on one line where there is room (as in the original) */
+@media (min-width: 421px) and (max-width: 768px) {
+    .search-group label {
+        white-space: nowrap;
+    }
+}
+
+/* =========================================================
+   SEARCH BAR - KEEP THE GLASS ROW ON TABLETS & PHONES
+   Higher specificity (.main-wrapper ...) so a later stylesheet such as
+   GlobalU.css cannot switch it to a stacked white card.
+========================================================= */
+@media (max-width: 1024px) {
+    .main-wrapper .search-container {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-end !important;
+        background: linear-gradient(
+            180deg,
+            rgba(30, 40, 30, 0.55) 0%,
+            rgba(60, 70, 60, 0.30) 28%,
+            rgba(255, 255, 255, 0.80) 62%,
+            rgba(255, 255, 255, 0.95) 100%
+        ) !important;
+    }
+
+    .main-wrapper .search-group label {
+        color: #ffffff !important;
+    }
+
+    .main-wrapper .search-group {
+        max-width: none;
+        min-width: 0;
+    }
+
+    .main-wrapper .search-group input {
+        width: 100%;
+    }
+
+    .main-wrapper .search-container .btn-main1 {
+        width: auto !important;
+        margin-top: 0 !important;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-wrapper .search-container {
+        margin: -24px auto 30px;
+        width: 97%;
+        padding: 14px 12px;
+        gap: 8px;
+    }
+}
+
+/* =========================================================
+   ITEMS GRID - columns match items per page
+   phone (<=600px): 1 item | tablet (601-1024px): 2 items | laptop: 3 items
+   (the page size itself is set in dashboard.js)
+========================================================= */
+@media (max-width: 600px) {
+    .grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+    }
+    .card {
+        max-width: 340px;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        max-width: 640px;
+    }
 }
