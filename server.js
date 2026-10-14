@@ -873,7 +873,7 @@ app.get('/api/items/published', (req, res) => {
 /*--Lost Items (Public)--*/
 app.get('/api/items/lost', (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate, TIME_FORMAT(incident_time, '%h:%i %p') as formattedTime
-                 FROM items WHERE status = 'Published' AND report_type = 'Lost' ORDER BY created_at DESC`;
+                 FROM items WHERE status IN ('Published', 'Approved') AND report_type = 'Lost' ORDER BY created_at DESC`;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
@@ -883,7 +883,7 @@ app.get('/api/items/lost', (req, res) => {
 /*--Found Items (Public)--*/
 app.get('/api/items/found', (req, res) => {
     const sql = `SELECT *, DATE_FORMAT(incident_date, '%b %d, %Y') as formattedDate, TIME_FORMAT(incident_time, '%h:%i %p') as formattedTime
-                 FROM items WHERE status = 'Published' AND report_type = 'Found' ORDER BY created_at DESC`;
+                 FROM items WHERE status IN ('Published', 'Approved') AND report_type = 'Found' ORDER BY created_at DESC`;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
