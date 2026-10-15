@@ -845,3 +845,85 @@ body.item-details-modal-open {
         gap: 20px !important;
     }
 }
+
+/* =========================================================
+   PHONE VIEW: compact cards so users scroll less
+   - Portrait phones (<= 650px): 2 cards per row
+   - Landscape phones (short screens): 3 cards per row
+   Tablets and desktop are not affected.
+   Keep this block at the END of the file so it wins.
+========================================================= */
+@media screen and (max-width: 650px), screen and (max-height: 500px) and (orientation: landscape) {
+    .container { margin: 18px auto !important; }
+    .breadcrumb { font-size: 1rem; margin-bottom: 14px; }
+    .search-section { padding: 10px 12px; margin-bottom: 14px; }
+    .search-bar-pill { padding: 8px 16px; }
+    /* keep 16px: iOS Safari zooms the page in on inputs smaller than this */
+    .search-bar-pill input { font-size: 16px; margin-left: 10px; }
+
+    .container .items-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        margin: 0 auto !important;
+        justify-items: stretch !important;
+    }
+
+    .container .items-grid .item-card {
+        width: 100% !important;
+        max-width: none !important;
+        border-radius: 10px;
+    }
+    .container .items-grid .item-card:hover { transform: none; }
+
+    /* card photo: 200px -> 110px */
+    .container .items-grid .item-card img,
+    .container .items-grid .card-img-placeholder,
+    .container .items-grid .card-img-container,
+    .container .items-grid .item-card .sensitive-img-wrapper {
+        height: 110px !important;
+        min-height: 110px !important;
+        max-height: 110px !important;
+        border-radius: 10px 10px 0 0;
+    }
+    .container .items-grid .card-img-placeholder,
+    .container .items-grid .card-img-container { font-size: 11px; text-align: center; }
+    .container .items-grid .sensitive-img-overlay { font-size: 9px; padding: 4px; gap: 3px; }
+    .container .items-grid .sensitive-img-overlay i { font-size: 14px; }
+
+    /* card text */
+    .container .items-grid .card-content { padding: 8px 8px 10px; }
+    .container .items-grid .card-content h3 {
+        font-size: 14px;
+        line-height: 1.25;
+        margin: 6px 0 4px;
+        overflow-wrap: anywhere;
+    }
+    .container .items-grid .title-line { margin-bottom: 6px; }
+    .container .items-grid .badge { font-size: 10px; margin-bottom: 6px; }
+
+    .container .items-grid .item-details p {
+        font-size: 11.5px;
+        line-height: 1.35;
+        margin: 2px 0;
+        min-height: 0;
+        -webkit-line-clamp: 2;
+        overflow-wrap: anywhere;
+    }
+    /* last row = Email on History; give it room so the address is not cut */
+    .container .items-grid .item-details p:last-of-type { -webkit-line-clamp: 3; }
+
+    .container .items-grid .post-time {
+        font-size: 10px;
+        margin-top: 6px;
+        padding-top: 6px;
+    }
+}
+
+/* Landscape phones: 3 cards fit across the screen */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .container .items-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+}

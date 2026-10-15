@@ -37,6 +37,164 @@ document.addEventListener("DOMContentLoaded", () => {
         if (descEl) descEl.textContent = description;
     }
 
+    // ==========================================
+    // PROFILE PICTURE
+    // ==========================================
+    const MAX_MB = 2;                              // biggest photo a person may pick
+    const MAX_BYTES = MAX_MB * 1024 * 1024;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    const OUTPUT_SIZE = 400;                       // photo is cropped square + shrunk to 400x400 before upload
+
+    const avatarEl = document.getElementById('avatar');
+    const avatarInitialsEl = document.getElementById('avatar-initials');
+    const avatarChangeBtn = document.getElementById('avatar-change-btn');
+    const avatarToolsEl = document.getElementById('avatar-tools');
+    const avatarRemoveBtn = document.getElementById('avatar-remove-btn');
+    const avatarInput = document.getElementById('avatar-input');
+
+    let editing = false;
+    let pendingAvatarBlob = null;     // chosen photo, uploaded when "Save Changes" is pressed
+    let pendingAvatarUrl = null;      // local preview of that photo
+    let avatarRemoved = false;        // "Remove photo" pressed, applied on save
+
+    const AVATAR_COLORS = ['#6B9E45', '#5D8252', '#3F7D6B', '#7A8F3C', '#8A6D3B', '#4E7A8A', '#7B6B9E'];
+
+    function initialsOf(name) {
+        const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return '?';
+        if (parts.length === 1) return parts[0].charAt(0);
+        return parts[0].charAt(0) + parts[parts.length - 1].charAt(0);
+    }
+
+    function colorFor(name) {
+        let hash = 0;
+        const s = String(name || '');
+        for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+        return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+    }
+
+    // only allow plain file paths/URLs in the CSS url("...")
+    function safeImageUrl(url) {
+        return typeof url === 'string' && /^[\w\-./?=&%:]+$/.test(url) ? url : null;
+    }
+
+    function renderAvatar() {
+        if (!avatarEl) return;
+        const name = (editing ? nameInput.value : originalUserData.name) || originalUserData.name || '';
+        const savedUrl = avatarRemoved ? null : safeImageUrl(originalUserData.profile_picture);
+        const url = pendingAvatarUrl || savedUrl;
+
+        if (url) {
+            avatarEl.style.backgroundImage = `url("${url}")`;
+            avatarEl.style.backgroundColor = '#d9d9d9';
+            avatarInitialsEl.textContent = '';
+        } else {
+            avatarEl.style.backgroundImage = 'none';
+            avatarEl.style.backgroundColor = colorFor(name);
+            avatarInitialsEl.textContent = initialsOf(name);
+        }
+        avatarEl.setAttribute('aria-label', url ? 'Profile picture' : `Profile picture (initials ${initialsOf(name)})`);
+
+        // edit-only controls
+        avatarChangeBtn.style.display = editing ? 'flex' : 'none';
+        avatarToolsEl.style.display = editing ? 'flex' : 'none';
+        avatarRemoveBtn.style.display = editing && url ? 'inline-block' : 'none';
+    }
+
+    function resetPendingAvatar() {
+        if (pendingAvatarUrl) URL.revokeObjectURL(pendingAvatarUrl);
+        pendingAvatarBlob = null;
+        pendingAvatarUrl = null;
+        avatarRemoved = false;
+        if (avatarInput) avatarInput.value = '';
+    }
+
+    // center-crop to a square, shrink to 400x400, save as JPEG (small + consistent)
+    function squareResize(file) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const src = URL.createObjectURL(file);
+            img.onload = () => {
+                try {
+                    const side = Math.min(img.naturalWidth, img.naturalHeight);
+                    const sx = (img.naturalWidth - side) / 2;
+                    const sy = (img.naturalHeight - side) / 2;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = OUTPUT_SIZE;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';              // transparent PNGs become white, not black
+                    ctx.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+                    ctx.drawImage(img, sx, sy, side, side, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('encode failed')), 'image/jpeg', 0.88);
+                } catch (err) { reject(err); }
+                finally { URL.revokeObjectURL(src); }
+            };
+            img.onerror = () => { URL.revokeObjectURL(src); reject(new Error('unreadable image')); };
+            img.src = src;
+        });
+    }
+
+    async function handleAvatarFile(file) {
+        if (!file) return;
+
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            notify("Unsupported file", "Please choose a JPG, PNG or WebP image.", "fa-solid fa-circle-exclamation");
+            avatarInput.value = '';
+            return;
+        }
+        if (file.size > MAX_BYTES) {
+            const mb = (file.size / (1024 * 1024)).toFixed(1);
+            notify("Photo too large", `That photo is ${mb} MB. The limit is ${MAX_MB} MB.`, "fa-solid fa-circle-exclamation");
+            avatarInput.value = '';
+            return;
+        }
+
+        try {
+            const blob = await squareResize(file);
+            if (pendingAvatarUrl) URL.revokeObjectURL(pendingAvatarUrl);
+            pendingAvatarBlob = blob;
+            pendingAvatarUrl = URL.createObjectURL(blob);
+            avatarRemoved = false;
+            renderAvatar();
+        } catch (err) {
+            console.error('Avatar processing failed:', err);
+            notify("Couldn't read that photo", "Please try a different image.", "fa-solid fa-circle-exclamation");
+            avatarInput.value = '';
+        }
+    }
+
+    // Uploads / removes the photo. Throws an Error with a readable message on failure.
+    async function saveAvatarChanges() {
+        if (pendingAvatarBlob) {
+            const fd = new FormData();
+            fd.append('avatar', pendingAvatarBlob, 'avatar.jpg');
+            const res = await fetch('/api/user/profile-picture', { method: 'POST', body: fd, credentials: 'same-origin' });
+            const result = await res.json().catch(() => ({}));
+            if (!res.ok || !result.success) throw new Error(result.message || 'Photo upload failed.');
+            originalUserData.profile_picture = result.profile_picture;
+            resetPendingAvatar();
+        } else if (avatarRemoved) {
+            const res = await fetch('/api/user/profile-picture', { method: 'DELETE', credentials: 'same-origin' });
+            const result = await res.json().catch(() => ({}));
+            if (!res.ok || !result.success) throw new Error(result.message || 'Could not remove the photo.');
+            originalUserData.profile_picture = null;
+            avatarRemoved = false;
+        }
+    }
+
+    avatarChangeBtn.addEventListener('click', () => avatarInput.click());
+    avatarInput.addEventListener('change', () => handleAvatarFile(avatarInput.files[0]));
+    avatarRemoveBtn.addEventListener('click', () => {
+        if (pendingAvatarUrl) URL.revokeObjectURL(pendingAvatarUrl);
+        pendingAvatarBlob = null;
+        pendingAvatarUrl = null;
+        avatarInput.value = '';
+        avatarRemoved = true;
+        renderAvatar();
+    });
+    // initials follow the name while it is being edited
+    nameInput.addEventListener('input', () => { if (editing) renderAvatar(); });
+
     // Fetch and populate data
     function loadUserData() {
         fetch('/user/me', { credentials: 'same-origin' })
@@ -56,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.getElementById('user-fullname').textContent = user.name || 'User';
                 document.getElementById('user-email').textContent = user.email || '';
+                renderAvatar();
             })
             .catch(err => console.error('Error fetching profile:', err));
     }
@@ -64,6 +223,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Toggle Edit Mode
     editBtn.addEventListener('click', () => {
+        editing = true;
+        renderAvatar();
         nameInput.disabled = false;
         emailInput.disabled = false;
         contactInput.disabled = false;
@@ -76,6 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cancel Edit Mode
     cancelBtn.addEventListener('click', () => {
+        editing = false;
+        resetPendingAvatar();
         loadUserData();
 
         nameInput.disabled = true;
@@ -91,6 +254,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle Account Form Submission
     accountForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // 1) profile picture first (its own upload) - stop here if it fails
+        try {
+            await saveAvatarChanges();
+        } catch (err) {
+            notify("Photo not saved", err.message || "Please try again.", "fa-solid fa-circle-exclamation");
+            return;
+        }
 
         const updatedData = {
             name: nameInput.value.trim(),

@@ -471,3 +471,101 @@ footer p {
     .info-grid { grid-template-columns: 1fr; }
     .avatar-large { width: 120px; height: 120px; }
 }
+
+/* =========================================================
+   PROFILE PICTURE  (initials by default, photo if uploaded)
+========================================================= */
+.avatar-wrap {
+    --avatar-size: 200px;
+    --avatar-ring: #ffffff;
+    position: relative;
+    width: var(--avatar-size);
+    margin: 0 auto 20px;
+}
+
+.avatar-wrap .avatar-large {
+    width: var(--avatar-size) !important;
+    height: var(--avatar-size) !important;
+    margin: 0 !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-initials {
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 600;
+    font-size: calc(var(--avatar-size) * 0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    user-select: none;
+    line-height: 1;
+}
+
+/* camera button on the circle (edit mode only) */
+.avatar-edit-btn {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 3px solid var(--avatar-ring);
+    background: var(--primary-green);
+    color: #fff;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s, transform 0.15s;
+}
+.avatar-edit-btn:hover { background: var(--dark-green); transform: scale(1.06); }
+.avatar-edit-btn:focus-visible { outline: 3px solid rgba(107, 158, 69, 0.5); outline-offset: 2px; }
+
+.avatar-tools {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: -6px 0 14px;
+}
+
+.avatar-remove {
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    color: #d9453a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.avatar-remove:hover { color: #b0332a; }
+
+.avatar-hint {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+/* sizes follow the existing responsive avatar sizes */
+@media (max-width: 768px) { .avatar-wrap { --avatar-size: 150px; margin-bottom: 15px; } }
+@media (max-width: 600px) {
+    .avatar-wrap { --avatar-size: 120px; }
+    .avatar-edit-btn { width: 40px; height: 40px; font-size: 15px; }
+}
+
+/* dark theme */
+:root[data-theme="dark"] .avatar-wrap { --avatar-ring: #172019; }
+:root[data-theme="dark"] .avatar-wrap .avatar-large { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+:root[data-theme="dark"] .avatar-edit-btn { background: #5f8f4f; }
+:root[data-theme="dark"] .avatar-edit-btn:hover { background: #77a965; }
+:root[data-theme="dark"] .avatar-remove { color: #ff8a80; }
+:root[data-theme="dark"] .avatar-hint { color: #9aa99a; }

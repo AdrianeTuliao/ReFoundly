@@ -15,6 +15,19 @@ document.addEventListener("DOMContentLoaded", () => {
     let filteredData = [];
     let currentPage = 1;
 
+    // Status color code (used by the card and the popup badge):
+    //   Published        -> green  (live, visible to everyone)
+    //   Pending Approval -> yellow (waiting for admin review)
+    //   Resolved         -> blue   (item has been returned / case closed)
+    //   anything else    -> gray   (so an unexpected value is never shown in a wrong color)
+    function getStatusClass(status) {
+        const s = String(status || "").toLowerCase().trim();
+        if (s === "published") return "status-published";
+        if (s === "pending approval" || s === "pending") return "status-pending";
+        if (s === "resolved") return "status-resolved";
+        return "status-other";
+    }
+
     // 2. Responsive Items Calculation
     function getItemsPerPage() {
         const w = window.innerWidth;
@@ -86,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         pageData.forEach(item => {
-            const statusClass = (item.report_type || "").toLowerCase() === 'found' ? 'status-found' : 'status-lost';
+            const statusClass = getStatusClass(item.status);
             const card = document.createElement("div");
             card.className = "item-card";
             card.id = `item-${item.id}`; 
@@ -103,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="item-details">
                         <p><strong>Description:</strong> ${item.description || 'No description'}</p>
                         <p><strong>Where ${item.report_type}:</strong> ${item.location}</p>
-                        <p><strong>Status:</strong> <span class="${statusClass}">${item.status}</span></p>
+                        <p><strong>Status:</strong> <span class="status-pill ${statusClass}">${item.status}</span></p>
                         <p><strong>Owner:</strong> ${item.contact_firstname} ${item.contact_lastname}</p>
                         <p><strong>Phone:</strong> ${item.contact_phone}</p>
                         <p><strong>Email:</strong> ${item.contact_email}</p>
@@ -211,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="modal-col-left">
                         <div class="modal-title-header">
                             <h1 class="modal-item-title">${item.item_name}</h1>
-                            <span class="status-badge-published">${item.status || 'Published'}</span>
+                            <span class="status-badge-published status-pill ${getStatusClass(item.status || 'Published')}">${item.status || 'Published'}</span>
                         </div>
                         ${modalImgHtml}
                         <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.report_type || 'Item'}</strong></p>

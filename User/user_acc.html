@@ -6,8 +6,8 @@
     <title>ReFoundly - Account</title>
     <link rel="stylesheet" href="user_acc.css">
     <link rel="stylesheet" href="GlobalU.css">
-    <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="theme.js"></script>
 </head>
 <body>
 
@@ -58,7 +58,20 @@
 
         <section class="account-card">
             <div class="sidebar">
-                <div class="avatar-large"></div>
+                <div class="avatar-wrap" id="avatar-wrap">
+                    <div class="avatar-large" id="avatar" role="img" aria-label="Profile picture">
+                        <span id="avatar-initials" class="avatar-initials"></span>
+                    </div>
+                    <!-- shown only while editing -->
+                    <button type="button" id="avatar-change-btn" class="avatar-edit-btn" title="Change photo" aria-label="Change profile picture" style="display: none;">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <div id="avatar-tools" class="avatar-tools" style="display: none;">
+                    <button type="button" id="avatar-remove-btn" class="avatar-remove" style="display: none;">Remove photo</button>
+                    <small id="avatar-hint" class="avatar-hint">JPG, PNG or WebP &middot; max 2 MB</small>
+                </div>
+                <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp" hidden>
                 <h2 id="user-fullname">John Doe</h2>
                 <p id="user-email">johndoe@gmail.com</p>
             </div>
@@ -231,8 +244,5 @@
     <script src="auth-check.js"></script>
     <script src="notifications.js"></script>
     <script src="global-smooth.js"></script>
-    <link rel="stylesheet" href="Theme.css">
-<script src="Theme.js"></script>
-<script src="AddTheme.js"></script>
 </body>
 </html>

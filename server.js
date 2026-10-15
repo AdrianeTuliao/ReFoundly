@@ -277,11 +277,20 @@ app.post('/logout', (req, res) => {
 /*--Get Current User--*/
 app.get('/user/me', requireUser, (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authorized" });
-    const query = "SELECT name, email, contact_number, dob FROM users WHERE id = ?";
+    const query = "SELECT name, email, contact_number, dob, profile_picture FROM users WHERE id = ?";
     db.query(query, [req.session.userId], (err, results) => {
         if (err || results.length === 0) return res.status(500).send(err);
         res.json(results[0]);
     });
+});
+
+/*--Profile Picture (avatar) routes: POST / DELETE /api/user/profile-picture--*/
+// Photos are saved in User/uploads/avatars and served through the existing /uploads static route.
+require('./avatar-backend')(app, {
+    db,
+    getUserId: (req) => req.session && req.session.userId,
+    middleware: [requireUser],
+    uploadsRoot: path.join(__dirname, 'User', 'uploads'),
 });
 
 /*--Email Transporter Setup (Nodemailer)--*/

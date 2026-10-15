@@ -2,10 +2,10 @@
     let allItems = []; 
     let filteredItems = []; 
     let currentPage = 1;
-    // Items per page depends on screen size: phone 1, tablet 2, laptop/desktop 3
+    // Items per page depends on screen size: phone 2 (portrait or landscape), tablet 2, laptop/desktop 3
     function getItemsPerPage() {
         const w = window.innerWidth;
-        if (w <= 600) return 1;
+        if (window.matchMedia("(max-height: 500px) and (orientation: landscape)").matches) return 2;
         if (w <= 1024) return 2;
         return 3;
     }
@@ -77,6 +77,28 @@ function applyFilters() {
 
     currentPage = 1; 
     renderPage(1);
+    scrollToResults();
+}
+
+// After pressing Search, bring the matching items into view
+// (they sit below the hero and the "How It Works" section).
+function scrollToResults() {
+    const target = document.querySelector('.content-wrapper > h4');
+    if (!target) return;
+
+    // close the phone keyboard / dropdown focus first so the layout settles before we scroll
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+    }
+
+    const nav = document.querySelector('.navbar');            // sticky header covers the top of the screen
+    const offset = (nav ? nav.offsetHeight : 0) + 12;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    requestAnimationFrame(() => {
+        window.scrollTo({ top: Math.max(top, 0), behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
 }
 
 // 4. Render Grid (CSP SECURE VERSION)

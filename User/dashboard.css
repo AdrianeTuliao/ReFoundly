@@ -1753,8 +1753,8 @@ footer p {
 
     /* Fixed side-by-side layout for mobile pagination */
     .notif-dropdown {
-        width: 300px;
-        right: -60px;
+        width: min(320px, calc(100vw - 24px));
+        right: 12px;
     }
     .pagination-container {
         padding: 0 15px; /* Reduces side padding from 55px to 15px */
@@ -1780,8 +1780,8 @@ footer p {
     }
 
     .notif-dropdown {
-        width: 280px;
-        right: -80px;
+        width: min(280px, calc(100vw - 24px));
+        right: 12px;
     }
 }
 
@@ -1988,5 +1988,61 @@ footer p {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 24px;
         max-width: 640px;
+    }
+}
+
+/* =========================================================
+   PHONE VIEW: compact "Recent Lost and Found Items" cards
+   Matches lost / found / history pages:
+   - Phones (<= 650px wide, or landscape phones): 2 cards per page, side by side
+   Tablets and desktop are not affected.
+   Keep this block at the END of the file so it wins.
+   (Items per page is set in dashboard.js -> getItemsPerPage)
+========================================================= */
+@media screen and (max-width: 650px), screen and (max-height: 500px) and (orientation: landscape) {
+    .content-wrapper .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        max-width: none;
+        margin: 14px auto;
+        justify-items: stretch;
+    }
+
+    .content-wrapper .grid .card {
+        max-width: none;
+        width: 100%;
+        border-radius: 10px;
+    }
+    .content-wrapper .grid .card:hover { transform: none; }
+
+    /* card photo: 200px -> 110px (the 200px is set inline by dashboard.js, so !important) */
+    .content-wrapper .grid .card img,
+    .content-wrapper .grid .card .card-img,
+    .content-wrapper .grid .card .sensitive-img-wrapper {
+        height: 110px !important;
+        min-height: 110px !important;
+        max-height: 110px !important;
+    }
+    .content-wrapper .grid .card .sensitive-img-wrapper { border-radius: 10px 10px 0 0; }
+    .content-wrapper .grid .card .sensitive-img-overlay { font-size: 9px; padding: 4px; gap: 3px; }
+    .content-wrapper .grid .card .sensitive-img-overlay i { font-size: 14px; }
+
+    /* card text */
+    .content-wrapper .grid .card-body { padding: 8px 8px 10px; }
+    .content-wrapper .grid .card-body h4 {
+        font-size: 14px;
+        line-height: 1.25;
+        margin: 4px 0 6px;
+        overflow-wrap: anywhere;
+    }
+    .content-wrapper .grid .card-body .badge { font-size: 10px; }
+    .content-wrapper .grid .card-body p {
+        font-size: 10.5px !important;
+        margin-top: 6px !important;
+    }
+    .content-wrapper .grid .card-body .btn-main2 {
+        padding: 8px 10px;
+        font-size: 12px;
+        margin-top: 8px !important;
     }
 }
