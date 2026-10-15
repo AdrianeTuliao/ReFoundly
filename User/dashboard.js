@@ -48,6 +48,7 @@ async function loadPublishedItems() {
         const response = await fetch('/api/items/published');
         if (response.status === 401) return; 
         allItems = await response.json(); 
+        console.log("Published Items Data:", allItems);
         filteredItems = [...allItems]; 
         renderPage(1); 
     } catch (error) {
