@@ -33,7 +33,7 @@
         var base = src.substring(0, src.lastIndexOf('/') + 1);
         var link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = base + 'theme.css';
+        link.href = base + 'Theme.css';
         link.setAttribute('data-theme-css', '');
         document.head.appendChild(link);
     })();
