@@ -1,23 +1,47 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Move the popup out of <body> so no transformed/animated page wrapper can trap its
-    // "position: fixed" (that is what made it open at the top of the page instead of on screen).
+    // 1. DOM Element References
     const itemModalEl = document.getElementById("itemModal");
-    if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
-        document.documentElement.appendChild(itemModalEl);
-    }
     const grid = document.getElementById("history-grid");
     const paginationContainer = document.getElementById("pagination-container");
     const searchInput = document.getElementById("history-search");
     const wrapper = document.querySelector(".main-wrapper");
 
+    // Move modal out of body to avoid CSS transform positioning bugs
+    if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
+        document.documentElement.appendChild(itemModalEl);
+    }
+
     let allData = [];
     let filteredData = [];
     let currentPage = 1;
-    const itemsPerPage = 4; 
+
+    // 2. Responsive Items Calculation
+    function getItemsPerPage() {
+        const w = window.innerWidth;
+        const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+        
+        // 3 items for tablet/iPad landscape, 4 items for desktop or portrait
+        if (w <= 1180 && isLandscape) {
+            return 3;
+        }
+        return 4;
+    }
+
+    let itemsPerPage = getItemsPerPage();
+
+    // 3. Screen Resize Event Handler
+    window.addEventListener("resize", () => {
+        const newItemsPerPage = getItemsPerPage();
+        if (newItemsPerPage !== itemsPerPage) {
+            itemsPerPage = newItemsPerPage;
+            currentPage = 1;
+            renderPage(1);
+        }
+    });
 
     if (wrapper) setTimeout(() => wrapper.classList.add("fade-in"), 100);
 
-    // Fetch Data
+    // 4. Fetch User History Data
     fetch('/api/user-history')
         .then(res => res.json())
         .then(data => {
@@ -26,11 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
             renderPage(1);
             handleURLHighlight();
         })
-        .catch(err => {
+        .catch(() => {
             if (grid) grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: red;'>Error loading history.</p>";
         });
 
-    // Search Logic
+    // 5. Search Filter Event Listener
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
@@ -48,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // 6. Page Render Function
     function renderPage(page) {
         currentPage = page;
         grid.innerHTML = "";
@@ -95,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setupPagination();
     }
 
+    // 7. URL Direct Link & Card Highlight Handler
     function handleURLHighlight() {
         const urlParams = new URLSearchParams(window.location.search);
         const targetId = urlParams.get('id');
@@ -126,6 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // 8. Fixed Pagination Controls Generator
     function setupPagination() {
         paginationContainer.innerHTML = "";
         const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
@@ -134,8 +161,13 @@ document.addEventListener("DOMContentLoaded", () => {
         prevBtn.className = "pag-btn-large";
         prevBtn.textContent = "Previous";
         prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-            if (currentPage > 1) { renderPage(currentPage - 1); }
+        prevBtn.onclick = (e) => { 
+            e.stopPropagation(); 
+            if (currentPage > 1) { 
+                currentPage--; 
+                renderPage(currentPage); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            } 
         };
         paginationContainer.appendChild(prevBtn);
 
@@ -147,66 +179,73 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextBtn = document.createElement("button");
         nextBtn.className = "pag-btn-large";
         nextBtn.textContent = "Next";
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => {
-            if (currentPage < totalPages) { renderPage(currentPage + 1);}
+        nextBtn.disabled = currentPage >= totalPages;
+        nextBtn.onclick = (e) => { 
+            e.stopPropagation(); 
+            if (currentPage < totalPages) { 
+                currentPage++; 
+                renderPage(currentPage); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            } 
         };
         paginationContainer.appendChild(nextBtn);
     }
 
-    // Modal Functions (Inside DOMContentLoaded so they have access to `allData`)
+    // 9. Modal Open & Render Functions
     window.openModal = function(id) {
-    const item = allData.find(i => String(i.id) === String(id));
-    if (!item) return;
+        const item = allData.find(i => String(i.id) === String(id));
+        if (!item) return;
 
-    const isSensitive = Boolean(item.is_sensitive_image);
-    const modalImgHtml = isSensitive
-        ? `<div class="card-img-wrapper sensitive-img-wrapper modal-sensitive-img">
-               <img src="${item.image_path || 'placeholder.png'}" class="sensitive-img" draggable="false" style="width:100%; border-radius:15px;">
-               <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy</span></div>
-           </div>`
-        : `<img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+        const isSensitive = Boolean(item.is_sensitive_image);
+        const modalImgHtml = isSensitive
+            ? `<div class="card-img-wrapper sensitive-img-wrapper modal-sensitive-img">
+                   <img src="${item.image_path || 'placeholder.png'}" class="sensitive-img" draggable="false" style="width:100%; border-radius:15px;">
+                   <div class="sensitive-img-overlay"><i class="fas fa-eye-slash"></i><span>Blurred for privacy</span></div>
+               </div>`
+            : `<img src="${item.image_path || 'placeholder.png'}" style="width:100%; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
 
-    const body = document.getElementById("modalBody");
-    if (body) {
-        body.innerHTML = `
-            <div class="modal-body-grid">
-                <div class="modal-col-left">
-                    <div class="modal-title-header">
-                        <h1 class="modal-item-title">${item.item_name}</h1>
-                        <span class="status-badge-published">${item.status || 'Published'}</span>
+        const body = document.getElementById("modalBody");
+        if (body) {
+            body.innerHTML = `
+                <div class="modal-body-grid">
+                    <div class="modal-col-left">
+                        <div class="modal-title-header">
+                            <h1 class="modal-item-title">${item.item_name}</h1>
+                            <span class="status-badge-published">${item.status || 'Published'}</span>
+                        </div>
+                        ${modalImgHtml}
+                        <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.report_type || 'Item'}</strong></p>
                     </div>
-                    ${modalImgHtml}
-                    <p style="margin-top:12px; color:#666;">Report Type: <strong>${item.report_type || 'Item'}</strong></p>
+                    <div class="modal-col-right">
+                        <h3 class="info-header">Item Information</h3>
+                        <p><strong>Category:</strong> ${item.category}</p>
+                        <p><strong>Location:</strong> ${item.location}</p>
+                        <p><strong>Date:</strong> ${item.formattedDate}</p>
+                        <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
+                        <h3 class="info-header" style="margin-top:20px;">Description</h3>
+                        <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
+                    </div>
                 </div>
-                <div class="modal-col-right">
-                    <h3 class="info-header">Item Information</h3>
-                    <p><strong>Category:</strong> ${item.category}</p>
-                    <p><strong>Location:</strong> ${item.location}</p>
-                    <p><strong>Date:</strong> ${item.formattedDate}</p>
-                    <p><strong>Time:</strong> ${item.formattedTime || 'N/A'}</p>
-                    <h3 class="info-header" style="margin-top:20px;">Description</h3>
-                    <p style="line-height:1.6;">${item.description || 'No description provided.'}</p>
-                </div>
-            </div>
-        `;
-    }
-    const modal = document.getElementById("itemModal");
-    if (modal) {
-        modal.classList.add("show");
-        document.body.classList.add("item-details-modal-open");
-        document.documentElement.classList.add("item-details-modal-open");
-    }
-};
+            `;
+        }
+        const modal = document.getElementById("itemModal");
+        if (modal) {
+            modal.classList.add("show");
+            document.body.classList.add("item-details-modal-open");
+            document.documentElement.classList.add("item-details-modal-open");
+        }
+    };
 
-window.closeModal = function() {
-    const modal = document.getElementById("itemModal");
-    if (modal) {
-        modal.classList.remove("show");
-    }
-    document.body.classList.remove("item-details-modal-open");
-    document.documentElement.classList.remove("item-details-modal-open");
-};
+    // 10. Modal Close Handler
+    window.closeModal = function() {
+        const modal = document.getElementById("itemModal");
+        if (modal) {
+            modal.classList.remove("show");
+        }
+        document.body.classList.remove("item-details-modal-open");
+        document.documentElement.classList.remove("item-details-modal-open");
+    };
+
     const closeBtn = document.getElementById("closeModalBtn");
     const modal = document.getElementById("itemModal");
 
@@ -218,6 +257,7 @@ window.closeModal = function() {
     }
 });
 
+// 11. Periodic User Authentication Check
 function checkSession() {
     fetch('/user/me', { headers: { 'Accept': 'application/json' } })
     .then(response => {
@@ -230,4 +270,5 @@ function checkSession() {
     })
     .catch(() => console.warn("Server connection offline."));
 }
+
 setInterval(checkSession, 60000);

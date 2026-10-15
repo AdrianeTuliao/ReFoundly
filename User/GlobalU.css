@@ -591,3 +591,10 @@ body.page-entering {
 .container, .form-container, .search-section, .card, .item-card {
     animation: contentFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+html, body {
+    transform: none !important;
+    filter: none !important;
+    perspective: none !important;
+    will-change: auto !important;
+}

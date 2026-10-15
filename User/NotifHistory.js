@@ -5,9 +5,7 @@ let currentUserId = localStorage.getItem('userId') || localStorage.getItem('id')
 
 document.addEventListener("DOMContentLoaded", renderFullHistory);
 
-// Escapes text before it's injected into innerHTML — see notifications.js
-// for why this matters (notification text can carry another user's raw
-// chat input, e.g. via "New message from X: <preview>").
+// Escapes text before injecting into innerHTML
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/[&<>"']/g, c => ({
@@ -38,8 +36,12 @@ function formatNiceDate(dateString) {
 function updateFilter(type) {
     currentFilter = type;
     currentPage = 1;
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    if (event) event.target.classList.add('active');
+    document.querySelectorAll('.tab-pill').forEach(btn => btn.classList.remove('active'));
+    
+    const activeTabId = type === 'unread' ? 'tabUnread' : 'tabAll';
+    const activeTab = document.getElementById(activeTabId);
+    if (activeTab) activeTab.classList.add('active');
+
     renderFullHistory();
 }
 
@@ -47,6 +49,51 @@ function updateFilter(type) {
 function movePage(direction) {
     currentPage += direction;
     renderFullHistory();
+}
+
+// If the server can't delete the notifications (for example the clear-all route is missing),
+// we remember "hide everything up to this id" in this browser, so Clear All still empties the page.
+function historyClearKey() { return 'refoundly_history_cleared_' + String(currentUserId); }
+function getHistoryCleared() {
+    try { return Number(localStorage.getItem(historyClearKey())) || 0; } catch (e) { return 0; }
+}
+
+// Clear All Notifications Function
+async function clearNotifs() {
+    const ok = await rfConfirm(
+        "This will permanently remove all of your notification history. This can't be undone.",
+        { title: "Clear all notifications?", confirmText: "Yes, clear all", cancelText: "Cancel", danger: true }
+    );
+    if (!ok) return;
+
+    // 1) Ask the server to delete them
+    try {
+        await fetch('/api/user/notifications/clear-all', { method: 'POST' });
+    } catch (err) {
+        console.warn("clear-all request failed:", err);
+    }
+
+    // 2) Check what the server still has. If anything is left, the server did not really delete
+    //    them (missing route, error, ...), so hide them in this browser instead.
+    let remaining = [];
+    try {
+        const check = await fetch('/api/user/notifications');
+        if (check.ok) {
+            const data = await check.json();
+            if (Array.isArray(data)) remaining = data;
+        }
+    } catch (err) { /* offline: nothing to check */ }
+
+    if (remaining.length) {
+        console.warn(`Server still has ${remaining.length} notification(s) after clear-all. ` +
+                     `Hiding them in this browser. Add/fix POST /api/user/notifications/clear-all on the server.`);
+        const newestId = Math.max(...remaining.map(n => Number(n.id) || 0));
+        try { localStorage.setItem(historyClearKey(), String(newestId)); } catch (e) { /* private mode */ }
+    }
+
+    localStorage.removeItem('refoundly_user_private');
+    currentPage = 1;
+    await renderFullHistory();
 }
 
 // Notification History Rendering
@@ -86,6 +133,10 @@ async function renderFullHistory() {
         const isNotAdminAction = !content.includes("New Report");
         return isForMe && isNotAdminAction;
     }).reverse();
+
+    // Notifications hidden by Clear All (only used when the server could not delete them)
+    const clearedBefore = getHistoryCleared();
+    if (clearedBefore) displayList = displayList.filter(n => Number(n.id) > clearedBefore);
 
     if (currentFilter === 'unread') {
         displayList = displayList.filter(n => (n.is_read == 0 || n.read === false));
@@ -140,7 +191,7 @@ async function renderFullHistory() {
                     <p style="font-weight: ${isRead ? '400' : '600'}">${messageContent}</p>
                     <span><i class="far fa-clock"></i> ${timeContent}</span>
                 </div>
-                ${!isRead ? '<div class="unread-dot" style="width: 10px; height: 10px; background: #7aa340; border-radius: 50%; margin-left: auto;"></div>' : ''}
+                ${!isRead ? '<div class="unread-dot" style="width: 10px; height: 10px; background: #7aa340; border-radius: 50%; margin-left: auto; flex-shrink: 0; align-self: center;"></div>' : ''}
             </div>
         `;
     }).join('');
@@ -155,13 +206,9 @@ async function markAllAsRead() {
     }
 
     try {
-        // Preferred path: a single bulk request, if the backend supports it.
         const res = await fetch('/api/user/notifications/read-all', { method: 'POST' });
         if (!res.ok) throw new Error('Bulk read-all endpoint unavailable');
     } catch (err) {
-        // Fallback: mark each currently-unread notification individually
-        // using the endpoint we know exists (/read/:id). Slower, but works
-        // even if /read-all hasn't been added to the server yet.
         const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || [];
         const unread = notifications.filter(n => !(n.is_read == 1 || n.read === true));
 
@@ -183,7 +230,6 @@ async function markAllAsRead() {
 // Notification Click Handler
 async function handleNotifClick(notifId, itemId, conversationId) {
     try {
-        // 🟢 FIX: correct route is /api/user/notifications/read/:id
         await fetch(`/api/user/notifications/read/${notifId}`, { method: 'POST' });
 
         const notifications = JSON.parse(localStorage.getItem('refoundly_user_private')) || [];
@@ -193,14 +239,11 @@ async function handleNotifClick(notifId, itemId, conversationId) {
         console.error("Failed to mark notification as read:", err);
     }
 
-    // Conversation-linked notifications (new message, agreement update,
-    // dispute, confirmed transaction) always go straight to that chat.
     if (conversationId) {
         window.location.href = `message.html?conversation=${conversationId}`;
         return;
     }
 
-    // No linked item (e.g. a general/system notice) -> just go to history
     if (!itemId) {
         window.location.href = 'history.html';
         return;

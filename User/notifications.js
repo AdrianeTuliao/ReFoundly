@@ -1,11 +1,7 @@
 // --- GLOBAL USER NOTIFICATION ENGINE ---
 let currentNotifTab = 'all';
 
-// Escapes text before it's injected into innerHTML. Notification messages
-// can originate from another user's raw input (e.g. chat message previews),
-// so this MUST run before any notification text touches the DOM — without
-// it, a message like "<img src=x onerror=alert(1)>" executes the moment
-// the recipient opens their notification bell or sees the toast popup.
+// Escapes text before it's injected into innerHTML.
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/[&<>"']/g, c => ({
@@ -52,6 +48,68 @@ function showRefoundlyToast(title, message, iconClass = 'fa-solid fa-bell') {
     }, 5000);
 }
 
+// Loads rf-dialog.js on demand, so the custom confirm modal works on EVERY page that has the bell,
+// even if that page forgot the <script src="rf-dialog.js"> tag.
+function ensureRfDialog() {
+    return new Promise(resolve => {
+        if (typeof rfConfirm === 'function') return resolve(true);
+        const s = document.createElement('script');
+        s.src = 'rf-dialog.js';
+        s.onload = () => resolve(typeof rfConfirm === 'function');
+        s.onerror = () => resolve(false);
+        document.head.appendChild(s);
+    });
+}
+
+// ---- Bell "Clear All" memory --------------------------------------------------
+// The bell and the Notification History page read the SAME list from the server, so marking
+// notifications as read never made them disappear. Instead we remember "hide everything up to
+// this notification id" for this user in this browser. Newer notifications still appear.
+function bellClearKey(data) {
+    const uid = Array.isArray(data) && data.length ? data[0].user_id : '';
+    return 'refoundly_bell_cleared_' + (uid ?? '');
+}
+function getBellClearedBefore(data) {
+    try { return Number(localStorage.getItem(bellClearKey(data))) || 0; } catch (e) { return 0; }
+}
+function visibleForBell(data) {
+    if (!Array.isArray(data)) return data;
+    const cutoff = getBellClearedBefore(data);
+    return cutoff ? data.filter(n => Number(n.id) > cutoff) : data;
+}
+
+// Clear all global notifications using the custom rfConfirm modal
+async function clearAllGlobalNotifs() {
+    const hasDialog = await ensureRfDialog();
+    const ok = hasDialog
+        ? await rfConfirm(
+            "This clears all notifications from your bell. You can still find them in Notification History.",
+            { title: "Clear all notifications?", confirmText: "Yes, clear all", cancelText: "Cancel", danger: true }
+          )
+        : confirm("Clear all notifications from the bell?");   // last-resort fallback if rf-dialog.js can't load
+    if (!ok) return;
+
+    try {
+        const res = await fetch('/api/user/notifications');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) return;
+
+        // 1) Hide everything up to the newest notification from the bell right away
+        const newestId = Math.max(...data.map(n => Number(n.id) || 0));
+        try { localStorage.setItem(bellClearKey(data), String(newestId)); } catch (e) { /* private mode */ }
+        updateNotificationsUI();
+
+        // 2) Also mark the unread ones as read on the server, so the unread badge stays at 0
+        const unread = data.filter(n => n.is_read == 0 || n.is_read === false || n.read === false);
+        await Promise.all(
+            unread.map(n => fetch(`/api/user/notifications/read/${n.id}`, { method: 'POST' }).catch(() => {}))
+        );
+    } catch (err) {
+        console.error("Failed to clear global notifications:", err);
+    }
+}
+
 // Match Popup Checker
 function checkAndShowMatchPopups(notifications) {
     if (!Array.isArray(notifications)) return;
@@ -81,14 +139,12 @@ async function updateNotificationsUI() {
         const res = await fetch('/api/user/notifications');
         if (!res.ok) return;
         
-        const data = await res.json();
+        const data = visibleForBell(await res.json());   // hides notifications cleared from the bell
 
-        // Trigger Popup Toast Alert for unread notifications
         if (Array.isArray(data)) {
             checkAndShowMatchPopups(data);
         }
 
-        // Check unread status
         const unreadCount = data.filter(n => n.is_read == 0 || n.is_read === false || n.read === false).length;
         
         if (badge) {
@@ -135,9 +191,6 @@ async function handleGlobalNotifClick(id, itemId, conversationId) {
         await fetch(`/api/user/notifications/read/${id}`, { method: 'POST' });
         await updateNotificationsUI();
 
-        // A conversation-linked notification (new message, agreement update,
-        // dispute, confirmed transaction) always goes straight to that chat —
-        // item_id alone can't tell us WHICH conversation about that item.
         if (conversationId) {
             window.location.href = `message.html?conversation=${conversationId}`;
             return;
@@ -153,12 +206,6 @@ async function handleGlobalNotifClick(id, itemId, conversationId) {
             const item = await res.json();
             const dbType = (item.report_type || "").toLowerCase().trim();
 
-            // 🟢 FIX: don't depend on `finalRedirect` — it's only defined in
-            // dashboard.js, which isn't loaded on every page (history.html,
-            // lost.html, found.html, etc). Calling it there threw a
-            // ReferenceError that got swallowed by the catch below, which
-            // silently redirected to history.html instead — making a real
-            // match look like it pointed back at your own post.
             if (typeof finalRedirect === 'function') {
                 finalRedirect(itemId, dbType);
             } else {
@@ -187,6 +234,7 @@ function initNotifications() {
     const dropdown = document.getElementById('notifDropdown');
     const tabAll = document.getElementById('tabAll');
     const tabUnread = document.getElementById('tabUnread');
+    const clearBtn = document.getElementById('clearNotifsBtn'); 
 
     if (bell && dropdown) {
         dropdown.style.display = "none";
@@ -207,7 +255,15 @@ function initNotifications() {
 
     tabAll?.addEventListener('click', (e) => { e.stopPropagation(); switchNotifTab('all'); });
     tabUnread?.addEventListener('click', (e) => { e.stopPropagation(); switchNotifTab('unread'); });
-    
+
+    // Capture phase + stopImmediatePropagation: runs before, and blocks, any older handler on this
+    // button (for example a native confirm() left in dashboard.js), so only the custom modal shows.
+    clearBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        clearAllGlobalNotifs();
+    }, true);
+
     updateNotificationsUI();
 }
 

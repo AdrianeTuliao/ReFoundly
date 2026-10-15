@@ -6,15 +6,22 @@
     <title>Notifications | ReFoundly</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="GlobalU.css">
-    <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="theme.js"></script>
     <style>
         body { background-color: #f4f7f6; overflow-y: auto; }
         
+        /* FIXED WIDTH: the card is always the same size, whatever the notification text.
+           width:100% stops it from shrinking to fit its content (which happens when the
+           page/body is a flex container); max-width keeps it at 850px on big screens. */
         .history-container {
+            width: 100%;
             max-width: 850px;
             margin: 50px auto;
             padding: 0 20px;
+            box-sizing: border-box;
+            align-self: center;
+            flex-shrink: 0;
         }
 
         .notif-card {
@@ -24,6 +31,8 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .notif-header-section {
@@ -36,6 +45,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
@@ -74,20 +85,29 @@
         .btn-mark-read:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .notif-tabs { display: flex; gap: 10px; }
+        .tab-pill.active { background: #e7f3e0; color: #5D8252; }
 
+        /* List container */
         #historyList {
             min-height: 200px;
-            padding-top: 10px; 
+            padding-top: 5px; 
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            box-sizing: border-box;
         }
 
+        /* One size for all rows: nakalock ang lapad at kusang mag-wrap pababa ang text */
         .notif-list-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* Naka-align sa taas para sa multi-line text */
             gap: 15px;
-            padding: 20px;
+            padding: 18px 20px;
             border-bottom: 1px solid #f9f9f9;
             cursor: pointer;
             transition: background 0.2s;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .notif-list-item:hover { background: #f9f9f9; }
@@ -103,104 +123,132 @@
             justify-content: center;
             color: #555;
             flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .notif-info p { margin: 0; color: #333; font-size: 1rem; line-height: 1.4; }
-        .notif-info span { font-size: 0.85rem; color: #999; margin-top: 5px; display: block; }
+        /* Mahigpit na kinokontrol ang width para hindi lumagpas o lumapad pahiga */
+        .notif-info {
+            flex: 1;
+            min-width: 0; /* Important para gumana nang maayos ang text-wrap sa flexbox */
+        }
 
-     /* PAGINATION STYLING */
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    padding: 5px;
-    border-top: 1px solid #f0f0f0;
-}
+        .notif-info p { 
+            margin: 0; 
+            color: #333; 
+            font-size: 1rem; 
+            line-height: 1.4;
+            white-space: normal !important;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
 
-.page-arrow { 
-    background: transparent;
-    border: none;
-    color: #555;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+        .notif-info span { 
+            font-size: 0.85rem; 
+            color: #999; 
+            margin-top: 4px; 
+            display: block; 
+        }
 
-.page-arrow:hover:not(:disabled) {
-    background-color: rgba(122, 163, 64, 0.1); 
-    color: #7aa340;
-}
+        /* PAGINATION STYLING */
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-top: 1px solid #f0f0f0;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-.page-arrow:disabled {
-    opacity: 0.2;
-    cursor: not-allowed;
-}
+        .page-arrow { 
+            background: transparent;
+            border: none;
+            color: #555;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-.page-num {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 600;
-    min-width: 100px;
-    text-align: center;
-}
+        .page-arrow:hover:not(:disabled) {
+            background-color: rgba(122, 163, 64, 0.1); 
+            color: #7aa340;
+        }
 
-/* Persistent Highlight for the Navbar Bell on History Page */
-.notif-wrapper.nav-active i {
-    color: #ffffff !important; /* Your specific brand green */
-}
+        .page-arrow:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
 
-.notif-wrapper.nav-active::after {
-    content: '';
-    position: absolute;
-    bottom: -8px; /* Adjust based on your navbar height */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 5px;
-    height: 5px;
-    background-color: #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 5px rgba(122, 163, 64, 0.5);
-}
+        .page-num {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 600;
+            min-width: 100px;
+            text-align: center;
+        }
 
-/* Ensure the wrapper is relative so the dot positions correctly */
-.notif-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .notif-wrapper.nav-active i {
+            color: #ffffff !important;
+        }
 
-.breadcrumb {
-    max-width: 850px;
-    margin: 20px auto -30px auto; /* Pulls it closer to the card */
-    padding: 0 20px;
-    color: #888;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
+        .notif-wrapper.nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(122, 163, 64, 0.5);
+        }
 
-.breadcrumb a {
-    color: var(--primary-green); 
-    text-decoration: none;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
-}
+        .notif-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.breadcrumb a:hover {
-    text-decoration: underline;
-    color: var(--accent-green);
-}
+        /* Same width as the card below (width:100% + same max-width/padding) and left-aligned,
+           like the other pages. Without width:100% a flex page shrinks it to its text and
+           centres it. */
+        .breadcrumb {
+            width: 100%;
+            max-width: 850px;
+            box-sizing: border-box;
+            align-self: center;
+            flex-shrink: 0;
+            text-align: left;
+            margin: 20px auto -30px auto;
+            padding: 0 20px;
+            color: #888;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
 
-.breadcrumb span {
-    color: #555;
-    margin-left: 5px;
-}
+        .breadcrumb a {
+            color: var(--primary-green); 
+            text-decoration: none;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+        }
 
+        .breadcrumb a:hover {
+            text-decoration: underline;
+            color: var(--accent-green);
+        }
+
+        .breadcrumb span {
+            color: #555;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -225,9 +273,8 @@
 </nav>
 
 <nav class="breadcrumb">
-            <a href="dashboard.html">Home</a> &gt; <span>Found Items</span>
-        </nav>
-
+    <a href="dashboard.html">Home</a> &gt; <span>Notification History</span>
+</nav>
 
 <div class="history-container">
     <div class="notif-card">
@@ -247,8 +294,7 @@
             </div>
         </div>
 
-        <div id="historyList">
-            </div>
+        <div id="historyList"></div>
 
         <div class="pagination-controls" id="pagination-container">
             <button class="page-arrow" id="prevBtn" onclick="movePage(-1)">
@@ -262,10 +308,8 @@
     </div>
 </div>
 
+<script src="rf-dialog.js"></script>
 <script src="NotifHistory.js"></script>
 <script src="global-smooth.js"></script>
-<link rel="stylesheet" href="Theme.css">
-<script src="Theme.js"></script>
-<script src="AddTheme.js"></script>
 </body>
 </html>

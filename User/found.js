@@ -1,11 +1,33 @@
 let allItems = [];
 let filteredItems = [];
 let currentPage = 1;
-const itemsPerPage = 4; // Number of items per page
+
+function getItemsPerPage() {
+    const w = window.innerWidth;
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    
+    // Kapag iPad/Tablet range at naka-LANDSCAPE -> 3 items lang
+    if (w <= 1180 && isLandscape) {
+        return 3;
+    }
+    // Kapag iPad Portrait O Desktop -> 4 items
+    return 4;
+}
+
+let itemsPerPage = getItemsPerPage();
+
+// Re-render kapag nire-resize o ini-rotate ang screen
+window.addEventListener("resize", () => {
+    const newItemsPerPage = getItemsPerPage();
+    if (newItemsPerPage !== itemsPerPage) {
+        itemsPerPage = newItemsPerPage;
+        currentPage = 1;
+        renderItems();
+        renderPagination();
+    }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Move the popup out of <body> so no transformed/animated page wrapper can trap its
-    // "position: fixed" (that is what made it open at the top of the page instead of on screen).
     const itemModalEl = document.getElementById("itemModal");
     if (itemModalEl && itemModalEl.parentElement !== document.documentElement) {
         document.documentElement.appendChild(itemModalEl);
@@ -139,8 +161,12 @@ function renderPagination() {
     prevBtn.disabled = currentPage === 1;
     prevBtn.onclick = (e) => { 
         e.stopPropagation(); 
-        if(currentPage > 1) { currentPage--; updateView(); } 
-    };
+        if(currentPage > 1) { 
+            currentPage--; 
+            updateView(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        } 
+    }
     paginationContainer.appendChild(prevBtn);
 
     const pageIndicator = document.createElement("span");
@@ -154,7 +180,11 @@ function renderPagination() {
     nextBtn.disabled = currentPage === totalPages;
     nextBtn.onclick = (e) => { 
         e.stopPropagation(); 
-        if(currentPage < totalPages) { currentPage++; updateView(); } 
+        if(currentPage < totalPages) { 
+            currentPage++; 
+            updateView(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        } 
     };
     paginationContainer.appendChild(nextBtn);
 }
