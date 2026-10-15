@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 12, 2026 at 12:45 PM
+-- Generation Time: Oct 15, 2026 at 01:50 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -428,7 +428,54 @@ INSERT INTO `audit_logs` (`id`, `user_id`, `admin_id`, `action`, `details`, `ip_
 (363, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":9,\"itemId\":110,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-12 07:09:04'),
 (364, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":9,\"itemId\":110,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-12 07:09:06'),
 (365, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":9,\"itemId\":110,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-12 08:30:48'),
-(366, NULL, NULL, 'TRANSACTION_CONFIRMED', '{\"conversationId\":\"9\",\"itemId\":110,\"reportPath\":\"/uploads/reports/transaction_9_1791793863083.pdf\"}', NULL, '2026-10-12 08:31:03');
+(366, NULL, NULL, 'TRANSACTION_CONFIRMED', '{\"conversationId\":\"9\",\"itemId\":110,\"reportPath\":\"/uploads/reports/transaction_9_1791793863083.pdf\"}', NULL, '2026-10-12 08:31:03'),
+(367, 16, 2, 'ADMIN_STATUS_PUBLISHED', '{\"itemId\":127,\"status\":\"Published\",\"identifier\":\"admin1@gmail.com\"}', '::1', '2026-10-12 18:06:17'),
+(368, 16, 2, 'ADMIN_STATUS_PUBLISHED', '{\"itemId\":128,\"status\":\"Published\",\"identifier\":\"admin1@gmail.com\"}', '::1', '2026-10-12 18:09:17'),
+(369, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-12 18:11:26'),
+(370, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-12 18:11:28'),
+(371, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-13 00:26:12'),
+(372, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 04:08:09'),
+(373, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 04:08:20'),
+(374, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:30:55'),
+(375, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:32:30'),
+(376, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:34:23'),
+(377, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:35:24'),
+(378, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:36:56'),
+(379, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:38:07'),
+(380, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:38:34'),
+(381, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:42:31'),
+(382, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:42:41'),
+(383, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:45:35'),
+(384, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:49:49'),
+(385, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:50:06'),
+(386, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:56:05'),
+(387, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 05:56:58'),
+(388, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:02:41'),
+(389, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:16:37'),
+(390, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:16:38'),
+(391, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:37:08'),
+(392, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:43:02'),
+(393, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:43:05'),
+(394, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:43:43'),
+(395, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:44:40'),
+(396, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 06:58:12'),
+(397, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 07:19:21'),
+(398, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 08:50:40'),
+(399, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 08:50:53'),
+(400, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 09:51:26'),
+(401, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 10:38:09'),
+(402, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 10:41:29'),
+(403, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 10:46:21'),
+(404, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:06:49'),
+(405, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:34:15'),
+(406, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:34:18'),
+(407, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:34:21'),
+(408, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:34:23'),
+(409, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:34:24'),
+(410, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:37:59'),
+(411, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 11:47:35'),
+(412, NULL, NULL, 'DEAL_AGREEMENT_READY', '{\"conversationId\":13,\"itemId\":128,\"itemName\":\"Smartphone\",\"barangay\":\"Caranglaan Barangay Hall\",\"userOne\":\"Adriane Tuliao\",\"userTwo\":\"Datuin, Aj\"}', NULL, '2026-10-14 15:52:02'),
+(413, 16, NULL, 'SECURITY_ADMIN_LOGIN_FAILURE', '{\"reason\":\"User not found\",\"identifier\":\"tuliao.maradriane.m@gmail.com\"}', '::1', '2026-10-15 08:18:17');
 
 -- --------------------------------------------------------
 
@@ -460,7 +507,8 @@ CREATE TABLE `conversations` (
 
 INSERT INTO `conversations` (`id`, `item_id`, `user_one_id`, `user_two_id`, `created_at`, `updated_at`, `user_one_agreed`, `user_two_agreed`, `agreement_status`, `meetup_barangay`, `meetup_date`, `meetup_time`, `admin_notified_at`, `admin_confirmed_by`, `transaction_report_path`) VALUES
 (9, 110, 16, 22, '2026-09-11 08:53:29', '2026-10-12 08:31:03', 1, 1, 'confirmed', 'Caranglaan Barangay Hall', '2026-10-12', '15:07:00', '2026-10-12 08:30:48', 2, '/uploads/reports/transaction_9_1791793863083.pdf'),
-(12, 118, 16, 22, '2026-09-12 00:54:17', '2026-09-30 13:10:00', 1, 1, 'confirmed', 'Tapuac Barangay Hall', '2026-10-01', '09:06:00', '2026-09-30 13:07:59', 2, '/uploads/reports/transaction_12_1790773717768.pdf');
+(12, 118, 16, 22, '2026-09-12 00:54:17', '2026-09-30 13:10:00', 1, 1, 'confirmed', 'Tapuac Barangay Hall', '2026-10-01', '09:06:00', '2026-09-30 13:07:59', 2, '/uploads/reports/transaction_12_1790773717768.pdf'),
+(13, 128, 16, 22, '2026-10-12 18:10:37', '2026-10-14 15:52:02', 1, 1, 'admin_reviewing', 'Caranglaan Barangay Hall', '2026-10-16', '14:11:00', '2026-10-14 15:52:02', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -555,7 +603,9 @@ INSERT INTO `items` (`id`, `user_id`, `item_name`, `category`, `brand`, `inciden
 (114, 18, 'Smartphone', 'gadgets', 'Iphone 15 pro max', '2026-08-23', '23:35:00', 'Mayombo', '/uploads/1787499337248.png', 0, 'nawala ko sa may puregold', 'Lost', 'James Marvin', 'Mandapat', '09959388798', 'marvinmandapat777@gmail.com', 'Resolved', 0, NULL, '2026-08-23 15:35:37'),
 (115, 16, 'Smartphone', 'gadgets', 'Iphone', '2026-08-29', '10:09:00', 'Tapuac', '/uploads/1787969427847.png', 0, 'Nawala ko around tapuac', 'Lost', 'Adriane', 'Tuliao', '09776928040', 'tuliao.maradriane.m@gmail.com', 'Pending Approval', 0, NULL, '2026-08-29 02:10:27'),
 (118, 22, 'Leather Wallet', 'wallet', 'Penshoppe', '2026-09-12', '08:53:00', 'Tapuac', '/uploads/1789174431868.jpeg', 0, 'Tapuac', 'Found', 'Aj', 'Datuin', '09959388798', 'tuliao.ian.14@gmail.com', 'Published', 0, NULL, '2026-09-12 00:53:51'),
-(119, 16, 'Brown Leather Wallet', 'wallet', 'Penshoppe', '2026-09-12', '08:58:00', 'Tapuac', '/uploads/1789174739671.jpeg', 0, 'I lost around 7/11 tapuac', 'Lost', 'Adriane', 'Tuliao', '09776928040', 'tuliao.maradriane.m@gmail.com', 'Published', 0, NULL, '2026-09-12 00:58:59');
+(119, 16, 'Brown Leather Wallet', 'wallet', 'Penshoppe', '2026-09-12', '08:58:00', 'Tapuac', '/uploads/1789174739671.jpeg', 0, 'I lost around 7/11 tapuac', 'Lost', 'Adriane', 'Tuliao', '09776928040', 'tuliao.maradriane.m@gmail.com', 'Published', 0, NULL, '2026-09-12 00:58:59'),
+(127, 16, 'Smartphone', 'gadgets', 'Iphon 17 pro max', '2026-10-15', '14:02:00', 'Caranglaan', '/uploads/1791828193758.jpg', 0, 'nawala ko po', 'Lost', 'Adriane', 'Tuliao', '09959388798', 'tuliao.maradriane.m@gmail.com', 'Published', 0, NULL, '2026-10-12 18:03:13'),
+(128, 22, 'Smartphone', 'gadgets', 'Iphone 17 pro max', '2026-10-15', '16:08:00', 'Caranglaan', '/uploads/1791828536503.jpg', 0, '', 'Found', 'Aj', 'Datuin', '09959388798', 'tuliao.ian.14@gmail.com', 'Published', 0, NULL, '2026-10-12 18:08:56');
 
 -- --------------------------------------------------------
 
@@ -598,7 +648,10 @@ INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `message`, `messag
 (43, 12, 16, 'Adriane Tuliao requested to reschedule the meetup: \"Something came up very important sorry for wasting time\". Both parties need to agree again.', 'text', NULL, 0, 1, '2026-09-30 13:07:11'),
 (44, 12, 16, '', 'image', '/uploads/1790773800661.jpeg', 1, 1, '2026-09-30 13:10:00'),
 (45, 9, 16, 'resched', 'text', NULL, 0, 1, '2026-10-12 07:07:46'),
-(46, 9, 16, 'Adriane Tuliao requested to reschedule the meetup. Both parties need to agree again.', 'text', NULL, 0, 1, '2026-10-12 07:08:36');
+(46, 9, 16, 'Adriane Tuliao requested to reschedule the meetup. Both parties need to agree again.', 'text', NULL, 0, 1, '2026-10-12 07:08:36'),
+(47, 13, 16, 'Good day, I think this is my lost item!', 'text', NULL, 0, 1, '2026-10-12 18:10:53'),
+(48, 13, 22, 'sure set a date?', 'text', NULL, 0, 1, '2026-10-12 18:11:07'),
+(49, 13, 16, 'DATE', 'text', NULL, 0, 0, '2026-10-13 00:26:14');
 
 -- --------------------------------------------------------
 
@@ -636,25 +689,26 @@ CREATE TABLE `users` (
   `dob` date DEFAULT NULL,
   `suspend_reasons` text DEFAULT NULL,
   `suspended_until` datetime DEFAULT NULL,
-  `status` enum('active','deactivated','suspended') NOT NULL DEFAULT 'active'
+  `status` enum('active','deactivated','suspended') NOT NULL DEFAULT 'active',
+  `profile_picture` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `name`, `email`, `password`, `created_at`, `contact_number`, `dob`, `suspend_reasons`, `suspended_until`, `status`) VALUES
-(1, 'marvin1', 'Marvin Mandapat', 'marvin@example.com', '$2b$10$uicqCllSWz0ZzfyzN96kQ.tPDe4kUI9cUVfS/O4TXZLICUX3LHW9q', '2026-01-30 15:56:05', '09000000000', '2004-05-14', NULL, NULL, 'active'),
-(2, 'ian', 'Adriane Tuliao', 'adriane@example.com', '$2b$10$Y4pY6Y5MAQkrSVUVWqATpurz3PYKUqG8jU3G6vGCz42fcN4vXrapu', '2026-02-02 15:55:43', '09000000000', '2004-05-14', NULL, NULL, 'active'),
-(3, '', 'Ian Test', 'Ian@example.com', '$2b$10$O7QoD4oxqkRqgVZ7W251cOjdXw0OAFkT5Ikc4dwnRC9EwzcZFGDQi', '2026-02-20 17:06:40', '09123456789', '2004-05-15', NULL, NULL, 'active'),
-(5, '', 'ian ilokano', 'ianilokano@example.com', '$2b$10$euNvpmMVpJNHrUF2A7dTzOk6JSkei5iYeI0EiDGiBMJ8fczexxl42', '2026-02-20 17:16:26', '09776928040', '2004-01-20', NULL, NULL, 'active'),
-(6, '', 'Rodas, Piolo', 'pandonthitsdiff@gmail.com', '$2b$10$TZzt3xx7tv3z6SP7nwF.Veb/UdZvMPTV5fBB0E5ufy71RB4LB1d.O', '2026-02-21 01:19:20', '09663169715', '2005-02-21', NULL, NULL, 'active'),
-(8, '', 'Tuliao, Mar Adriane', 'pandot@gmail.com', '$2b$10$LiLW00mz.bEUp4jrWv4UdeEVnGPxpFvF64W9.Nuo8IVmcS4a1Jj9C', '2026-02-21 04:09:16', '09000000000', '2026-02-21', NULL, NULL, 'active'),
-(16, 'AdrianeTuliao', 'Adriane Tuliao', 'tuliao.maradriane.m@gmail.com', '$2b$10$lCb0BUlZXIgVHHpTjFg2zeSQw7Lbu96IavPZYkYsBgJjyF80xkKLG', '2026-03-06 02:41:36', '09959388798', '2004-05-09', NULL, NULL, 'active'),
-(18, 'jamesmarvin01', 'Mandapat, James Marvin', 'marvinmandapat777@gmail.com', '$2b$10$1W42w9Tppb.fYOjXR0VJlu69c2sAfnUgh0PXIOjIRMKKn.b0x4qeC', '2026-03-17 10:18:44', '09959388798', '2004-08-09', NULL, NULL, 'active'),
-(19, 'lambinohanss01', 'Lambino, Hans', 'hanslambino3@gmail.com', '$2b$10$HnKJwcJO.IkqG.vUOyLBLutTJ9gStFUik1yVnw7WsIMPvhOMnPf3S', '2026-03-19 05:40:28', '09959388798', '2004-05-12', NULL, NULL, 'active'),
-(22, 'ajii01', 'Datuin, Aj', 'tuliao.ian.14@gmail.com', '$2b$10$S9o/TMZBiDna0Bdkc/rNpum9B2WAYFwlzi/MdwyQF5t3aLti/23Bq', '2026-08-29 04:29:11', '09959388798', '2000-04-01', NULL, NULL, 'active'),
-(23, 'Kramyr', 'Napao, Mark', 'Markanapao@gmail.com', '$2b$10$CTjtjxkxGslLlzFe8ASu9u9ff7SL7Iwl3VAWGrf1ZXQeb9GhlaqrG', '2026-09-19 00:13:15', '09561506744', '2001-12-31', NULL, NULL, 'active');
+INSERT INTO `users` (`id`, `username`, `name`, `email`, `password`, `created_at`, `contact_number`, `dob`, `suspend_reasons`, `suspended_until`, `status`, `profile_picture`) VALUES
+(1, 'marvin1', 'Marvin Mandapat', 'marvin@example.com', '$2b$10$uicqCllSWz0ZzfyzN96kQ.tPDe4kUI9cUVfS/O4TXZLICUX3LHW9q', '2026-01-30 15:56:05', '09000000000', '2004-05-14', NULL, NULL, 'active', NULL),
+(2, 'ian', 'Adriane Tuliao', 'adriane@example.com', '$2b$10$Y4pY6Y5MAQkrSVUVWqATpurz3PYKUqG8jU3G6vGCz42fcN4vXrapu', '2026-02-02 15:55:43', '09000000000', '2004-05-14', NULL, NULL, 'active', NULL),
+(3, '', 'Ian Test', 'Ian@example.com', '$2b$10$O7QoD4oxqkRqgVZ7W251cOjdXw0OAFkT5Ikc4dwnRC9EwzcZFGDQi', '2026-02-20 17:06:40', '09123456789', '2004-05-15', NULL, NULL, 'active', NULL),
+(5, '', 'ian ilokano', 'ianilokano@example.com', '$2b$10$euNvpmMVpJNHrUF2A7dTzOk6JSkei5iYeI0EiDGiBMJ8fczexxl42', '2026-02-20 17:16:26', '09776928040', '2004-01-20', NULL, NULL, 'active', NULL),
+(6, '', 'Rodas, Piolo', 'pandonthitsdiff@gmail.com', '$2b$10$TZzt3xx7tv3z6SP7nwF.Veb/UdZvMPTV5fBB0E5ufy71RB4LB1d.O', '2026-02-21 01:19:20', '09663169715', '2005-02-21', NULL, NULL, 'active', NULL),
+(8, '', 'Tuliao, Mar Adriane', 'pandot@gmail.com', '$2b$10$LiLW00mz.bEUp4jrWv4UdeEVnGPxpFvF64W9.Nuo8IVmcS4a1Jj9C', '2026-02-21 04:09:16', '09000000000', '2026-02-21', NULL, NULL, 'active', NULL),
+(16, 'AdrianeTuliao', 'Adriane Tuliao', 'tuliao.maradriane.m@gmail.com', '$2b$10$lCb0BUlZXIgVHHpTjFg2zeSQw7Lbu96IavPZYkYsBgJjyF80xkKLG', '2026-03-06 02:41:36', '09959388798', '2004-05-07', NULL, NULL, 'active', '/uploads/avatars/user-16-1792059138926.jpg'),
+(18, 'jamesmarvin01', 'Mandapat, James Marvin', 'marvinmandapat777@gmail.com', '$2b$10$1W42w9Tppb.fYOjXR0VJlu69c2sAfnUgh0PXIOjIRMKKn.b0x4qeC', '2026-03-17 10:18:44', '09959388798', '2004-08-09', NULL, NULL, 'active', NULL),
+(19, 'lambinohanss01', 'Lambino, Hans', 'hanslambino3@gmail.com', '$2b$10$HnKJwcJO.IkqG.vUOyLBLutTJ9gStFUik1yVnw7WsIMPvhOMnPf3S', '2026-03-19 05:40:28', '09959388798', '2004-05-12', NULL, NULL, 'active', NULL),
+(22, 'ajii01', 'Datuin, Aj', 'tuliao.ian.14@gmail.com', '$2b$10$S9o/TMZBiDna0Bdkc/rNpum9B2WAYFwlzi/MdwyQF5t3aLti/23Bq', '2026-08-29 04:29:11', '09959388798', '2000-04-01', NULL, NULL, 'active', NULL),
+(23, 'Kramyr', 'Napao, Mark', 'Markanapao@gmail.com', '$2b$10$CTjtjxkxGslLlzFe8ASu9u9ff7SL7Iwl3VAWGrf1ZXQeb9GhlaqrG', '2026-09-19 00:13:15', '09561506744', '2001-12-31', NULL, NULL, 'active', NULL);
 
 -- --------------------------------------------------------
 
@@ -757,24 +811,30 @@ INSERT INTO `user_notifications` (`id`, `user_id`, `item_id`, `message`, `type`,
 (78, 16, 110, 'New message from Datuin, Aj: thanks for the successful transaction.', 'Published', 1, '2026-09-11 09:19:54', 9),
 (79, 16, 116, 'Possible item match! A found item was found in Tapuac. Check match updates.', 'Published', 1, '2026-09-11 13:42:18', NULL),
 (80, 22, 117, 'Possible item match! A new lost report in Tapuac (Brown Leather Wallet) might match your post.', 'Published', 1, '2026-09-11 13:42:18', NULL),
-(81, 22, 118, 'New message from Adriane Tuliao: I think this is mine?', 'Published', 0, '2026-09-12 00:54:25', 12),
+(81, 22, 118, 'New message from Adriane Tuliao: I think this is mine?', 'Published', 1, '2026-09-12 00:54:25', 12),
 (82, 16, 118, 'New message from Datuin, Aj: send your proof', 'Published', 1, '2026-09-12 00:54:42', 12),
-(83, 22, 118, 'New message from Adriane Tuliao: (proof)', 'Published', 0, '2026-09-12 00:54:57', 12),
-(84, 22, 118, 'New message from Adriane Tuliao: Confirm Item', 'Published', 0, '2026-09-12 00:55:05', 12),
+(83, 22, 118, 'New message from Adriane Tuliao: (proof)', 'Published', 1, '2026-09-12 00:54:57', 12),
+(84, 22, 118, 'New message from Adriane Tuliao: Confirm Item', 'Published', 1, '2026-09-12 00:55:05', 12),
 (85, 16, 118, 'New message from Datuin, Aj: Confirm Item', 'Published', 1, '2026-09-12 00:55:10', 12),
 (86, 16, 118, 'Your ReFoundly transaction for \"Leather Wallet\" has been confirmed. View the report in your chat.', 'Published', 1, '2026-09-12 00:56:18', 12),
-(87, 22, 118, 'Your ReFoundly transaction for \"Leather Wallet\" has been confirmed. View the report in your chat.', 'Published', 0, '2026-09-12 00:56:18', 12),
+(87, 22, 118, 'Your ReFoundly transaction for \"Leather Wallet\" has been confirmed. View the report in your chat.', 'Published', 1, '2026-09-12 00:56:18', 12),
 (88, 16, 118, 'Possible item match! A found item was found in Tapuac. Check match updates.', 'Published', 1, '2026-09-12 00:59:32', NULL),
-(89, 22, 119, 'Possible item match! A new lost report in Tapuac (Brown Leather Wallet) might match your post.', 'Published', 0, '2026-09-12 00:59:32', NULL),
-(90, 22, 118, 'New message from Adriane Tuliao: <script>alert<(\'XSS\')</script?', 'Published', 0, '2026-09-24 10:14:34', 12),
-(91, 22, 118, 'Adriane Tuliao requested to reschedule your meetup for \"Tapuac Barangay Hall\". Please review and agree again.', 'Published', 0, '2026-09-30 13:07:11', 12),
+(89, 22, 119, 'Possible item match! A new lost report in Tapuac (Brown Leather Wallet) might match your post.', 'Published', 1, '2026-09-12 00:59:32', NULL),
+(90, 22, 118, 'New message from Adriane Tuliao: <script>alert<(\'XSS\')</script?', 'Published', 1, '2026-09-24 10:14:34', 12),
+(91, 22, 118, 'Adriane Tuliao requested to reschedule your meetup for \"Tapuac Barangay Hall\". Please review and agree again.', 'Published', 1, '2026-09-30 13:07:11', 12),
 (92, 16, 118, 'Your ReFoundly transaction for \"Leather Wallet\" has been confirmed. View the report in your chat.', 'Published', 1, '2026-09-30 13:08:38', 12),
-(93, 22, 118, 'Your ReFoundly transaction for \"Leather Wallet\" has been confirmed. View the report in your chat.', 'Published', 0, '2026-09-30 13:08:38', 12),
-(94, 22, 118, 'New message from Adriane Tuliao: 📎 Sent a sensitive photo', 'Published', 0, '2026-09-30 13:10:00', 12),
-(95, 22, 110, 'New message from Adriane Tuliao: resched', 'Published', 0, '2026-10-12 07:07:46', 9),
-(96, 22, 110, 'Adriane Tuliao requested to reschedule your meetup for \"Caranglaan Barangay Hall\". Please review and agree again.', 'Published', 0, '2026-10-12 07:08:36', 9),
-(97, 16, 110, 'Your ReFoundly transaction for \"Smartphone\" has been confirmed. View the report in your chat.', 'Published', 0, '2026-10-12 08:31:03', 9),
-(98, 22, 110, 'Your ReFoundly transaction for \"Smartphone\" has been confirmed. View the report in your chat.', 'Published', 0, '2026-10-12 08:31:03', 9);
+(93, 22, 118, 'Your ReFoundly transaction for \"Leather Wallet\" has been confirmed. View the report in your chat.', 'Published', 1, '2026-09-30 13:08:38', 12),
+(94, 22, 118, 'New message from Adriane Tuliao: 📎 Sent a sensitive photo', 'Published', 1, '2026-09-30 13:10:00', 12),
+(95, 22, 110, 'New message from Adriane Tuliao: resched', 'Published', 1, '2026-10-12 07:07:46', 9),
+(96, 22, 110, 'Adriane Tuliao requested to reschedule your meetup for \"Caranglaan Barangay Hall\". Please review and agree again.', 'Published', 1, '2026-10-12 07:08:36', 9),
+(97, 16, 110, 'Your ReFoundly transaction for \"Smartphone\" has been confirmed. View the report in your chat.', 'Published', 1, '2026-10-12 08:31:03', 9),
+(98, 22, 110, 'Your ReFoundly transaction for \"Smartphone\" has been confirmed. View the report in your chat.', 'Published', 1, '2026-10-12 08:31:03', 9),
+(99, 22, 12, 'Possible item match! A lost item was found in Caranglaan. Check match updates.', 'Published', 1, '2026-10-12 18:09:17', NULL),
+(100, 5, 128, 'Possible item match! A new found report in Caranglaan (Smartphone) might match your post.', 'Published', 0, '2026-10-12 18:09:17', NULL),
+(101, 16, 128, 'Possible item match! A new found report in Caranglaan (Smartphone) might match your post.', 'Published', 1, '2026-10-12 18:09:17', NULL),
+(102, 22, 128, 'New message from Adriane Tuliao: Good day, I think this is my lost item!', 'Published', 1, '2026-10-12 18:10:53', 13),
+(103, 16, 128, 'New message from Datuin, Aj: sure set a date?', 'Published', 1, '2026-10-12 18:11:07', 13),
+(104, 22, 128, 'New message from Adriane Tuliao: DATE', 'Published', 1, '2026-10-13 00:26:14', 13);
 
 -- --------------------------------------------------------
 
@@ -887,25 +947,25 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=367;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=414;
 
 --
 -- AUTO_INCREMENT for table `conversations`
 --
 ALTER TABLE `conversations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
 
 --
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -917,7 +977,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_notifications`
 --
 ALTER TABLE `user_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
 
 --
 -- AUTO_INCREMENT for table `user_reports`
