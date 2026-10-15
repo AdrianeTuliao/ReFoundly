@@ -629,3 +629,25 @@ body, .navbar, .how-it-works, .card, .step-card, .search-container, .nav-menu, .
     cursor: not-allowed;
 }
 :root[data-theme="dark"] .page-indicator { color: var(--d-muted); }
+
+:root[data-theme="dark"] .notif-card {
+    background: var(--d-surface) !important;
+    color: var(--d-text) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+:root[data-theme="dark"] .notif-header-section {
+    background: var(--d-surface) !important;
+    border-bottom-color: var(--d-border) !important;
+}
+:root[data-theme="dark"] .notif-header-section h2 {
+    color: var(--d-text) !important;
+}
+:root[data-theme="dark"] .notif-list-item {
+    border-bottom-color: var(--d-border) !important;
+}
+:root[data-theme="dark"] .notif-list-item:hover {
+    background: var(--d-surface-2) !important;
+}
+:root[data-theme="dark"] .notif-info p {
+    color: var(--d-text) !important;
+}
