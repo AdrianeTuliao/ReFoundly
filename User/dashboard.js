@@ -65,8 +65,10 @@ function applyFilters() {
     filteredItems = allItems.filter(item => {
         const matchCategory = !category || category === 'all' || category === 'all categories' || item.category.toLowerCase().includes(category);
         const matchLocation = !location || location === 'all' || location === 'all barangays' || item.location.toLowerCase().includes(location);
+        
         const itemName = (item.item_name || "").toLowerCase();
         const itemBrand = (item.brand || "").toLowerCase();
+        
         const matchNameOrBrand = !nameSearch || itemName.includes(nameSearch) || itemBrand.includes(nameSearch);
         
         return matchCategory && matchLocation && matchNameOrBrand;

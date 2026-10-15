@@ -37,23 +37,24 @@ document.addEventListener("DOMContentLoaded", () => {
     loadLostItems();
     
     // --- SEARCH LOGIC ---
-    const searchInput = document.querySelector('.search-bar-pill input');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            
-            // Filter by Name, Category, or Location
-            filteredItems = allItems.filter(item => 
-                (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
-                (item.category && item.category.toLowerCase().includes(searchTerm)) ||
-                (item.location && item.location.toLowerCase().includes(searchTerm))
-            );
+const searchInput = document.querySelector('.search-bar-pill input');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        
+    
+        filteredItems = allItems.filter(item => 
+            (item.item_name && item.item_name.toLowerCase().includes(searchTerm)) ||
+            (item.brand && item.brand.toLowerCase().includes(searchTerm)) ||
+            (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+            (item.location && item.location.toLowerCase().includes(searchTerm))
+        );
 
-            currentPage = 1; // Reset to page 1 on new search
-            renderItems();
-            renderPagination();
-        });
-    }
+        currentPage = 1; // Reset to page 1 on new search
+        renderItems();
+        renderPagination();
+    });
+}
 
     window.onclick = (event) => {
         const modal = document.getElementById("itemModal");
