@@ -57,20 +57,18 @@ async function loadPublishedItems() {
     }
 }
 
-// 3. Filter Logic
 function applyFilters() {
     const category = document.getElementById('categoryInput').value.toLowerCase().trim();
     const location = document.getElementById('locationInput').value.toLowerCase().trim();
     const nameSearch = document.querySelector('.search-group input[placeholder="Search item name..."]')?.value.toLowerCase().trim() || "";
 
     filteredItems = allItems.filter(item => {
-        // Kapag walang nilagay, O KAYA piliin ang "all" / "all categories", i-bypass ang filter
         const matchCategory = !category || category === 'all' || category === 'all categories' || item.category.toLowerCase().includes(category);
-        
-        // Kapag walang nilagay, O KAYA piliin ang "all" / "all barangays", i-bypass ang filter
         const matchLocation = !location || location === 'all' || location === 'all barangays' || item.location.toLowerCase().includes(location);
         
-        const matchName = !nameSearch || item.item_name.toLowerCase().includes(nameSearch);
+        // Non-case-sensitive partial match para sa item name
+        const itemName = (item.item_name || "").toLowerCase();
+        const matchName = !nameSearch || itemName.includes(nameSearch);
         
         return matchCategory && matchLocation && matchName;
     });
