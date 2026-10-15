@@ -920,9 +920,19 @@ body.item-details-modal-open {
     }
 }
 
-/* Landscape phones: 3 cards fit across the screen */
 @media screen and (max-height: 500px) and (orientation: landscape) {
     .container .items-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
+}
+
+.modal-body-grid > div:last-child {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+
+.contact-box {
+    margin-top: auto !important; 
 }
