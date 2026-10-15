@@ -772,7 +772,19 @@ body.item-details-modal-open {
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
-    align-items: flex-start;
+    align-items: stretch !important;
+}
+
+.modal-body-grid > div:last-child {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.contact-box {
+    margin-top: auto !important;
 }
 .modal-col-left, 
 .modal-col-right {
