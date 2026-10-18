@@ -948,3 +948,15 @@ body.item-details-modal-open {
 .contact-box {
     margin-top: auto !important; 
 }
+
+/* =========================================================
+   TABLET (iPad) LANDSCAPE: remove the empty white space under the cards
+   The grid had a fixed min-height of 680px, so a single row of cards was
+   stretched to fill it. Let the row be as tall as the card content.
+========================================================= */
+@media screen and (max-width: 1366px) and (orientation: landscape) and (hover: none) {
+    .container .items-grid {
+        min-height: 0 !important;
+        align-items: start;
+    }
+}

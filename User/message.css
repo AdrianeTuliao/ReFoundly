@@ -1488,3 +1488,32 @@ footer p {
         z-index: 3;
     }
 }
+
+/* =========================================================
+   PHONE TOP BAR: same compact header as Dashboard and the other pages
+   (message.css was overriding the smaller GlobalU.css phone header)
+========================================================= */
+@media (max-width: 768px) {
+    .navbar {
+        min-height: 0;
+        padding: 0.5rem 1rem;
+    }
+    .navbar h1 {
+        font-size: 1.2rem;
+    }
+    .nav-icons {
+        gap: 15px;
+        font-size: 1.5rem;
+    }
+    .icons-link {
+        font-size: 1.7rem;
+    }
+    .hamburger {
+        width: auto;
+        height: auto;
+        font-size: 1.7rem;
+    }
+    .nav-menu {
+        top: calc(100% + 8px);
+    }
+}

@@ -598,3 +598,29 @@ html, body {
     perspective: none !important;
     will-change: auto !important;
 }
+
+/* =========================================================
+   NOTIFICATION DROPDOWN ON PHONES (applies to every page)
+   Compact (280px) and pinned 12px from the right edge of the screen so it
+   can never run off the side or bottom. !important so page CSS files
+   (dashboard.css, message.css, ...) cannot push it back out.
+========================================================= */
+@media (max-width: 768px), screen and (max-height: 500px) and (orientation: landscape) {
+    .notif-dropdown {
+        position: fixed !important;
+        top: 50px !important;
+        right: 12px !important;
+        left: auto !important;
+        width: min(280px, calc(100vw - 24px)) !important;
+        max-height: min(420px, calc(100vh - 70px)) !important;
+        max-height: min(420px, calc(100dvh - 70px)) !important;
+    }
+    .notif-scroll-area {
+        max-height: min(300px, calc(100vh - 190px)) !important;
+        max-height: min(300px, calc(100dvh - 190px)) !important;
+    }
+}
+/* short phone screens held sideways: the header is taller there */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .notif-dropdown { top: 58px !important; }
+}

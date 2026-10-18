@@ -269,7 +269,7 @@ app.get('/api/get-session-info', (req, res) => {
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) return res.status(500).json({ success: false });
-        res.clearCookie('connect.sid');
+        res.clearCookie('refound.sid', { path: '/', httpOnly: true, sameSite: 'lax' });
         res.json({ success: true });
     });
 });
@@ -666,7 +666,7 @@ app.post('/admin/logout', (req, res) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Logout failed' });
         }
-        res.clearCookie('connect.sid', { 
+        res.clearCookie('refound.sid', { 
             path: '/', 
             httpOnly: true,
             sameSite: 'lax'
@@ -2324,6 +2324,15 @@ app.post('/api/conversations/:conversationId/agreement/notify-admin', requireUse
     parties' agreement so they have to re-agree, and takes it out of
     'confirmed' so admin has to re-review before another PDF is issued.
 */
+// Rejects meetup dates earlier than today (Philippine time, UTC+8)
+function isPastMeetupDate(value) {
+    if (!value) return false;
+    const str = String(value).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return true;
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+    return str < today;
+}
+
 app.post('/api/conversations/:conversationId/reschedule', requireUser, (req, res) => {
     const currentUserId = req.session.userId;
     const conversationId = req.params.conversationId;
@@ -2331,6 +2340,10 @@ app.post('/api/conversations/:conversationId/reschedule', requireUser, (req, res
     const newBarangayInput = typeof req.body.barangay === 'string' ? req.body.barangay.trim() : '';
     const newDate = req.body.meetup_date || req.body.date || null;
     const newTime = req.body.meetup_time || req.body.time || null;
+
+    if (isPastMeetupDate(newDate)) {
+        return res.status(400).json({ success: false, message: "The new meetup date can't be in the past." });
+    }
 
     const sql = `
         SELECT c.id, c.item_id, c.user_one_id, c.user_two_id, c.agreement_status,
@@ -2527,6 +2540,12 @@ app.post('/api/conversations/:conversationId/agreement', requireUser, (req, res)
 
         const finalBarangay = c.meetup_barangay || barangayInput;
         const finalDate = c.meetup_date || meetupDateInput;
+
+        // Only validate a freshly proposed date; an already-saved meetup date
+        // may legitimately be today/earlier by the time the other person agrees.
+        if (!c.meetup_date && isPastMeetupDate(meetupDateInput)) {
+            return res.status(400).json({ success: false, message: "The meetup date can't be in the past." });
+        }
         const finalTime = c.meetup_time || meetupTimeInput;
 
         if (!finalBarangay) {
@@ -2932,6 +2951,7 @@ app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'User', '
 /*--Static Files Middleware--*/
 app.use(express.static(path.join(__dirname, 'User')));
 app.use('/uploads', express.static(path.join(__dirname, 'User', 'uploads')));
+app.set('trust proxy', 1);
 
 /*--Start Server--*/
 const PORT = process.env.PORT || 3000;

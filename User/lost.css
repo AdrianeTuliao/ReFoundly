@@ -947,3 +947,10 @@ body.item-details-modal-open {
 .contact-box {
     margin-top: auto !important; 
 }
+
+@media screen and (max-width: 1366px) and (orientation: landscape) and (hover: none) {
+    .container .items-grid {
+        min-height: 0 !important;
+        align-items: start;
+    }
+}

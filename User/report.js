@@ -1,12 +1,3 @@
-/* NOTE: sanitizeInput() was removed. It pre-encoded text into HTML entities
-   ("<html>" -> "&lt;html&gt;") client-side, before the server's own
-   stripTags() ever saw it. Since stripTags() only matches literal < and >
-   characters, it had nothing left to strip once the client had already
-   encoded them — so the entities went straight into the database as
-   visible text. The server is the only place this can be enforced
-   correctly anyway (anyone can bypass client JS), so sanitization now
-   happens exactly once, server-side, on the raw text as typed. */
-
 /* 1. IMAGE PREVIEW & REMOVE LOGIC */
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-upload');
@@ -20,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalImg = document.getElementById('modalImg');
     const closeModal = document.getElementById('closeModal');
 
-    const maxSize = 2 * 1024 * 1024; // 2MB Limit
+    const maxSize = 10 * 1024 * 1024; // 10MB Limit
 
     if (fileInput) {
         // Handle File Selection
@@ -35,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (file.size > maxSize) {
-                    alert("File is too big! Please upload an image smaller than 2MB.");
+                    alert("File is too big! Please upload an image smaller than 10MB.");
                     fileInput.value = '';
                     return;
                 }

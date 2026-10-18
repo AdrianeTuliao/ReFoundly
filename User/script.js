@@ -15,27 +15,53 @@ function handleFormToggle() {
 }
 
 /* --- TOOLTIP SYSTEM --- */
+function removeTooltip(inputName) {
+    const tooltip = document.getElementById(`tooltip-${inputName}`);
+    if (tooltip) tooltip.remove();
+}
+
 function updateChecklist(input, requirements) {
+    const allValid = requirements.every(req => req.isValid);
+
+    // KUNG KUMPLETO NA AT VALID NA ANG PIN-TYP NI USER, TANGGALIN NA AGAD ANG TOOLTIP!
+    if (allValid) {
+        input.classList.remove('input-invalid');
+        removeTooltip(input.name);
+        return; // Itigil na dito para hindi na magpakita ng box
+    } else if (input.value.length > 0) {
+        input.classList.add('input-invalid');
+    } else {
+        input.classList.remove('input-invalid');
+        removeTooltip(input.name);
+        return;
+    }
+
     let tooltip = document.getElementById(`tooltip-${input.name}`);
     
     if (!tooltip) {
         tooltip = document.createElement('div');
         tooltip.className = 'input-tooltip-neat';
         tooltip.id = `tooltip-${input.name}`;
-        document.body.appendChild(tooltip);
+        input.insertAdjacentElement('afterend', tooltip);
     }
 
-    const allValid = requirements.every(req => req.isValid);
+    // Responsive positioning: Desktop = absolute sa kanan, Mobile/Tablet = relative sa ibaba
+    const isMobileOrTablet = window.innerWidth <= 1024;
 
-    if (!allValid && input.value.length > 0) {
-        input.classList.add('input-invalid');
+    if (!isMobileOrTablet) {
+        tooltip.style.position = 'absolute';
+        tooltip.style.left = `${input.offsetLeft + input.offsetWidth + 15}px`;
+        tooltip.style.top = `${input.offsetTop + (input.offsetHeight / 2)}px`;
+        tooltip.style.transform = 'translateY(-50%)';
     } else {
-        input.classList.remove('input-invalid');
+        tooltip.style.position = 'relative';
+        tooltip.style.left = '0';
+        tooltip.style.top = '0';
+        tooltip.style.transform = 'none';
+        tooltip.style.marginTop = '4px';
+        tooltip.style.marginBottom = '10px';
+        tooltip.style.width = '100%';
     }
-
-    const rect = input.getBoundingClientRect();
-    tooltip.style.left = `${rect.right + window.scrollX + 15}px`;
-    tooltip.style.top = `${rect.top + window.scrollY + (rect.height / 2)}px`;
 
     let html = '';
     requirements.forEach(req => {
@@ -418,8 +444,9 @@ function initializeOTPHandler() {
             return;
         }
 
-        verifyBtn.innerText = "Sending OTP in email...";
+        verifyBtn.innerText = "Verifying...";
         verifyBtn.disabled = true;
+        let keepLocked = false; // stay disabled once verified, until the page redirects
 
         const endpoint = mode === 'register' ? '/verify-registration' : '/verify-otp';
 
@@ -439,6 +466,9 @@ function initializeOTPHandler() {
             const result = await response.json();
 
             if (result.success) {
+                keepLocked = true;
+                verifyBtn.innerText = "Verified";
+                if (cancelBtn) cancelBtn.disabled = true;
                 if (mode === 'register') {
                     alert("Account Verified! Please log in.");
                     location.reload();
@@ -455,8 +485,10 @@ function initializeOTPHandler() {
             console.error("Verification error:", err);
             alert("Verification failed. Check your connection.");
         } finally {
-            verifyBtn.innerText = "Verify Identity";
-            verifyBtn.disabled = false;
+            if (!keepLocked) {
+                verifyBtn.innerText = "Verify OTP";
+                verifyBtn.disabled = false;
+            }
         }
     });
 
@@ -520,7 +552,7 @@ async function requestPasswordReset() {
 
         const result = await response.json();
         if (result.success) {
-            document.getElementById('otpSection').style.display = 'block';
+            document.getElementById('otpSection').style.display = 'flex';
             showResetMessage("OTP sent to your email!"); 
         } else {
             showResetMessage(result.message, true);

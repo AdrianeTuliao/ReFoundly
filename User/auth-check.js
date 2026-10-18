@@ -56,3 +56,22 @@ function checkSession() {
 // Check every 10 seconds
 document.addEventListener('DOMContentLoaded', checkSession);
 setInterval(checkSession, 10000);
+
+// ---- Logout: really end the session on the server, then go to the login page ----
+document.addEventListener('click', function (e) {
+    var link = e.target.closest && e.target.closest('.logout-btn');
+    if (!link) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var go = function () { window.location.replace('/index.html'); };
+    fetch('/logout', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        .then(go, go);
+}, true);
+
+// Back/forward button: never show a cached page from a finished session
+window.addEventListener('pageshow', function (event) {
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (event.persisted || (nav && nav.type === 'back_forward')) {
+        checkSession();
+    }
+});
