@@ -761,7 +761,7 @@ input:not(:placeholder-shown) + label {
         transform: translateY(-20px) !important;
     }
 }
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1200px) {
     .input-tooltip-neat {
         position: relative !important;
         left: 0 !important;
