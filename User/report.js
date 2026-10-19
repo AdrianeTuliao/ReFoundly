@@ -39,7 +39,7 @@ function setupIncidentTimeLimit() {
     timeInput.addEventListener('focus', sync);
     timeInput.addEventListener('change', enforce);
     timeInput.addEventListener('blur', enforce);
-    setInterval(sync, 30000);                 // keep "now" fresh while the page stays open
+    setInterval(sync, 30000);                 
     sync();
 }
 
@@ -49,16 +49,15 @@ function setupIncidentDateLimits() {
 
     const applyLimits = () => {
         dateInput.min = MIN_INCIDENT_DATE;
-        dateInput.max = todayLocalISO(); // re-evaluated, so it stays right past midnight
+        dateInput.max = todayLocalISO(); 
     };
     applyLimits();
 
-    // Typed/pasted out-of-range values: reject right away
     dateInput.addEventListener('change', () => {
         applyLimits();
         const v = dateInput.value;
         if (v && (v < dateInput.min || v > dateInput.max)) {
-            alert("Please choose a date from Jan 1, 2025 up to today only.");
+            showCustomAlert("Invalid Date", "Please choose a date from Jan 1, 2025 up to today only."); 
             dateInput.value = '';
         }
     });
@@ -179,7 +178,7 @@ if (mainForm) {
         const timeEl = document.querySelector('input[name="incidentTime"]');
         const today = todayLocalISO();
         if (dateEl && (dateEl.value < MIN_INCIDENT_DATE || dateEl.value > today)) {
-            alert("Please choose a date from Jan 1, 2025 up to today only.");
+            showCustomAlert("Invalid Date", "Please choose a date from Jan 1, 2025 up to today only."); // ✅ Custom Modal na
             return;
         }
         if (dateEl && timeEl && dateEl.value === today && timeEl.value) {
