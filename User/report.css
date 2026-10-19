@@ -666,6 +666,7 @@ footer p {
 }
 
 /* Custom Popup Modal Styles */
+/* Custom Popup Modal Styles */
 .refoundly-modal-overlay {
     display: none;
     position: fixed;
@@ -681,14 +682,14 @@ footer p {
 }
 
 .refoundly-modal-box {
-    background: #ffffff;
+    background: #ffffff; /* Default Light Mode */
     padding: 30px;
     border-radius: 12px;
     text-align: center;
     width: 90%;
     max-width: 350px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    border-top: 6px solid #e74c3c; /* Red border para sa warning */
+    border-top: 6px solid #e74c3c;
     animation: modalPop 0.3s ease;
 }
 
@@ -700,12 +701,12 @@ footer p {
 
 .refoundly-modal-box h3 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: #333; /* Default Light Mode Text */
     font-size: 1.25rem;
 }
 
 .refoundly-modal-box p {
-    color: #666;
+    color: #666; /* Default Light Mode Subtext */
     font-size: 0.95rem;
     margin-bottom: 20px;
     line-height: 1.4;
@@ -725,6 +726,20 @@ footer p {
 
 .refoundly-modal-btn:hover {
     background-color: #5a853a;
+}
+
+:root[data-theme="dark"] .refoundly-modal-box {
+    background: var(--d-surface, #172019) !important;
+    color: var(--d-text, #e7ede5) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+:root[data-theme="dark"] .refoundly-modal-box h3 {
+    color: var(--d-text, #e7ede5) !important;
+}
+
+:root[data-theme="dark"] .refoundly-modal-box p {
+    color: var(--d-muted, #9aa99a) !important;
 }
 
 @keyframes modalPop {
