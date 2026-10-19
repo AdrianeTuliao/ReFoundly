@@ -29,7 +29,7 @@ function setupIncidentTimeLimit() {
     const enforce = () => {
         sync();
         if (timeInput.max && timeInput.value && timeInput.value > timeInput.max) {
-            alert("The time can't be later than the current time.");
+            showCustomAlert("Invalid Time", "The time can't be later than the current time.");
             timeInput.value = '';
         }
     };
@@ -326,3 +326,18 @@ function checkSession() {
     .catch(() => console.warn("Server connection offline."));
 }
 setInterval(checkSession, 10000);
+
+function showCustomAlert(title, message) {
+    const modal = document.getElementById('customWarningModal');
+    const titleEl = document.getElementById('warningModalTitle');
+    const msgEl = document.getElementById('warningModalMessage');
+    
+    if (titleEl) titleEl.innerText = title;
+    if (msgEl) msgEl.innerText = message;
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeCustomWarning() {
+    const modal = document.getElementById('customWarningModal');
+    if (modal) modal.style.display = 'none';
+}

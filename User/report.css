@@ -664,3 +664,70 @@ footer p {
         padding: 14px;
     }
 }
+
+/* Custom Popup Modal Styles */
+.refoundly-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+.refoundly-modal-box {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 90%;
+    max-width: 350px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border-top: 6px solid #e74c3c; /* Red border para sa warning */
+    animation: modalPop 0.3s ease;
+}
+
+.refoundly-modal-box i {
+    font-size: 45px;
+    color: #e74c3c;
+    margin-bottom: 15px;
+}
+
+.refoundly-modal-box h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.25rem;
+}
+
+.refoundly-modal-box p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.refoundly-modal-btn {
+    background-color: #6B9E45;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.refoundly-modal-btn:hover {
+    background-color: #5a853a;
+}
+
+@keyframes modalPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
