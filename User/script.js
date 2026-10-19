@@ -39,15 +39,12 @@ function getTooltip(input) {
 
 function placeTooltip(tooltip, input) {
     const anchor = getAnchor(input);
-    // Desktop = absolute sa kanan, Mobile/Tablet = relative sa ibaba
-    if (window.innerWidth > 1024) {
+    if (window.innerWidth > 1200) {
         tooltip.style.position = 'absolute';
         tooltip.style.left = `${anchor.offsetLeft + anchor.offsetWidth + 15}px`;
         tooltip.style.top = `${anchor.offsetTop + (anchor.offsetHeight / 2)}px`;
         tooltip.style.transform = 'translateY(-50%)';
     } else {
-        tooltip.style.position = 'relative';
-        tooltip.style.left = '0';
         tooltip.style.top = '0';
         tooltip.style.transform = 'none';
         tooltip.style.marginTop = '4px';
