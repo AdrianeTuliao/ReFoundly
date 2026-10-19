@@ -177,7 +177,7 @@ app.use(session({
     rolling: true,
     name: 'refound.sid',
     cookie: { 
-        maxAge: 50 * 60 * 1000, 
+        maxAge: 20 * 60 * 1000,  // 20 minutes
         httpOnly: true,  
         secure: false,  
         sameSite: 'lax',
@@ -2333,6 +2333,17 @@ function isPastMeetupDate(value) {
     return str < today;
 }
 
+// Latest allowed meetup date: the last day of NEXT month (Asia/Manila). Mirrors the date picker's max.
+function isTooFarMeetupDate(value) {
+    if (!value) return false;
+    const str = String(value).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return true;
+    const [y, m] = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }).split('-').map(Number);
+    const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();       // day 0 of month after next
+    const maxDate = new Date(Date.UTC(y, m, lastDay)).toISOString().slice(0, 10);
+    return str > maxDate;
+}
+
 app.post('/api/conversations/:conversationId/reschedule', requireUser, (req, res) => {
     const currentUserId = req.session.userId;
     const conversationId = req.params.conversationId;
@@ -2343,6 +2354,9 @@ app.post('/api/conversations/:conversationId/reschedule', requireUser, (req, res
 
     if (isPastMeetupDate(newDate)) {
         return res.status(400).json({ success: false, message: "The new meetup date can't be in the past." });
+    }
+    if (isTooFarMeetupDate(newDate)) {
+        return res.status(400).json({ success: false, message: "The new meetup date is too far ahead. Choose a date up to the end of next month." });
     }
 
     const sql = `
@@ -2545,6 +2559,9 @@ app.post('/api/conversations/:conversationId/agreement', requireUser, (req, res)
         // may legitimately be today/earlier by the time the other person agrees.
         if (!c.meetup_date && isPastMeetupDate(meetupDateInput)) {
             return res.status(400).json({ success: false, message: "The meetup date can't be in the past." });
+        }
+        if (!c.meetup_date && isTooFarMeetupDate(meetupDateInput)) {
+            return res.status(400).json({ success: false, message: "The meetup date is too far ahead. Choose a date up to the end of next month." });
         }
         const finalTime = c.meetup_time || meetupTimeInput;
 

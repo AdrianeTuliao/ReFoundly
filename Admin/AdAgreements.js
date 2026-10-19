@@ -39,15 +39,60 @@ function getStage(item) {
     return 'pending';
 }
 
+/* =========================================================
+   DATE / TIME FORMATTING
+   The API sends DATE columns as full ISO strings ("2026-10-14T16:00:00.000Z")
+   and TIME columns as "16:08:00". These helpers turn them into
+   "Oct 15, 2026" and "4:08 PM" (Philippine time, same as the server).
+   ========================================================= */
+
+const PH_TIMEZONE = 'Asia/Manila';
+
+function formatDateOnly(value) {
+    if (!value) return '';
+    const str = String(value).trim();
+
+    // Plain calendar date (no time part): format it as-is, no timezone shifting.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+        });
+    }
+
+    const parsed = new Date(str);
+    if (isNaN(parsed)) return str;
+    return parsed.toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric', timeZone: PH_TIMEZONE
+    });
+}
+
+function formatTimeOnly(value) {
+    if (!value) return '';
+    const str = String(value).trim();
+    if (/[ap]\.?m\.?$/i.test(str)) return str;           // already "4:08 PM"
+
+    const m = str.match(/^(\d{1,2}):(\d{2})/);           // "16:08:00" -> 4:08 PM
+    if (!m) return str;
+    const hour24 = Number(m[1]);
+    if (hour24 > 23) return str;
+
+    const suffix = hour24 >= 12 ? 'PM' : 'AM';
+    const hour12 = hour24 % 12 || 12;
+    return `${hour12}:${m[2]} ${suffix}`;
+}
+
+// "Oct 15, 2026 at 4:08 PM" (or just the date when there is no time)
+function formatDateTime(dateValue, timeValue) {
+    const d = formatDateOnly(dateValue);
+    const t = formatTimeOnly(timeValue);
+    if (!d) return t;
+    return t ? `${d} at ${t}` : d;
+}
+
 function formatMeetup(item) {
     if (!item.meetup_date) return 'Not set';
-    const d = new Date(item.meetup_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    let t = '';
-    if (item.meetup_time) {
-        const parsed = new Date(`1970-01-01T${item.meetup_time}`);
-        t = isNaN(parsed) ? item.meetup_time : parsed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    }
-    return t ? `${d}, ${t}` : d;
+    return formatDateTime(item.meetup_date, item.meetup_time);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -279,7 +324,7 @@ async function openHandoverModal(conversationId) {
                 <h3>${escapeHtml(item.item_name || 'Unnamed Item')}</h3>
                 <p><strong>Category:</strong> ${escapeHtml(item.category || 'N/A')} &middot; <strong>Type:</strong> ${escapeHtml(item.report_type || 'N/A')}</p>
                 <p><strong>Location reported:</strong> ${escapeHtml(item.location || 'N/A')}</p>
-                <p><strong>Date/Time:</strong> ${escapeHtml(item.incident_date || 'N/A')} ${escapeHtml(item.incident_time || '')}</p>
+                <p><strong>Date/Time:</strong> ${escapeHtml(formatDateTime(item.incident_date, item.incident_time) || 'N/A')}</p>
                 <p class="handover-desc">${escapeHtml(item.description || 'No description provided.')}</p>
             </div>
         </div>

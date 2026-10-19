@@ -20,38 +20,30 @@ function removeTooltip(inputName) {
     if (tooltip) tooltip.remove();
 }
 
-function updateChecklist(input, requirements) {
-    const allValid = requirements.every(req => req.isValid);
+/* Tooltips go AFTER the whole .password-container (not inside it),
+   so the eye icon keeps centering on the input itself. */
+function getAnchor(input) {
+    return input.closest('.password-container') || input;
+}
 
-    // KUNG KUMPLETO NA AT VALID NA ANG PIN-TYP NI USER, TANGGALIN NA AGAD ANG TOOLTIP!
-    if (allValid) {
-        input.classList.remove('input-invalid');
-        removeTooltip(input.name);
-        return; // Itigil na dito para hindi na magpakita ng box
-    } else if (input.value.length > 0) {
-        input.classList.add('input-invalid');
-    } else {
-        input.classList.remove('input-invalid');
-        removeTooltip(input.name);
-        return;
-    }
-
+function getTooltip(input) {
     let tooltip = document.getElementById(`tooltip-${input.name}`);
-    
     if (!tooltip) {
         tooltip = document.createElement('div');
         tooltip.className = 'input-tooltip-neat';
         tooltip.id = `tooltip-${input.name}`;
-        input.insertAdjacentElement('afterend', tooltip);
+        getAnchor(input).insertAdjacentElement('afterend', tooltip);
     }
+    return tooltip;
+}
 
-    // Responsive positioning: Desktop = absolute sa kanan, Mobile/Tablet = relative sa ibaba
-    const isMobileOrTablet = window.innerWidth <= 1024;
-
-    if (!isMobileOrTablet) {
+function placeTooltip(tooltip, input) {
+    const anchor = getAnchor(input);
+    // Desktop = absolute sa kanan, Mobile/Tablet = relative sa ibaba
+    if (window.innerWidth > 1024) {
         tooltip.style.position = 'absolute';
-        tooltip.style.left = `${input.offsetLeft + input.offsetWidth + 15}px`;
-        tooltip.style.top = `${input.offsetTop + (input.offsetHeight / 2)}px`;
+        tooltip.style.left = `${anchor.offsetLeft + anchor.offsetWidth + 15}px`;
+        tooltip.style.top = `${anchor.offsetTop + (anchor.offsetHeight / 2)}px`;
         tooltip.style.transform = 'translateY(-50%)';
     } else {
         tooltip.style.position = 'relative';
@@ -62,6 +54,27 @@ function updateChecklist(input, requirements) {
         tooltip.style.marginBottom = '10px';
         tooltip.style.width = '100%';
     }
+}
+
+function updateChecklist(input, requirements) {
+    const allValid = requirements.every(req => req.isValid);
+
+    // Kumpleto na at valid: tanggalin ang tooltip
+    if (allValid) {
+        input.classList.remove('input-invalid');
+        removeTooltip(input.name);
+        return;
+    } else if (input.value.length > 0) {
+        input.classList.add('input-invalid');
+    } else {
+        input.classList.remove('input-invalid');
+        removeTooltip(input.name);
+        return;
+    }
+
+    const tooltip = getTooltip(input);
+    tooltip.classList.remove('tooltip-ok');
+    placeTooltip(tooltip, input);
 
     let html = '';
     requirements.forEach(req => {
@@ -75,9 +88,26 @@ function updateChecklist(input, requirements) {
     tooltip.innerHTML = html;
 }
 
-function removeTooltip(inputName) {
-    const tooltip = document.getElementById(`tooltip-${inputName}`);
-    if (tooltip) tooltip.remove();
+/* Confirm password: green "Passwords match" / red "Passwords don't match" */
+function updateMatchMessage(input, matches) {
+    if (input.value.length === 0) {
+        input.classList.remove('input-invalid');
+        removeTooltip(input.name);
+        return;
+    }
+    input.classList.toggle('input-invalid', !matches);
+
+    const tooltip = getTooltip(input);
+    tooltip.classList.toggle('tooltip-ok', matches);
+    placeTooltip(tooltip, input);
+
+    const color = matches ? '#5f842f' : '#d9534f';
+    const icon = matches ? 'fa-check-circle' : 'fa-times-circle';
+    const text = matches ? 'Passwords match' : "Passwords don't match";
+    tooltip.innerHTML = `<div class="req-item" style="color: ${color}; font-weight: 500;">
+                <i class="fas ${icon}" style="color: ${color}; font-size: 11px;"></i>
+                <span>${text}</span>
+             </div>`;
 }
 
 /* PASSWORD VISIBILITY TOGGLE */
@@ -154,7 +184,7 @@ function validatePasswords() {
         if (confirmInput.value) checkMatch();
     };
     const checkMatch = () => {
-        updateChecklist(confirmInput, [{ text: "Passwords match", isValid: confirmInput.value === passwordInput.value && confirmInput.value !== "" }]);
+        updateMatchMessage(confirmInput, confirmInput.value === passwordInput.value);
     };
     passwordInput.addEventListener('input', check);
     passwordInput.addEventListener('focus', check);

@@ -802,8 +802,12 @@ input:not(:placeholder-shown) + label {
 }
 
 .forgot-password-box #otpSection {
-    display: none;
+    display: none;            /* JS switches it to flex once the code is sent */
+    flex-direction: column;   /* stack: message, code, new password, button */
+    align-items: stretch;
+    gap: 4px;
     text-align: center;
+    width: 100%;
 }
 
 .forgot-password-box #otpSection input,
@@ -819,4 +823,9 @@ input:not(:placeholder-shown) + label {
 .forgot-password-box form p {
     margin-left: 0;
     text-align: center;
+}
+/* Green state for the "Passwords match" message (beats the pink mobile override) */
+.input-tooltip-neat.tooltip-ok {
+    background: #f1f8e9 !important;
+    border: 1px solid #c5e1a5 !important;
 }

@@ -1152,7 +1152,7 @@ function createAgreementModal() {
                     <label for="agreementDateInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">
                         <i class="fas fa-calendar-alt"></i> Meetup Date
                     </label>
-                    <input type="date" id="agreementDateInput" min="${getLocalTodayISO()}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
+                    <input type="date" id="agreementDateInput" min="${getLocalTodayISO()}" max="${getMeetupMaxISO()}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
                 </div>
                 <div style="flex: 1;">
                     <label for="agreementTimeInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">
@@ -1273,7 +1273,7 @@ function openAgreementModal() {
                     <label for="agreementDateInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px; color: #333;">
                         <i class="fas fa-calendar-alt"></i> Meetup Date
                     </label>
-                    <input type="date" id="agreementDateInput" value="${today}" min="${today}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
+                    <input type="date" id="agreementDateInput" value="${today}" min="${today}" max="${getMeetupMaxISO()}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
                 </div>
                 <div style="flex: 1;">
                     <label for="agreementTimeInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px; color: #333;">
@@ -1329,9 +1329,14 @@ async function confirmAgreement() {
             return;
         }
 
-        if (dateToSend < getLocalTodayISO()) {
-            alert("The meetup date can't be in the past. Please choose today or a later date.");
-            if (dateInput) { dateInput.value = getLocalTodayISO(); dateInput.focus(); }
+        const dateError = getMeetupDateError(dateToSend, "");
+        if (dateError) {
+            alert(dateError);
+            if (dateInput) {
+                if (dateToSend < getLocalTodayISO()) dateInput.value = getLocalTodayISO();
+                else if (dateToSend > getMeetupMaxISO()) dateInput.value = getMeetupMaxISO();
+                dateInput.focus();
+            }
             return;
         }
     }
@@ -1345,6 +1350,16 @@ async function confirmAgreement() {
             alert("Please select a meetup time before agreeing.");
             if (timeInput) timeInput.focus();
             return;
+        }
+
+        // Same-day meetups must still be in the future (only for a freshly proposed time).
+        if (!agreementStatus.meetupDate) {
+            const timeError = getMeetupDateError(dateToSend, timeToSend);
+            if (timeError) {
+                alert(timeError);
+                if (timeInput) timeInput.focus();
+                return;
+            }
         }
     }
 
@@ -1646,7 +1661,7 @@ function createRescheduleModal() {
                     <label for="rescheduleDateInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">
                         <i class="fas fa-calendar-alt"></i> New Date
                     </label>
-                    <input type="date" id="rescheduleDateInput" min="${getLocalTodayISO()}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
+                    <input type="date" id="rescheduleDateInput" min="${getLocalTodayISO()}" max="${getMeetupMaxISO()}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;">
                 </div>
                 <div style="flex: 1;">
                     <label for="rescheduleTimeInput" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">
@@ -1709,6 +1724,38 @@ function getLocalTodayISO() {
     return `${d.getFullYear()}-${mm}-${dd}`;
 }
 
+/* Latest meetup date allowed: the last day of NEXT month, as YYYY-MM-DD.
+   (Day 0 of the month after next = last day of next month.) */
+function getMeetupMaxISO() {
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/* Returns an error message if the meetup date/time is not allowed, otherwise "". */
+function getMeetupDateError(dateStr, timeStr) {
+    if (!dateStr) return "";
+    const today = getLocalTodayISO();
+    const max = getMeetupMaxISO();
+
+    if (dateStr < today) {
+        return "The meetup date can't be in the past. Please choose today or a later date.";
+    }
+    if (dateStr > max) {
+        return "The meetup date is too far ahead. Please choose a date from today up to the end of next month.";
+    }
+    if (dateStr === today && timeStr) {
+        const now = new Date();
+        const nowHHMM = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        if (timeStr.slice(0, 5) < nowHHMM) {
+            return "That time has already passed today. Please choose a later time.";
+        }
+    }
+    return "";
+}
+
 async function submitReschedule() {
     if (!currentConversationId) return;
 
@@ -1717,10 +1764,13 @@ async function submitReschedule() {
     const timeInput = document.getElementById("rescheduleTimeInput");
     const reasonInput = document.getElementById("rescheduleReasonInput");
 
-    if (dateInput && dateInput.value && dateInput.value < getLocalTodayISO()) {
-        alert("The new date can't be in the past. Please choose today or a later date.");
-        dateInput.focus();
-        return;
+    if (dateInput && dateInput.value) {
+        const rescheduleError = getMeetupDateError(dateInput.value.trim(), timeInput ? timeInput.value.trim() : "");
+        if (rescheduleError) {
+            alert(rescheduleError.replace("The meetup date", "The new date"));
+            dateInput.focus();
+            return;
+        }
     }
 
     const button = document.getElementById("submitRescheduleBtn");

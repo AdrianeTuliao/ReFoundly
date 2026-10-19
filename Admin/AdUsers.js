@@ -6,6 +6,43 @@ let currentUserId = null
 
 const BACKEND_URL = "";  
 
+/* POST helper for admin actions: sends the CSRF token (if the server issues one)
+   and throws an Error carrying the SERVER'S real message, so failures are visible
+   instead of a generic "cannot connect" alert. */
+async function adminPost(url, payload) {
+    let csrfToken = '';
+    try {
+        const t = await fetch(`${BACKEND_URL}/api/csrf-token`);
+        if (t.ok) csrfToken = (await t.json()).csrfToken || '';
+    } catch (e) { /* no token available: continue without it */ }
+
+    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    if (csrfToken) headers['CSRF-Token'] = csrfToken;
+
+    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) });
+
+    let data = null;
+    if ((res.headers.get('content-type') || '').includes('application/json')) {
+        try { data = await res.json(); } catch (e) { /* ignore */ }
+    } else {
+        const text = await res.text().catch(() => '');
+        console.error(`[${res.status}] ${url} returned non-JSON:`, text.slice(0, 300));
+    }
+
+    if (!res.ok) {
+        let msg = (data && (data.message || data.error)) || '';
+        if (!msg) {
+            msg = (res.status === 401 || res.status === 403)
+                ? "Your admin session expired or this action was refused. Please log in again."
+                : `Server error (${res.status}). Check the server logs.`;
+        }
+        const err = new Error(msg);
+        err.status = res.status;
+        throw err;
+    }
+    return data || {};
+}
+
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.querySelector(".content-wrapper");
@@ -166,27 +203,18 @@ function closeUnsuspendModal() {
 
 async function executeUnsuspend() {
     if (!pendingUnsuspendId) return;
+    const id = pendingUnsuspendId;
+    const role = pendingUnsuspendRole;
 
     try {
-        const url = `${BACKEND_URL}/api/admin-users/unsuspend/${pendingUnsuspendId}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: pendingUnsuspendRole })
-        });
-
+        await adminPost(`${BACKEND_URL}/api/admin-users/unsuspend/${id}`, { role });
         closeUnsuspendModal();
-
-        if (response.ok) {
-            showToast("Suspension Lifted", "The account is now active again.", "success");
-            fetchUsers();
-        } else {
-            const errorData = await response.json();
-            showToast("Error", errorData.message || "Failed to lift suspension", "danger");
-        }
+        showToast("Suspension Lifted", "The account is now active again.", "success");
+        fetchUsers();
     } catch (err) {
         console.error("Unsuspend error:", err);
-        alert("Connection lost. Check backend server.");
+        closeUnsuspendModal();
+        showToast("Unsuspend failed", err.message, "danger");
     }
 }
 
@@ -234,41 +262,29 @@ function closeViewModal() { document.getElementById("viewUserModal").style.displ
 async function executeToggle() {
     const confirmBtn = document.getElementById("confirmToggleBtn");
     const originalText = confirmBtn.innerText;
-    
+
     confirmBtn.innerText = "Processing...";
     confirmBtn.disabled = true;
 
     try {
-        const url = `${BACKEND_URL}/api/admin-users/status-toggle/${pendingToggleId}`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                status: pendingToggleStatus,
-                role: pendingToggleRole,
-                actionSource: 'admin_manual'
-            })
+        await adminPost(`${BACKEND_URL}/api/admin-users/status-toggle/${pendingToggleId}`, {
+            status: pendingToggleStatus,
+            role: pendingToggleRole,
+            actionSource: 'admin_manual'
         });
 
-        if (response.ok) {
-            const isActivating = pendingToggleStatus === "active";
-
-            showToast(
-                isActivating ? "Account Reactivated" : "Account Deactivated",
-                isActivating ? "The user can now log in again." : "Account has been placed on hold.",
-                isActivating ? "success" : "danger"
-            );
-
-            closeToggleModal();
-            fetchUsers(); // Refresh table
-        } else {
-            const errorData = await response.json();
-            alert("Error: " + (errorData.message || "Failed to update status"));
-        }
+        const isActivating = pendingToggleStatus === "active";
+        showToast(
+            isActivating ? "Account Reactivated" : "Account Deactivated",
+            isActivating ? "The user can now log in again." : "Account has been placed on hold.",
+            isActivating ? "success" : "danger"
+        );
+        closeToggleModal();
+        fetchUsers(); // Refresh table
     } catch (err) {
         console.error("Toggle error:", err);
-        alert("Connection lost. Check if backend is running on port " + BACKEND_URL.split(':').pop());
+        closeToggleModal();
+        showToast("Action failed", err.message, "danger");
     } finally {
         confirmBtn.innerText = originalText;
         confirmBtn.disabled = false;
@@ -494,39 +510,25 @@ async function confirmSuspension() {
         }
     });
 
-    // Use the full URL so it doesn't try to talk to the AI server (5500)
-    const url = `${BACKEND_URL}/api/admin-users/suspend/${selectedUserId}`;
-    console.log("Targeting Backend at:", url);
+    const finalBtn = document.getElementById("finalSuspendBtn");
+    if (finalBtn) finalBtn.disabled = true;
 
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                reasons: reasons, 
-                role: selectedUserRole,
-                durationDays: maxDays // <--- Naidagdag: Ipapadala sa backend
-            }) 
+        await adminPost(`${BACKEND_URL}/api/admin-users/suspend/${selectedUserId}`, {
+            reasons: reasons,
+            role: selectedUserRole,
+            durationDays: maxDays
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Server Error Page:", errorText);
-            throw new Error(`Server responded with ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Success Actions
         closeSuspendModal();
         showToast("User Suspended", `Account suspended for ${maxDays} day(s).`, "danger");
-
-        // Refresh table after suspension
         fetchUsers();
-
     } catch (error) {
         console.error("Suspension failed:", error);
-        alert("Could not connect to the Backend server. Is it running on port " + BACKEND_URL.split(':').pop() + "?");
+        closeSuspendModal();
+        showToast("Suspension failed", error.message, "danger");
+    } finally {
+        if (finalBtn) finalBtn.disabled = false;
     }
 }
 

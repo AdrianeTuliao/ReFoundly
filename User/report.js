@@ -1,5 +1,36 @@
+/* 0. DATE LIMITS: from 2025-01-01 up to today (no future dates) */
+const MIN_INCIDENT_DATE = '2025-01-01';
+
+function todayLocalISO() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function setupIncidentDateLimits() {
+    const dateInput = document.querySelector('input[name="incidentDate"]');
+    if (!dateInput) return;
+
+    const applyLimits = () => {
+        dateInput.min = MIN_INCIDENT_DATE;
+        dateInput.max = todayLocalISO(); // re-evaluated, so it stays right past midnight
+    };
+    applyLimits();
+
+    // Typed/pasted out-of-range values: reject right away
+    dateInput.addEventListener('change', () => {
+        applyLimits();
+        const v = dateInput.value;
+        if (v && (v < dateInput.min || v > dateInput.max)) {
+            alert("Please choose a date from Jan 1, 2025 up to today only.");
+            dateInput.value = '';
+        }
+    });
+}
+
 /* 1. IMAGE PREVIEW & REMOVE LOGIC */
 document.addEventListener('DOMContentLoaded', () => {
+    setupIncidentDateLimits();
     const fileInput = document.getElementById('file-upload');
     const placeholder = document.getElementById('uploadPlaceholder');
     const previewContainer = document.getElementById('previewContainer');
@@ -104,6 +135,23 @@ if (mainForm) {
         if (!emailValue.includes('@')) {
             alert("Please enter a valid email address.");
             return;
+        }
+
+        // DATE / TIME VALIDATION (2025-01-01 up to today, never in the future)
+        const dateEl = document.querySelector('input[name="incidentDate"]');
+        const timeEl = document.querySelector('input[name="incidentTime"]');
+        const today = todayLocalISO();
+        if (dateEl && (dateEl.value < MIN_INCIDENT_DATE || dateEl.value > today)) {
+            alert("Please choose a date from Jan 1, 2025 up to today only.");
+            return;
+        }
+        if (dateEl && timeEl && dateEl.value === today && timeEl.value) {
+            const now = new Date();
+            const nowHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            if (timeEl.value > nowHM) {
+                alert("The time can't be later than the current time.");
+                return;
+            }
         }
 
         const maliciousRegex = /https?:\/\/|www\.|<script/i; 
