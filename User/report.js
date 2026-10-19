@@ -29,7 +29,7 @@ function setupIncidentTimeLimit() {
     const enforce = () => {
         sync();
         if (timeInput.max && timeInput.value && timeInput.value > timeInput.max) {
-            showCustomAlert("Invalid Time", "The time can't be later than the current time.");
+            showCustomAlert("Invalid Time", "The time can't be later than the current time."); // ✅ Custom Modal na
             timeInput.value = '';
         }
     };
