@@ -923,41 +923,57 @@ app.post('/api/admin/update-status', requireAdmin, async (req, res) => {
         createAuditLog(req, `ADMIN_STATUS_${newStatus.toUpperCase()}`, { itemId, status: newStatus });
 
         if (newStatus === 'Published') {
-            db.query("SELECT * FROM items WHERE id = ?", [itemId], (itemErr, itemResults) => {
-                if (!itemErr && itemResults.length > 0) {
-                    const approvedItem = itemResults[0];
-                    const oppositeType = (approvedItem.report_type === 'Lost') ? 'Found' : 'Lost';
+    db.query("SELECT * FROM items WHERE id = ?", [itemId], (itemErr, itemResults) => {
+        if (!itemErr && itemResults.length > 0) {
+            const approvedItem = itemResults[0];
+            const oppositeType = (approvedItem.report_type === 'Lost') ? 'Found' : 'Lost';
 
-                    const matchQuery = `
-                        SELECT id, user_id, item_name 
-                        FROM items 
-                        WHERE category = ? 
-                          AND location = ? 
-                          AND report_type = ? 
-                          AND user_id != ? 
-                          AND status = 'Published'
-                          AND (is_archived = 0 OR is_archived IS NULL)
-                    `;
+            const matchQuery = `
+                SELECT id, user_id, item_name, brand, description
+                FROM items 
+                WHERE category = ? 
+                  AND location = ? 
+                  AND report_type = ? 
+                  AND user_id != ? 
+                  AND status = 'Published'
+                  AND (is_archived = 0 OR is_archived IS NULL)
+                  AND (
+                      item_name LIKE ? OR 
+                      brand LIKE ? OR 
+                      description LIKE ?
+                  )
+            `;
 
-                    db.query(matchQuery, [approvedItem.category, approvedItem.location, oppositeType, approvedItem.user_id], (matchErr, matches) => {
-                        if (!matchErr && matches && matches.length > 0) {
-                            
-                            // 🟢 ENGLISH NOTIFICATION FOR NEWLY APPROVED REPORT
-                            const notifForNew = `Possible item match! A ${oppositeType.toLowerCase()} item was found in ${approvedItem.location}. Check match updates.`;
-                            db.query(`INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?)`, 
-                                [approvedItem.user_id, notifForNew, matches[0].id]);
+            // 💡 Dito natin sineset ang mga values para sa tatlong '?' sa SQL query
+            const searchKeyword = `%${approvedItem.item_name}%`;
+            const searchBrand = approvedItem.brand ? `%${approvedItem.brand}%` : '%%';
+            const searchDesc = approvedItem.description ? `%${approvedItem.description}%` : '%%';
 
-                            // 🟢 ENGLISH NOTIFICATION FOR EXISTING MATCH POST OWNERS
-                            matches.forEach(match => {
-                                const notifForExisting = `Possible item match! A new ${approvedItem.report_type.toLowerCase()} report in ${approvedItem.location} (${approvedItem.item_name}) might match your post.`;
-                                db.query(`INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?)`, 
-                                    [match.user_id, notifForExisting, approvedItem.id]);
-                            });
-                        }
+            db.query(matchQuery, [
+                approvedItem.category, 
+                approvedItem.location, 
+                oppositeType, 
+                approvedItem.user_id,
+                searchKeyword,
+                searchBrand,
+                searchDesc
+            ], (matchErr, matches) => {
+                if (!matchErr && matches && matches.length > 0) {
+                    
+                    const notifForNew = `Possible item match! A ${oppositeType.toLowerCase()} item was found in ${approvedItem.location}. Check match updates.`;
+                    db.query(`INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?)`, 
+                        [approvedItem.user_id, notifForNew, matches[0].id]);
+
+                    matches.forEach(match => {
+                        const notifForExisting = `Possible item match! A new ${approvedItem.report_type.toLowerCase()} report in ${approvedItem.location} (${approvedItem.item_name}) might match your post.`;
+                        db.query(`INSERT INTO user_notifications (user_id, message, item_id) VALUES (?, ?, ?)`, 
+                            [match.user_id, notifForExisting, approvedItem.id]);
                     });
                 }
             });
         }
+    });
+}
 
         res.json({ success: true, message: "Status updated in DB" });
     });

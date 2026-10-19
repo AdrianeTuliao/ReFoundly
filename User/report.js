@@ -7,6 +7,42 @@ function todayLocalISO() {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+function nowHM() {
+    const n = new Date();
+    return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+}
+
+/* Time can't be later than "now" when the chosen date is today */
+function setupIncidentTimeLimit() {
+    const dateInput = document.querySelector('input[name="incidentDate"]');
+    const timeInput = document.querySelector('input[name="incidentTime"]');
+    if (!dateInput || !timeInput) return;
+
+    const sync = () => {
+        if (dateInput.value === todayLocalISO()) {
+            timeInput.max = nowHM();          // native limit: blocks submit + greys picker
+        } else {
+            timeInput.removeAttribute('max'); // past dates: any time of day is fine
+        }
+    };
+
+    const enforce = () => {
+        sync();
+        if (timeInput.max && timeInput.value && timeInput.value > timeInput.max) {
+            alert("The time can't be later than the current time.");
+            timeInput.value = '';
+        }
+    };
+
+    dateInput.addEventListener('change', enforce);
+    dateInput.addEventListener('input', sync);
+    timeInput.addEventListener('focus', sync);
+    timeInput.addEventListener('change', enforce);
+    timeInput.addEventListener('blur', enforce);
+    setInterval(sync, 30000);                 // keep "now" fresh while the page stays open
+    sync();
+}
+
 function setupIncidentDateLimits() {
     const dateInput = document.querySelector('input[name="incidentDate"]');
     if (!dateInput) return;
@@ -31,6 +67,7 @@ function setupIncidentDateLimits() {
 /* 1. IMAGE PREVIEW & REMOVE LOGIC */
 document.addEventListener('DOMContentLoaded', () => {
     setupIncidentDateLimits();
+    setupIncidentTimeLimit();
     const fileInput = document.getElementById('file-upload');
     const placeholder = document.getElementById('uploadPlaceholder');
     const previewContainer = document.getElementById('previewContainer');
@@ -146,9 +183,7 @@ if (mainForm) {
             return;
         }
         if (dateEl && timeEl && dateEl.value === today && timeEl.value) {
-            const now = new Date();
-            const nowHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            if (timeEl.value > nowHM) {
+            if (timeEl.value > nowHM()) {
                 alert("The time can't be later than the current time.");
                 return;
             }
