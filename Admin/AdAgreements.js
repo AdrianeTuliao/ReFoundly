@@ -112,8 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('agreementSearchInput')?.addEventListener('input', handleSearch);
     document.getElementById('stageFilter')?.addEventListener('change', (e) => {
         currentStage = e.target.value;
-        currentPage = 1;
-        renderTable();
+        handleSearch();   // re-filter by the chosen stage (renderTable alone kept showing the old list)
     });
 
     document.getElementById('prevBtn')?.addEventListener('click', () => {
@@ -504,7 +503,11 @@ function buildModalActions(item) {
             ${pdfLink}`;
     }
     if (stage === 'approved') {
-        return `${reschedBtn}${pdfLink}`;
+        // Barangay approved -> after the meetup actually happens, the admin closes it here.
+        return `
+            ${reschedBtn}
+            <button class="btn-confirm" onclick="markCompleted(${id})"><i class="fa-solid fa-flag-checkered"></i> Mark as Completed</button>
+            ${pdfLink}`;
     }
     return pdfLink; // completed / rescheduling / pending: nothing more for the admin to do
 }
@@ -514,9 +517,18 @@ async function postAdminAction(conversationId, action, body, successTitle, succe
     try {
         const response = await fetch(`/api/admin/transactions/${conversationId}/${action}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json' 
+            },
             body: JSON.stringify(body || {})
         });
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Server returned an invalid response (Endpoint might be missing or offline).");
+        }
+
         const result = await response.json();
         if (!result.success) throw new Error(result.message || "Unknown error occurred.");
 
@@ -542,6 +554,19 @@ async function markBarangayApproved(conversationId) {
 
     await postAdminAction(conversationId, 'barangay-approved', {},
         "Handover is ready", "Both parties were notified that the barangay approved the schedule.");
+}
+
+// Admin closes the handover once the item was really handed over -> Successful Transaction.
+async function markCompleted(conversationId) {
+    const ok = await showAgrDialog({
+        title: "Mark this handover as completed?",
+        message: "Only confirm after the item was handed over to its owner. This counts as a Successful Transaction and marks the item as Resolved.",
+        confirmText: "Yes, completed"
+    });
+    if (!ok) return;
+
+    await postAdminAction(conversationId, 'complete', {},
+        "Transaction completed", "The handover was recorded as a Successful Transaction and both parties were notified.");
 }
 
 /* =========================================================
@@ -870,16 +895,22 @@ function clearAllNotifs() {
 
 function updateStatCards(data) {
     const stages = data.map(getStage);
-    // Scheduled = barangay-approved handovers (and completed)
-    const scheduled = stages.filter(s => s === 'approved' || s === 'completed').length;
-    // Pending = still needs admin action: review, or waiting on the barangay's reply
+    
+    // Scheduled = barangay-approved handovers that are still waiting for the meetup to happen
+    const scheduled = stages.filter(s => s === 'approved').length;
+    // Successful = handovers the admin closed as completed
+    const successful = stages.filter(s => s === 'completed').length;
+    
+    // Pending = mga naghihintay pa ng review o approval ng barangay ('review' o 'awaiting_barangay')
     const pending = stages.filter(s => s === 'review' || s === 'awaiting_barangay').length;
     const disputes = stages.filter(s => s === 'disputed').length;
 
     const scheduledEl = document.getElementById('metric-scheduled');
     const clearanceEl = document.getElementById('metric-clearance');
     const disputedEl = document.getElementById('metric-disputed');
+    const successEl = document.getElementById('metric-completed');
 
+    if (successEl) successEl.innerText = successful;
     if (scheduledEl) scheduledEl.innerText = scheduled;
     if (clearanceEl) clearanceEl.innerText = pending;
     if (disputedEl) disputedEl.innerText = disputes;

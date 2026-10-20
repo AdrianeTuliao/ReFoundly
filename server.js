@@ -2637,6 +2637,205 @@ app.post('/api/conversations/:conversationId/agreement', requireUser, (req, res)
     });
 });
 
+/*--ADMIN: MARK HANDOVER AS BARANGAY APPROVED--*/
+app.post('/api/admin/transactions/:conversationId/barangay-approved', requireAdmin, (req, res) => {
+    const conversationId = req.params.conversationId;
+
+    const sql = `
+        SELECT c.*, i.item_name FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        WHERE c.id = ? LIMIT 1
+    `;
+    
+    db.query(sql, [conversationId], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error." });
+        if (results.length === 0) return res.status(404).json({ success: false, message: "Conversation not found." });
+
+        const c = results[0];
+
+        if (!['confirmed', 'awaiting_barangay'].includes(c.agreement_status)) {
+            return res.status(400).json({
+                success: false,
+                message: c.agreement_status === 'barangay_approved'
+                    ? "This handover is already marked as barangay approved."
+                    : "Only a confirmed handover that is waiting for the barangay can be approved."
+            });
+        }
+
+        // 🟢 I-update ang agreement_status para maging 'barangay_approved'
+        db.query(
+            "UPDATE conversations SET agreement_status = 'barangay_approved' WHERE id = ?",
+            [conversationId],
+            (updateErr) => {
+                if (updateErr) return res.status(500).json({ success: false, message: "Database update error." });
+
+                const notifMsg = `The barangay has approved the schedule for "${c.item_name}". Your handover is now ready!`;
+                db.query(
+                    `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                    [c.user_one_id, notifMsg, c.item_id, conversationId, c.user_two_id, notifMsg, c.item_id, conversationId],
+                    () => {}
+                );
+
+                db.query(
+                    `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_BARANGAY_APPROVED', ?)`,
+                    [JSON.stringify({ conversationId, itemId: c.item_id })],
+                    () => {}
+                );
+
+                res.json({ success: true, message: "Marked as barangay approved successfully." });
+            }
+        );
+    });
+});
+
+/*--ADMIN: MARK HANDOVER AS COMPLETED (item was handed over) = Successful Transaction--*/
+app.post('/api/admin/transactions/:conversationId/complete', requireAdmin, (req, res) => {
+    const conversationId = req.params.conversationId;
+
+    const sql = `
+        SELECT c.*, i.item_name FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        WHERE c.id = ? LIMIT 1
+    `;
+
+    db.query(sql, [conversationId], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error." });
+        if (results.length === 0) return res.status(404).json({ success: false, message: "Conversation not found." });
+
+        const c = results[0];
+
+        if (c.agreement_status !== 'barangay_approved') {
+            return res.status(400).json({
+                success: false,
+                message: c.agreement_status === 'completed'
+                    ? "This handover is already completed."
+                    : "Only a barangay-approved handover can be marked as completed."
+            });
+        }
+
+        db.query(
+            "UPDATE conversations SET agreement_status = 'completed', updated_at = NOW() WHERE id = ? AND agreement_status = 'barangay_approved'",
+            [conversationId],
+            (updateErr, updateResult) => {
+                if (updateErr) {
+                    console.error("Complete Transaction Error:", updateErr);
+                    return res.status(500).json({ success: false, message: "Database update error." });
+                }
+                if (!updateResult || updateResult.affectedRows === 0) {
+                    return res.status(409).json({ success: false, message: "This handover was already updated. Please refresh." });
+                }
+
+                // The item is now returned to its owner -> counts as Resolved / claimed in the stats
+                // Resolves the conversation's item AND the matching Lost/Found post of the other
+                // party (same name + category, opposite report type) so admin doesn't have to hunt for it.
+                db.query(
+                    `UPDATE items t
+                     JOIN items o ON o.id = ?
+                     SET t.status = 'Resolved'
+                     WHERE t.id = o.id
+                        OR (t.status = 'Published'
+                            AND t.user_id IN (?, ?)
+                            AND t.user_id <> o.user_id
+                            AND t.report_type <> o.report_type
+                            AND LOWER(TRIM(t.item_name)) = LOWER(TRIM(o.item_name))
+                            AND t.category = o.category)`,
+                    [c.item_id, c.user_one_id, c.user_two_id],
+                    (itemErr) => {
+                        if (itemErr) console.error("Item resolve error:", itemErr);
+                    }
+                );
+
+                const notifMsg = `Your handover for "${c.item_name}" was completed successfully. Thank you for using ReFoundly!`;
+                db.query(
+                    `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                    [c.user_one_id, notifMsg, c.item_id, conversationId, c.user_two_id, notifMsg, c.item_id, conversationId],
+                    () => {}
+                );
+
+                db.query(
+                    `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_COMPLETED', ?)`,
+                    [JSON.stringify({ conversationId, itemId: c.item_id })],
+                    () => {}
+                );
+
+                res.json({ success: true, message: "Transaction marked as completed." });
+            }
+        );
+    });
+});
+
+/*--ADMIN: RE-SCHEDULE (e.g. barangay said no). Resets both agreements so the users pick again.--*/
+app.post('/api/admin/transactions/:conversationId/reschedule', requireAdmin, (req, res) => {
+    const conversationId = req.params.conversationId;
+    const reason = stripTags(req.body.reason || '').slice(0, 300);
+    const newDate = req.body.newDate || null;
+    const newTime = req.body.newTime || null;
+
+    if (!reason) {
+        return res.status(400).json({ success: false, message: "Please give a reason for the re-schedule." });
+    }
+    if (isPastMeetupDate(newDate)) {
+        return res.status(400).json({ success: false, message: "The new meetup date can't be in the past." });
+    }
+    if (isTooFarMeetupDate(newDate)) {
+        return res.status(400).json({ success: false, message: "The new meetup date is too far ahead. Choose a date up to the end of next month." });
+    }
+
+    const sql = `
+        SELECT c.*, i.item_name FROM conversations c
+        JOIN items i ON i.id = c.item_id
+        WHERE c.id = ? LIMIT 1
+    `;
+
+    db.query(sql, [conversationId], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error." });
+        if (results.length === 0) return res.status(404).json({ success: false, message: "Conversation not found." });
+
+        const c = results[0];
+
+        if (!['confirmed', 'awaiting_barangay', 'barangay_approved'].includes(c.agreement_status)) {
+            return res.status(400).json({ success: false, message: "This handover can't be re-scheduled at its current stage." });
+        }
+
+        // Barangay is cleared too: the usual reason is that hall can't host it, so the users choose again.
+        const updateSql = `
+            UPDATE conversations
+            SET user_one_agreed = 0,
+                user_two_agreed = 0,
+                agreement_status = 'reschedule_requested',
+                meetup_barangay = NULL,
+                meetup_date = ?,
+                meetup_time = ?,
+                admin_notified_at = NULL,
+                transaction_report_path = NULL,
+                updated_at = NOW()
+            WHERE id = ?
+        `;
+
+        db.query(updateSql, [newDate, newTime, conversationId], (updateErr) => {
+            if (updateErr) {
+                console.error("Admin Reschedule Error:", updateErr);
+                return res.status(500).json({ success: false, message: "Database update error." });
+            }
+
+            const notifMsg = `The admin asked to re-schedule your handover for "${c.item_name}": ${reason}. Please agree on a new schedule.`;
+            db.query(
+                `INSERT INTO user_notifications (user_id, message, item_id, conversation_id) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                [c.user_one_id, notifMsg, c.item_id, conversationId, c.user_two_id, notifMsg, c.item_id, conversationId],
+                () => {}
+            );
+
+            db.query(
+                `INSERT INTO audit_logs (action, details) VALUES ('ADMIN_RESCHEDULE_REQUESTED', ?)`,
+                [JSON.stringify({ conversationId, itemId: c.item_id, reason, newDate, newTime })],
+                () => {}
+            );
+
+            res.json({ success: true, message: "Re-schedule sent to both parties." });
+        });
+    });
+});
+
 /* =========================================================
    ADMIN: REVIEW + CONFIRM TRANSACTION (auto-generates the PDF)
    ========================================================= */
@@ -2656,7 +2855,8 @@ app.get('/api/admin/pending-transactions', requireAdmin, (req, res) => {
         JOIN items i ON i.id = c.item_id
         JOIN users ua ON ua.id = c.user_one_id
         JOIN users ub ON ub.id = c.user_two_id
-        WHERE c.agreement_status IN ('both_agreed', 'admin_reviewing', 'confirmed', 'disputed')
+        WHERE c.agreement_status IN ('both_agreed', 'admin_reviewing', 'confirmed', 'awaiting_barangay',
+                                     'barangay_approved', 'reschedule_requested', 'completed', 'disputed')
         ORDER BY c.admin_notified_at IS NULL, c.admin_notified_at DESC
     `;
     db.query(sql, (err, results) => {

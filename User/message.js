@@ -1022,6 +1022,12 @@ function renderAgreementStateChange(previousStatus) {
         if (previousStatus !== "barangay_approved") {
             showToast("The barangay approved your handover. Please bring a valid ID!");
         }
+    } else if (status === "completed") {
+        showConfirmedPanel();
+
+        if (previousStatus !== "completed") {
+            showToast("Handover completed. Thank you for using ReFoundly!");
+        }
     } else if (status === "disputed") {
         showDisputedPanel();
 
@@ -1518,12 +1524,15 @@ function showConfirmedPanel() {
         meetupDetailsHtml += `</p>`;
     }
 
-    const barangayApproved = agreementStatus.status === "barangay_approved";
-    const panelTitle = barangayApproved ? "Ready for handover" : "Confirmed by admin, waiting for barangay approval";
-    const panelBody = barangayApproved
-        ? "The barangay hall approved this schedule. See you at the meetup! Please bring a valid ID."
-        : "An admin confirmed your handover and is coordinating with the barangay hall. Please stand by. Your meetup is not final until the barangay approves.";
-    const panelBadge = barangayApproved ? "Ready" : "Waiting for Barangay";
+    const isCompleted = agreementStatus.status === "completed";
+    const barangayApproved = agreementStatus.status === "barangay_approved" || isCompleted;
+    const panelTitle = isCompleted ? "Handover completed" : (barangayApproved ? "Ready for handover" : "Confirmed by admin, waiting for barangay approval");
+    const panelBody = isCompleted
+        ? "This handover was completed successfully. Thank you for using ReFoundly!"
+        : (barangayApproved
+            ? "The barangay hall approved this schedule. See you at the meetup! Please bring a valid ID."
+            : "An admin confirmed your handover and is coordinating with the barangay hall. Please stand by. Your meetup is not final until the barangay approves.");
+    const panelBadge = isCompleted ? "Completed" : (barangayApproved ? "Ready" : "Waiting for Barangay");
     const panelColor = barangayApproved ? "#2e7d32" : "#0369a1";
     const panelIcon = barangayApproved ? "fa-circle-check" : "fa-hourglass-half";
 
@@ -1566,7 +1575,9 @@ function showConfirmedPanel() {
 
     const rescheduleBtn = document.getElementById("rescheduleBtn");
     if (rescheduleBtn) {
-        rescheduleBtn.addEventListener("click", openRescheduleModal);
+        // A finished handover can't be re-scheduled any more
+        if (isCompleted) rescheduleBtn.remove();
+        else rescheduleBtn.addEventListener("click", openRescheduleModal);
     }
 }
 

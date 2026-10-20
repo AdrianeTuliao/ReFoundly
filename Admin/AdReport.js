@@ -126,6 +126,11 @@ async function fetchItems() {
 
 setInterval(fetchItems, 20000);
 
+// Refresh right away when the admin comes back to this tab (e.g. after completing a handover)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) fetchItems(); });
+window.addEventListener('focus', fetchItems);
+window.addEventListener('pageshow', fetchItems);
+
 async function changeStatus(id, newStatus) {
     try {
         const response = await fetch('/api/admin/update-status', {

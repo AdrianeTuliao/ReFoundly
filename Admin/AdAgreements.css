@@ -112,7 +112,7 @@ body {
 /* 3 Metrics Row */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
     margin-bottom: 28px;
 }
@@ -140,6 +140,7 @@ body {
 .active-bg { background-color: #e0f2fe; color: #0284c7; }
 .pending-bg { background-color: #fef3c7; color: #d97706; }
 .disputed-bg { background-color: #fee2e2; color: #dc2626; }
+.success-bg { background-color: #d1fae5; color: #047857; }
 
 .card-info p {
     font-size: 0.88rem;
@@ -484,4 +485,11 @@ td {
 
 .agr-dialog-confirm.danger {
     background: #dc2626;
+}
+
+@media (max-width: 1200px) {
+    .summary-cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .summary-cards { grid-template-columns: 1fr; }
 }
