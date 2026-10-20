@@ -850,6 +850,11 @@ app.get('/api/user-history', requireUser, (req, res) => {
     });
 });
 
+/*--Auto-migration: column that links a conversation to the other party's matching post--*/
+db.query("ALTER TABLE conversations ADD COLUMN IF NOT EXISTS matched_item_id INT NULL", (err) => {
+    if (err) console.error("matched_item_id migration failed (run it manually):", err.message);
+});
+
 /*--Published Items (Public)--*/
 app.get('/api/items/published', (req, res) => {
     const sql = `
@@ -1537,7 +1542,7 @@ app.post('/api/conversations/start', requireUser, (req, res) => {
 
     // Get the item and its owner
     const itemSql = `
-        SELECT id, user_id, item_name, status, is_archived
+        SELECT id, user_id, item_name, status, is_archived, report_type, category, location
         FROM items
         WHERE id = ?
     `;
@@ -1639,39 +1644,50 @@ app.post('/api/conversations/start', requireUser, (req, res) => {
                     });
                 }
 
-                // Create new conversation
-                const insertSql = `
-                    INSERT INTO conversations
-                    (
-                        item_id,
-                        user_one_id,
-                        user_two_id
-                    )
-                    VALUES (?, ?, ?)
+                // Create new conversation. Also remember the chatter's OWN matching post
+                // (opposite type, same category, preferably same location) so that when the
+                // handover is completed both posts can be resolved without guessing.
+                const myItemId = req.body.myItemId ? Number(req.body.myItemId) : null;
+                const oppositeType = (item.report_type === 'Lost') ? 'Found' : 'Lost';
+
+                const matchSql = `
+                    SELECT id FROM items
+                    WHERE user_id = ?
+                      AND report_type = ?
+                      AND category = ?
+                      AND status = 'Published'
+                      AND (is_archived = 0 OR is_archived IS NULL)
+                      AND (? IS NULL OR id = ?)
+                    ORDER BY (location = ?) DESC, created_at DESC
+                    LIMIT 1
                 `;
 
                 db.query(
-                    insertSql,
-                    [itemId, userOneId, userTwoId],
-                    (insertErr, result) => {
+                    matchSql,
+                    [currentUserId, oppositeType, item.category, myItemId, myItemId, item.location],
+                    (matchErr, matchRows) => {
+                        if (matchErr) console.error("Matched item lookup error:", matchErr);
+                        const matchedItemId = (!matchErr && matchRows && matchRows.length) ? matchRows[0].id : null;
 
-                        if (insertErr) {
-                            console.error(
-                                "Create Conversation Error:",
-                                insertErr
-                            );
+                        db.query(
+                            `INSERT INTO conversations (item_id, matched_item_id, user_one_id, user_two_id) VALUES (?, ?, ?, ?)`,
+                            [itemId, matchedItemId, userOneId, userTwoId],
+                            (insertErr, result) => {
+                                if (insertErr) {
+                                    console.error("Create Conversation Error:", insertErr);
+                                    return res.status(500).json({
+                                        success: false,
+                                        message: "Unable to create conversation."
+                                    });
+                                }
 
-                            return res.status(500).json({
-                                success: false,
-                                message: "Unable to create conversation."
-                            });
-                        }
-
-                        res.json({
-                            success: true,
-                            conversationId: result.insertId,
-                            existing: false
-                        });
+                                res.json({
+                                    success: true,
+                                    conversationId: result.insertId,
+                                    existing: false
+                                });
+                            }
+                        );
                     }
                 );
             }
@@ -2725,25 +2741,38 @@ app.post('/api/admin/transactions/:conversationId/complete', requireAdmin, (req,
                     return res.status(409).json({ success: false, message: "This handover was already updated. Please refresh." });
                 }
 
-                // The item is now returned to its owner -> counts as Resolved / claimed in the stats
-                // Resolves the conversation's item AND the matching Lost/Found post of the other
-                // party (same name + category, opposite report type) so admin doesn't have to hunt for it.
-                db.query(
-                    `UPDATE items t
-                     JOIN items o ON o.id = ?
-                     SET t.status = 'Resolved'
-                     WHERE t.id = o.id
-                        OR (t.status = 'Published'
-                            AND t.user_id IN (?, ?)
-                            AND t.user_id <> o.user_id
-                            AND t.report_type <> o.report_type
-                            AND LOWER(TRIM(t.item_name)) = LOWER(TRIM(o.item_name))
-                            AND t.category = o.category)`,
-                    [c.item_id, c.user_one_id, c.user_two_id],
-                    (itemErr) => {
-                        if (itemErr) console.error("Item resolve error:", itemErr);
-                    }
-                );
+                // 1) Resolve the item the conversation was opened on.
+                db.query("UPDATE items SET status = 'Resolved' WHERE id = ?", [c.item_id], (itemErr) => {
+                    if (itemErr) console.error("Item resolve error:", itemErr);
+                });
+
+                // 2) Also resolve the OTHER party's matching post.
+                //    Preferred: the exact post saved on the conversation (matched_item_id).
+                //    Fallback (older conversations): same category + location + opposite type,
+                //    owned by the other user, newest one.
+                if (c.matched_item_id) {
+                    db.query("UPDATE items SET status = 'Resolved' WHERE id = ?", [c.matched_item_id], (uErr) => {
+                        if (uErr) console.error("Matched post resolve error:", uErr);
+                    });
+                } else {
+                    db.query("SELECT id, user_id, report_type, category, location FROM items WHERE id = ? LIMIT 1", [c.item_id], (selErr, rows) => {
+                        if (selErr || !rows || rows.length === 0) return;
+                        const base = rows[0];
+                        const otherUserId = Number(base.user_id) === Number(c.user_one_id) ? c.user_two_id : c.user_one_id;
+
+                        db.query(
+                            `SELECT id FROM items
+                             WHERE user_id = ? AND report_type <> ? AND category = ? AND location = ?
+                               AND status = 'Published' AND (is_archived = 0 OR is_archived IS NULL)
+                             ORDER BY created_at DESC LIMIT 1`,
+                            [otherUserId, base.report_type, base.category, base.location],
+                            (matchErr, matchRows) => {
+                                if (matchErr || !matchRows || matchRows.length === 0) return;
+                                db.query("UPDATE items SET status = 'Resolved' WHERE id = ?", [matchRows[0].id], () => {});
+                            }
+                        );
+                    });
+                }
 
                 const notifMsg = `Your handover for "${c.item_name}" was completed successfully. Thank you for using ReFoundly!`;
                 db.query(
