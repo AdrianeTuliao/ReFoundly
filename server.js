@@ -192,6 +192,23 @@ app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
+/*--Auto-lift expired suspensions (suspended_until in the past)--*/
+function liftExpiredSuspensions() {
+    ['users', 'admins'].forEach((table) => {
+        db.query(
+            `UPDATE ${table}
+             SET status = 'active', suspended_until = NULL, suspend_reasons = NULL
+             WHERE status = 'suspended' AND suspended_until IS NOT NULL AND suspended_until <= NOW()`,
+            (err, result) => {
+                if (err) return console.error(`Lift expired suspensions (${table}) failed:`, err.message);
+                if (result && result.affectedRows) console.log(`Lifted ${result.affectedRows} expired suspension(s) in ${table}.`);
+            }
+        );
+    });
+}
+liftExpiredSuspensions();
+setInterval(liftExpiredSuspensions, 5 * 60 * 1000);
+
 /*--Auth Middleware: requireUser--*/
 function requireUser(req, res, next) {
     if (req.session && req.session.userId) {
@@ -210,6 +227,14 @@ function requireUser(req, res, next) {
                 req.session.destroy(); // I-kickout agad kapag suspended
                 if (req.headers.accept && req.headers.accept.includes('application/json')) {
                     return res.status(403).json({ success: false, message: "Your account has been suspended." });
+                }
+                return res.redirect('/index.html');
+            }
+
+            if (userStatus === 'deactivated') {
+                req.session.destroy(); // Deactivated = on hold, kick out immediately
+                if (req.headers.accept && req.headers.accept.includes('application/json')) {
+                    return res.status(403).json({ success: false, message: "Your account has been deactivated." });
                 }
                 return res.redirect('/index.html');
             }
@@ -242,6 +267,14 @@ function requireAdmin(req, res, next) {
                 req.session.destroy(); // Kickout suspended Admin
                 if (req.originalUrl.startsWith('/api/') || (req.headers.accept && req.headers.accept.includes('application/json'))) {
                     return res.status(403).json({ success: false, message: "Admin account is suspended." });
+                }
+                return res.redirect('/index.html');
+            }
+
+            if (adminStatus === 'deactivated') {
+                req.session.destroy();
+                if (req.originalUrl.startsWith('/api/') || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+                    return res.status(403).json({ success: false, message: "Admin account is deactivated." });
                 }
                 return res.redirect('/index.html');
             }
@@ -408,6 +441,11 @@ const userStatus = user.status ? user.status.toString().toLowerCase() : '';
             return res.json({ success: false, message: 'Wrong password' });
         }
 
+        if (userStatus === 'deactivated') {
+            createAuditLog(req, 'SECURITY_LOGIN_FAILURE', { reason: 'Account deactivated' }, email);
+            return res.json({ success: false, message: 'Your account has been deactivated. Please contact support.' });
+        }
+
         if (isTrustedDevice === true) {
             req.session.userId = user.id; 
             return res.json({ 
@@ -553,6 +591,9 @@ app.post('/verify-otp', burstLimiter, (req, res) => {
                 if (isSuspended) {
                     return res.json({ success: false, message: "Your account is suspended. Please contact support." });
                 }
+                if (userStatus === 'deactivated') {
+                    return res.json({ success: false, message: "Your account has been deactivated. Please contact support." });
+                }
             }
 
             req.session.userId = req.session.tempUserId; 
@@ -601,6 +642,11 @@ app.post('/admin/login', (req, res) => {
                 suspend_reasons: parsedReasons,
                 suspended_until: admin.suspended_until 
             });
+        }
+
+        if (adminStatus === 'deactivated') {
+            createAuditLog(req, 'SECURITY_ADMIN_LOGIN_FAILURE', { reason: 'Admin account deactivated' }, email);
+            return res.json({ success: false, message: 'Your admin account has been deactivated.' });
         }
 
         try {

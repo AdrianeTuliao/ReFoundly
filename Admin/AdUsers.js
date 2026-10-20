@@ -678,9 +678,6 @@ window.closeAddUserModal = closeAddUserModal;
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
 
-    const addForm = document.getElementById("addUserForm");
-    addForm?.addEventListener("submit", handleAddAdmin);
-
     const contactInput = document.getElementById("addContact");
     contactInput?.addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
