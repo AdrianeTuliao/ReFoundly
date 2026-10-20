@@ -75,7 +75,6 @@ router.post('/suspend/:id', (req, res) => {
     const sql = `
         UPDATE ${tableName} 
         SET status = 'suspended',
-            is_suspended = 1,
             suspend_reasons = ?,
             suspended_until = ?
         WHERE id = ?
