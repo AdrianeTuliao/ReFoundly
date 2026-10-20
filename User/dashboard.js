@@ -47,7 +47,9 @@ async function loadPublishedItems() {
     try {
         const response = await fetch('/api/items/published');
         if (response.status === 401) return; 
-        allItems = await response.json(); 
+        const data = await response.json();
+        // "Recent" = still-active reports only. Resolved (already returned) items are hidden here.
+        allItems = (Array.isArray(data) ? data : []).filter(i => String(i.status || '').toLowerCase() !== 'resolved');
         console.log("Published Items Data:", allItems);
         filteredItems = [...allItems]; 
         renderPage(1); 
