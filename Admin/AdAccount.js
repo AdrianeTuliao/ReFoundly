@@ -64,24 +64,32 @@ async function fetchAdminProfile() {
             const emailEl = document.getElementById("admin-email");
             const contactEl = document.getElementById("admin-contact");
             const avatarEl = document.getElementById("admin-avatar");
+            const topAvatarEl = document.getElementById("top-admin-avatar"); // Top header avatar
 
             if (nameEl) nameEl.textContent = data.name || "Admin";
             if (headingEl) headingEl.textContent = data.name || "Admin";
             if (emailEl) emailEl.textContent = data.email || "N/A";
             if (contactEl) contactEl.textContent = data.contact_number || "No contact number added";
 
-            if (avatarEl && data.profile_picture) {
-                avatarEl.style.backgroundImage = `url(${data.profile_picture})`;
-                avatarEl.style.backgroundSize = "cover";
-                avatarEl.style.backgroundPosition = "center";
+            if (data.profile_picture) {
+                // Main profile avatar
+                if (avatarEl) {
+                    avatarEl.style.backgroundImage = `url(${data.profile_picture})`;
+                    avatarEl.style.backgroundSize = "cover";
+                    avatarEl.style.backgroundPosition = "center";
+                }
+                // Top header avatar
+                if (topAvatarEl) {
+                    topAvatarEl.style.backgroundImage = `url(${data.profile_picture})`;
+                    topAvatarEl.style.backgroundSize = "cover";
+                    topAvatarEl.style.backgroundPosition = "center";
+                }
             }
         } else {
             console.error("Failed to load admin profile:", data.message);
         }
     } catch (error) {
         console.error("Error fetching admin profile:", error);
-        const contactEl = document.getElementById("admin-contact");
-        if (contactEl) contactEl.textContent = "Error loading contact";
     }
 }
 
