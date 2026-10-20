@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="AdAccount.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AdResponsive.css">
 </head>
 <body>
 
@@ -29,6 +30,7 @@
                 <a href="AdAgreements.html" class="nav-item" id="nav-agreements" onclick="switchAdminTab('agreements')">
                 <i class="fas fa-handshake"></i>
                 <span>Agreements</span>
+                </a>
                 <a href="AdUsers.html">
                     <i class="fa-solid fa-users"></i> Users
                 </a>
@@ -65,45 +67,84 @@
             </header>
 
             <section class="content-wrapper">
-                <h1>Account</h1>
+    <h1>Account</h1>
 
-                <div class="account-card">
-                    <div class="profile-left">
-                        <div class="profile-avatar"></div>
-                        <h3>Admin</h3>
-                        <p id="admin-subtext"></p>
+    <div class="account-card">
+        <!-- LEFT PROFILE: Avatar and Name -->
+        <div class="profile-left">
+            <div class="profile-avatar-container" style="position: relative; display: inline-block;">
+                <div class="profile-avatar" id="admin-avatar" style="background-size: cover; background-position: center;"></div>
+                <input type="file" id="adminAvatarInput" accept="image/*" style="display: none;" onchange="uploadAdminAvatar(this)">
+                <!-- Camera icon shown in edit mode or always if preferred -->
+                <button type="button" id="avatarUploadBtn" onclick="document.getElementById('adminAvatarInput').click()" style="position: absolute; bottom: 0; right: 0; background: #5D8252; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; display: none; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-camera"></i>
+                </button>
+            </div>
+            <h3 id="admin-name-heading">Admin</h3>
+            <p id="admin-subtext">Loading...</p>
+        </div>
+
+        <!-- RIGHT PROFILE: Information Grid -->
+        <div class="profile-right">
+            <h2>Admin Information</h2>
+
+            <div class="info-grid">
+                <!-- Name Field -->
+                <div class="info-box">
+                    <label>Name</label>
+                    <div id="view-name">
+                        <p id="admin-name">Loading...</p>
                     </div>
-
-                    <div class="profile-right">
-                        <h2>Admin Information</h2>
-
-                        <div class="info-grid">
-                            <div class="info-box">
-                                <label>Email</label>
-                                <p id="admin-email">Loading...</p>
-                                <a href="#" class="link">Edit</a>
-                            </div>
-
-                            <div class="info-box">
-                                <label>Contact Number</label>
-                                <p id="admin-contact">Loading...</p>
-                                <a href="javascript:void(0)" class="link" onclick="editContact()">Edit</a>
-                            </div>
-
-                            <div class="info-box">
-                                <label>Password</label>
-                                <p>••••••••</p>
-                                <a href="#" class="link">Change Password</a>
-                            </div>
-                        </div>
+                    <div id="edit-name" style="display: none;">
+                        <input type="text" id="input-name" class="account-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
                     </div>
-                </div> 
-            </section>
+                </div>
+
+                <!-- Email Field -->
+                <div class="info-box">
+                    <label>Email</label>
+                    <div id="view-email">
+                        <p id="admin-email">Loading...</p>
+                    </div>
+                    <div id="edit-email" style="display: none;">
+                        <input type="email" id="input-email" class="account-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
+                    </div>
+                </div>
+
+                <!-- Contact Number Field -->
+                <div class="info-box">
+                    <label>Contact Number</label>
+                    <div id="view-contact">
+                        <p id="admin-contact">Loading...</p>
+                    </div>
+                    <div id="edit-contact" style="display: none;">
+                        <input type="text" id="input-contact" class="account-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="info-box">
+                    <label>Password</label>
+                    <p>••••••••</p>
+                    <a href="javascript:void(0)" class="link" onclick="openChangePasswordModal()">Change Password</a>
+                </div>
+            </div>
+
+            <!-- Edit / Save Buttons Container -->
+            <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="editProfileBtn" onclick="enableAdminEditMode()" style="background: #5D8252; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">Edit</button>
+                <button type="button" id="saveProfileBtn" onclick="saveAdminChanges()" style="background: #5D8252; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: none;">Save Changes</button>
+                <button type="button" id="cancelProfileBtn" onclick="cancelAdminEditMode()" style="background: #ccc; color: #333; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: none;">Cancel</button>
+            </div>
+        </div>
+    </div> 
+</section>
         </main>
     </div>
 
     <script src="Adminscript.js"></script>
     <script src="AdAccount.js"></script>
+    <script src="AdResponsive.js"></script>
 
 </body>
 </html>

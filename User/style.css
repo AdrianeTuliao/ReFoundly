@@ -703,6 +703,16 @@ input:not(:placeholder-shown) + label {
     text-decoration: underline;
 }
 
+.modal-icon-gray { color: #6b7280; }
+
+.reason-box-gray {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.reason-box-gray strong { color: #4b5563; }
+
 @keyframes modalPop {
     from {
         transform: scale(0.8);

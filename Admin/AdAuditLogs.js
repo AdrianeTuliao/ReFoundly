@@ -138,8 +138,12 @@ function renderTable() {
         let displayDetails = "—";
         if (detailsObj.item) {
             displayDetails = `<em>Item: ${detailsObj.item} (${detailsObj.type})</em>`;
+        } else if (detailsObj.conversationId) {
+            const who = '';
+            const nm = detailsObj.itemName ? ` · ${detailsObj.itemName}` : '';
+            displayDetails = `<em>Transaction #${detailsObj.conversationId}${nm}${who}</em>`;
         } else if (detailsObj.itemId) {
-            displayDetails = `<em>Update ID: ${detailsObj.itemId} -> ${detailsObj.status}</em>`;
+            displayDetails = `<em>Update ID: ${detailsObj.itemId} -> ${detailsObj.status || 'N/A'}</em>`;
         } else if (log.action === 'SECURITY_BRUTE_FORCE_BLOCK') {
             displayDetails = `<strong style="color:red;">Blocked for ${detailsObj.retryAfter}s</strong>`;
         } else if (log.action === 'SECURITY_LOGIN_FAILURE' || log.action === 'SECURITY_ADMIN_LOGIN_FAILURE') {
@@ -154,7 +158,15 @@ function renderTable() {
             badgeClass = "badge-security"; 
         }
 
+        // Older transaction logs were saved without an actor -> pick the most truthful label
         let userDisplay = "Guest User";
+        if (/^(TRANSACTION_BARANGAY_APPROVED|TRANSACTION_COMPLETED|ADMIN_)/.test(logAction)) {
+            userDisplay = `<span class="admin-label">Admin</span>`;
+        } else if (/^(DEAL_AGREEMENT_READY|TRANSACTION_|MEETUP_)/.test(logAction)) {
+            userDisplay = (detailsObj.userOne && detailsObj.userTwo)
+                ? `${detailsObj.userOne} & ${detailsObj.userTwo}`
+                : "Users in transaction";
+        }
         if (log.admin_email) {
             userDisplay = `<span class="admin-label">Admin:</span> ${log.admin_email}`;
         } else if (log.user_name) {

@@ -1,5 +1,6 @@
 /* =========================
    ADMIN ACCOUNT PAGE
+   (same layout as the user account page, admin info only)
    ========================= */
 
 /* PAGE TRANSITION */
@@ -8,55 +9,68 @@
     transform: translateY(12px);
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
-
 .content-wrapper.fade-in {
     opacity: 1;
     transform: translateY(0);
 }
-
-/* PAGE TITLE */
-.content-wrapper h1 {
-    margin-bottom: 25px;
-}
+.content-wrapper h1 { margin-bottom: 25px; }
 
 /* ACCOUNT CARD */
 .account-card {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 14px;
-    padding: 30px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px 30px;
     display: flex;
-    gap: 40px;
-    max-width: 900px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    align-items: stretch;
+    max-width: 1000px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 }
 
 /* LEFT PROFILE */
 .profile-left {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    width: 220px;
+    padding: 10px 30px;
+    border-right: 1px solid #d9e0d6;   /* vertical divider */
 }
-
 .profile-avatar {
-    width: 100px;
-    height: 100px;
+    width: 180px;
+    height: 180px;
     background: #d1d5db;
     border-radius: 50%;
-    margin: 0 auto 15px;
+    margin: 0 auto 20px;
+    flex-shrink: 0;
 }
-
 .profile-left h3 {
-    margin: 10px 0 5px;
+    margin: 6px 0 8px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    word-break: break-word;
 }
-
 .profile-left p {
     font-size: 14px;
     color: #555;
+    word-break: break-all;
+    margin: 0;
 }
 
 /* RIGHT PROFILE */
+.profile-right {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 0 10px 40px;
+}
 .profile-right h2 {
-    margin-bottom: 20px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #5D8252;
+    margin: 0 0 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #d9e0d6;
 }
 
 /* INFO GRID */
@@ -65,34 +79,36 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
-
 .info-box {
     background: #f9fafb;
-    padding: 15px;
-    border-radius: 10px;
+    border: 1px solid #e5e9e2;
+    padding: 20px;
+    border-radius: 12px;
+    min-width: 0;
 }
-
 .info-box label {
-    font-size: 13px;
-    color: #666;
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
 }
-
 .info-box p {
-    margin: 6px 0;
+    margin: 10px 0 8px;
+    font-size: 0.95rem;
+    color: #222;
+    word-break: break-all;
 }
 
 /* LINKS */
 .link {
-    font-size: 12px;
+    font-size: 13px;
     color: #5D8252;
-    text-decoration: none;
+    text-decoration: underline;
 }
+.link:hover { color: #3f5e36; }
 
 /* SIGN OUT */
-.signout-wrap {
-    margin-top: 25px;
-}
-
+.signout-wrap { margin-top: 25px; }
 .btn-signout {
     background: #8cc152;
     color: #fff;
@@ -100,4 +116,22 @@
     padding: 8px 18px;
     border-radius: 8px;
     cursor: pointer;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+    .account-card { flex-direction: column; padding: 28px 20px; }
+    .profile-left {
+        flex: none;
+        border-right: none;
+        border-bottom: 1px solid #d9e0d6;
+        padding: 0 10px 28px;
+        margin-bottom: 24px;
+    }
+    .profile-right { padding: 0; }
+}
+@media (max-width: 600px) {
+    .profile-avatar { width: 130px; height: 130px; }
+    .profile-right h2 { font-size: 1.5rem; }
+    .info-grid { grid-template-columns: 1fr; }
 }

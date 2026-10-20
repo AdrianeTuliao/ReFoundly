@@ -43,6 +43,20 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("urNextBtn")?.addEventListener("click", () => changeUserReportsPage(1));
     document.getElementById("closeUserReportModal")?.addEventListener("click", closeUserReportModal);
 
+    // Close buttons (X) + Esc key: delegated in capture phase so nothing else can swallow the click
+    document.addEventListener("click", (event) => {
+        const x = event.target.closest && event.target.closest(".close-btn");
+        if (x) {
+            const modal = x.closest(".modal");
+            if (modal) modal.style.display = "none";
+        }
+    }, true);
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            document.querySelectorAll(".modal").forEach(m => { m.style.display = "none"; });
+        }
+    });
+
     // Modal backdrop click
     window.addEventListener("click", (event) => {
         if (event.target.classList.contains('modal')) {
@@ -129,7 +143,6 @@ setInterval(fetchItems, 20000);
 // Refresh right away when the admin comes back to this tab (e.g. after completing a handover)
 document.addEventListener('visibilitychange', () => { if (!document.hidden) fetchItems(); });
 window.addEventListener('focus', fetchItems);
-window.addEventListener('pageshow', fetchItems);
 
 async function changeStatus(id, newStatus) {
     try {

@@ -176,6 +176,27 @@
     </div>
 </div>
 
+<!-- DEACTIVATED ACCOUNT MODAL -->
+<div id="deactivation-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <i class="fa-solid fa-user-lock modal-icon modal-icon-gray"></i>
+        <h3>Account Deactivated</h3>
+        <p class="sub-text">Your account is currently on hold and you can't log in.</p>
+
+        <div class="reason-box reason-box-gray">
+            <strong>WHAT THIS MEANS:</strong>
+            <p>An administrator has deactivated this account. Your items and messages are kept, but access stays locked until an admin reactivates it.</p>
+            <strong style="margin-top:10px;">WHAT YOU CAN DO:</strong>
+            <p>Contact support or your barangay admin and ask for your account to be reactivated.</p>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" id="close-deactivation-btn">Close</button>
+            <a href="mailto:support@refoundly.com" class="btn-support">Contact Support</a>
+        </div>
+    </div>
+</div>
+
     <script src="script.js"></script>
     <script src="global-smooth.js"></script>
 </body>

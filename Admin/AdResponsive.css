@@ -1,0 +1,288 @@
+/* =====================================================================
+   AdResponsive.css  -  makes every Admin page fit phones, tablets and
+   laptops.  Link it LAST in <head> of each Admin page:
+       <link rel="stylesheet" href="AdResponsive.css">
+   Companion script (hamburger + slide-in menu): AdResponsive.js
+   ===================================================================== */
+
+/* ---------- Mobile menu button + overlay (hidden on desktop) ---------- */
+.ad-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-right: auto;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    background: #ffffff;
+    color: #3b5b32;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+.ad-menu-btn svg { width: 22px; height: 22px; }
+
+.ad-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 2900;
+}
+
+/* =====================================================================
+   <= 1200px : laptops / small desktops
+   ===================================================================== */
+@media (max-width: 1200px) {
+    .summary-cards {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    }
+    .analytics-row { grid-template-columns: 1fr !important; }
+}
+
+/* =====================================================================
+   <= 1024px : tablets  ->  sidebar becomes a slide-in drawer
+   ===================================================================== */
+@media (max-width: 1024px) {
+    .dashboard-container { display: block !important; }
+
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        width: 260px !important;
+        max-width: 84vw !important;
+        overflow-y: auto !important;
+        transform: translateX(-105%);
+        transition: transform 0.28s ease;
+        z-index: 3000 !important;
+        box-shadow: none;
+    }
+    body.ad-menu-open .sidebar {
+        transform: translateX(0);
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.25);
+    }
+    body.ad-menu-open { overflow: hidden; }
+    body.ad-menu-open .ad-sidebar-overlay { display: block; }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .ad-menu-btn { display: inline-flex; }
+
+    .top-nav {
+        padding: 0 16px !important;
+        height: auto !important;
+        min-height: 64px;
+        gap: 12px;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .content-wrapper { padding-left: 20px !important; padding-right: 20px !important; }
+
+    /* tables scroll sideways instead of breaking the page */
+    .table-container,
+    .audit-table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-container table,
+    .audit-table-container table { min-width: 720px; }
+    table:has(#agreementsTableBody) { min-width: 980px; }
+    table:has(#reportsTableBody),
+    table:has(#userReportsTableBody) { min-width: 800px; }
+
+    /* action buttons wrap instead of forcing a wide column */
+    .action-buttons {
+        min-width: 0 !important;
+        flex-wrap: wrap;
+        justify-content: flex-end !important;
+    }
+    th, td { padding-left: 12px !important; padding-right: 12px !important; }
+
+    .charts-grid { grid-template-columns: 1fr !important; }
+    .charts-grid > * { min-width: 0; }
+
+    .graph-card { flex-wrap: wrap; }
+    .visual-bar-chart { width: 100% !important; max-width: 360px; }
+}
+
+/* =====================================================================
+   <= 768px : large phones / small tablets
+   ===================================================================== */
+@media (max-width: 768px) {
+    .content-wrapper { padding-left: 16px !important; padding-right: 16px !important; padding-bottom: 28px !important; }
+
+    .page-header {
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+    .page-header h1 { font-size: 1.6rem !important; }
+
+    .filter-bar,
+    .analytics-filters { flex-wrap: wrap !important; }
+    .filter-bar .search-box,
+    .search-box { width: 100% !important; max-width: 100% !important; flex: 1 1 100%; }
+    .filter-bar select { flex: 1 1 100%; width: 100%; }
+    .filter-bar .btn-generate { margin-left: 0 !important; width: 100%; }
+    .filter-group { flex: 1 1 180px; }
+    .filter-group select { width: 100%; }
+
+    /* ---- modals ---- */
+    .modal-overlay .modal-content,
+    .modal-overlay .modal-card,
+    .modal .modal-content {
+        max-width: 94vw !important;
+        box-sizing: border-box;
+    }
+    .modal-overlay .modal-content {
+        max-height: 92vh;
+        overflow-y: auto !important;
+    }
+    .modal .modal-content {
+        width: 92% !important;
+        margin: 5% auto !important;
+        max-width: 640px !important;
+    }
+    #confirmModal .modal-content { width: min(350px, 92vw) !important; }
+    #suspendModal .modal-content,
+    #toggleStatusModal .modal-content { width: min(500px, 94vw) !important; }
+    .view-card { width: min(600px, 94vw) !important; }
+
+    .profile-main { flex-direction: column; gap: 18px !important; padding: 20px !important; }
+    .view-avatar-circle { width: 110px !important; height: 110px !important; }
+    .info-grid { grid-template-columns: 1fr !important; padding: 0 !important; }
+
+    .handover-review-grid { flex-wrap: wrap; }
+    .handover-parties { flex-direction: column; }
+
+    .reason-checklist { padding: 14px !important; }
+    #confirmView, #reasonView { padding: 20px !important; }
+    .toggle-body-padding { padding: 20px !important; }
+
+    /* toast + notification dropdown */
+    #custom-toast {
+        left: 12px !important;
+        right: 12px !important;
+        top: 12px !important;
+        min-width: 0 !important;
+    }
+    .notif-dropdown {
+        position: fixed !important;
+        top: 64px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+}
+
+/* =====================================================================
+   <= 600px : phones
+   ===================================================================== */
+@media (max-width: 600px) {
+    .summary-cards { grid-template-columns: 1fr !important; gap: 14px !important; }
+    .card, .card1, .card2, .card3, .card4 { padding: 16px !important; }
+
+    .page-header h1 { font-size: 1.4rem !important; }
+    .page-header .subtitle { font-size: 0.82rem; }
+    .btn-primary-action,
+    .btn-archive { width: 100%; justify-content: center; }
+
+    .admin-controls { gap: 12px !important; }
+    .admin-controls > span:first-child { display: none; }  /* hides the word "Admin" to save room */
+
+    th, td { padding: 10px 10px !important; font-size: 0.8rem !important; }
+
+    .report-type-tabs { overflow-x: auto; white-space: nowrap; }
+
+    .pagination-controls,
+    .pagination { padding: 14px 0 !important; margin-top: 12px; }
+
+    .modal-actions { flex-wrap: wrap; }
+    .modal-actions button { flex: 1 1 auto; }
+    .agr-dialog-card { padding: 22px 18px 18px !important; }
+    .agr-dialog-actions { flex-wrap: wrap; }
+
+
+    /* ---- Tables become stacked cards on phones (labels come from AdResponsive.js) ---- */
+    .table-container table,
+    .audit-table-container table,
+    table:has(#agreementsTableBody),
+    table:has(#reportsTableBody),
+    table:has(#userReportsTableBody) {
+        min-width: 0 !important;
+        display: block;
+        width: 100%;
+    }
+    .table-container thead,
+    .audit-table-container thead { display: none; }
+    .table-container tbody,
+    .audit-table-container tbody { display: block; }
+    .table-container tbody tr,
+    .audit-table-container tbody tr {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #eee;
+    }
+    .table-container tbody td,
+    .audit-table-container tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 0 !important;
+        border: none !important;
+        text-align: right !important;
+        font-size: 0.84rem !important;
+    }
+    .table-container tbody td::before,
+    .audit-table-container tbody td::before {
+        content: attr(data-label);
+        flex: 0 0 34%;
+        text-align: left;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #64748b;
+        padding-top: 2px;
+    }
+    .table-container tbody td:not([data-label])::before,
+    .audit-table-container tbody td:not([data-label])::before,
+    .table-container tbody td[colspan]::before { display: none; }
+    .table-container tbody td[colspan] { justify-content: center; }
+    .table-container tbody td > *,
+    .audit-table-container tbody td > * { text-align: right; }
+    .details-cell { white-space: normal !important; max-width: none !important; }
+    .action-buttons, .action-cell, .action-group { justify-content: flex-end !important; flex-wrap: wrap; }
+    .user-cell { justify-content: flex-end !important; }
+
+    .chart-container { padding: 14px !important; min-height: 280px; }
+    .chart-container h3 { margin-bottom: 12px !important; }
+}
+
+/* =====================================================================
+   >= 1025px: make sure the drawer pieces never show on desktop
+   ===================================================================== */
+@media (min-width: 1025px) {
+    .ad-menu-btn, .ad-sidebar-overlay { display: none !important; }
+}
+
+/* Add-Admin form hints on narrow screens: sit under the field, arrow hidden */
+.input-tooltip-neat.tooltip-below::before { display: none; }
+.input-tooltip-neat.tooltip-below { z-index: 20000; }

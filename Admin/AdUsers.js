@@ -827,8 +827,20 @@ function updateAdminChecklist(input, requirements) {
     input.style.borderColor = (!allValid && input.value.length > 0) ? '#e53e3e' : '#ccc';
 
     const rect = input.getBoundingClientRect();
-    tooltip.style.left = `${rect.right + window.scrollX + 15}px`;
-    tooltip.style.top = `${rect.top + window.scrollY + (rect.height / 2)}px`;
+    if (window.innerWidth <= 900) {
+        // Narrow screens: no room on the right, so show the hint just under the field
+        tooltip.classList.add('tooltip-below');
+        tooltip.style.width = `${Math.min(rect.width, window.innerWidth - 24)}px`;
+        tooltip.style.left = `${Math.max(12, rect.left) + window.scrollX}px`;
+        tooltip.style.top = `${rect.bottom + window.scrollY + 8}px`;
+        tooltip.style.transform = 'none';
+    } else {
+        tooltip.classList.remove('tooltip-below');
+        tooltip.style.width = '';
+        tooltip.style.transform = '';
+        tooltip.style.left = `${rect.right + window.scrollX + 15}px`;
+        tooltip.style.top = `${rect.top + window.scrollY + (rect.height / 2)}px`;
+    }
 
     tooltip.innerHTML = requirements.map(req => `
         <div class="req-item" style="color: ${req.isValid ? '#444' : '#888'}; display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 4px;">

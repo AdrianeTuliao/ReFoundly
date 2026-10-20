@@ -84,8 +84,10 @@ db.connect(err => {
 
 /*--Audit Log Helper--*/
 function createAuditLog(req, action, details, guestEmail = null) { 
-    const userId = req.session.userId || null;
-    const adminId = req.session.admin ? req.session.admin.id : null;
+    // When guestEmail is given (login attempts), the actor is whoever typed that email,
+    // NOT whoever else happens to be logged in on this browser session.
+    const userId = guestEmail ? null : (req.session.userId || null);
+    const adminId = guestEmail ? null : (req.session.admin ? req.session.admin.id : null);
     const ip = req.ip;
     
     let identifier = "Unknown";
@@ -443,7 +445,11 @@ const userStatus = user.status ? user.status.toString().toLowerCase() : '';
 
         if (userStatus === 'deactivated') {
             createAuditLog(req, 'SECURITY_LOGIN_FAILURE', { reason: 'Account deactivated' }, email);
-            return res.json({ success: false, message: 'Your account has been deactivated. Please contact support.' });
+            return res.json({
+                success: false,
+                isDeactivated: true,
+                message: 'Your account has been deactivated. Please contact support.'
+            });
         }
 
         if (isTrustedDevice === true) {
@@ -719,6 +725,53 @@ app.post('/admin/logout', (req, res) => {
         }); 
 
         return res.json({ success: true });
+    });
+});
+
+/*--Get Current Admin Profile--*/
+app.get('/admin/me', requireAdmin, (req, res) => {
+    const sql = 'SELECT id, name, email, contact_number, profile_picture FROM admins WHERE id = ?';
+    db.query(sql, [req.session.admin.id], (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(401).json({ success: false, message: 'Session Invalid' });
+        }
+        res.json(results[0]);
+    });
+});
+
+/*--Update Admin Profile (Name and Contact Number, Email is non-editable)--*/
+app.put('/api/admin/update-profile', requireAdmin, (req, res) => {
+    const adminId = req.session.admin.id;
+    const { name, contact_number } = req.body;
+
+    const sql = `UPDATE admins SET name = COALESCE(?, name), contact_number = COALESCE(?, contact_number) WHERE id = ?`;
+    
+    db.query(sql, [name, contact_number, adminId], (err, result) => {
+        if (err) {
+            console.error("Admin Profile Update Error:", err);
+            return res.status(500).json({ success: false, message: "Database update error." });
+        }
+        res.json({ success: true, message: "Admin profile updated successfully!" });
+    });
+});
+
+/*--Admin Profile Picture Upload Route--*/
+app.post('/api/admin/profile-picture', requireAdmin, upload.single('profile_picture'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: "No image file uploaded." });
+    }
+
+    const adminId = req.session.admin.id;
+    const imagePath = `/uploads/${req.file.filename}`;
+
+    const sql = `UPDATE admins SET profile_picture = ? WHERE id = ?`;
+    db.query(sql, [imagePath, adminId], (err) => {
+        if (err) {
+            console.error("Admin Avatar DB Error:", err);
+            return res.status(500).json({ success: false, message: "Database error updating profile picture." });
+        }
+
+        res.json({ success: true, profile_picture: imagePath });
     });
 });
 
@@ -2365,7 +2418,7 @@ app.post('/api/conversations/:conversationId/agreement/notify-admin', requireUse
             return res.status(400).json({ success: false, message: "Both parties have not agreed yet." });
         }
 
-        const details = JSON.stringify({
+        createAuditLog(req, 'DEAL_AGREEMENT_READY', {
             conversationId: c.id,
             itemId: c.item_id,
             itemName: c.item_name,
@@ -2373,14 +2426,6 @@ app.post('/api/conversations/:conversationId/agreement/notify-admin', requireUse
             userOne: c.user_one_name,
             userTwo: c.user_two_name
         });
-
-        db.query(
-            `INSERT INTO audit_logs (action, details) VALUES ('DEAL_AGREEMENT_READY', ?)`,
-            [details],
-            (logErr) => {
-                if (logErr) console.error("Audit log insert failed:", logErr);
-            }
-        );
 
         db.query(
             `UPDATE conversations SET agreement_status = 'admin_reviewing', admin_notified_at = NOW() WHERE id = ?`,
@@ -2520,14 +2565,10 @@ app.post('/api/conversations/:conversationId/reschedule', requireUser, (req, res
                 (notifErr) => { if (notifErr) console.error("Reschedule notification insert failed:", notifErr); }
             );
 
-            db.query(
-                `INSERT INTO audit_logs (action, details) VALUES ('MEETUP_RESCHEDULE_REQUESTED', ?)`,
-                [JSON.stringify({
+            createAuditLog(req, 'MEETUP_RESCHEDULE_REQUESTED', {
                     conversationId, itemId: c.item_id, requestedBy: currentUserId,
                     reason, newBarangay: finalBarangay, newDate, newTime
-                })],
-                () => {}
-            );
+                });
 
             res.json({
                 success: true,
@@ -2738,11 +2779,7 @@ app.post('/api/admin/transactions/:conversationId/barangay-approved', requireAdm
                     () => {}
                 );
 
-                db.query(
-                    `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_BARANGAY_APPROVED', ?)`,
-                    [JSON.stringify({ conversationId, itemId: c.item_id })],
-                    () => {}
-                );
+                createAuditLog(req, 'TRANSACTION_BARANGAY_APPROVED', { conversationId, itemId: c.item_id });
 
                 res.json({ success: true, message: "Marked as barangay approved successfully." });
             }
@@ -2827,11 +2864,7 @@ app.post('/api/admin/transactions/:conversationId/complete', requireAdmin, (req,
                     () => {}
                 );
 
-                db.query(
-                    `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_COMPLETED', ?)`,
-                    [JSON.stringify({ conversationId, itemId: c.item_id })],
-                    () => {}
-                );
+                createAuditLog(req, 'TRANSACTION_COMPLETED', { conversationId, itemId: c.item_id });
 
                 res.json({ success: true, message: "Transaction marked as completed." });
             }
@@ -2900,11 +2933,7 @@ app.post('/api/admin/transactions/:conversationId/reschedule', requireAdmin, (re
                 () => {}
             );
 
-            db.query(
-                `INSERT INTO audit_logs (action, details) VALUES ('ADMIN_RESCHEDULE_REQUESTED', ?)`,
-                [JSON.stringify({ conversationId, itemId: c.item_id, reason, newDate, newTime })],
-                () => {}
-            );
+            createAuditLog(req, 'ADMIN_RESCHEDULE_REQUESTED', { conversationId, itemId: c.item_id, reason, newDate, newTime });
 
             res.json({ success: true, message: "Re-schedule sent to both parties." });
         });
@@ -2997,11 +3026,7 @@ app.post('/api/admin/transactions/:conversationId/dispute', requireAdmin, (req, 
                     () => {}
                 );
 
-                db.query(
-                    `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_DISPUTED', ?)`,
-                    [JSON.stringify({ conversationId, itemId: c.item_id, reason })],
-                    () => {}
-                );
+                createAuditLog(req, 'TRANSACTION_DISPUTED', { conversationId, itemId: c.item_id, reason });
 
                 res.json({ success: true, status: 'disputed' });
             }
@@ -3217,11 +3242,7 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
                             () => {}
                         );
 
-                        db.query(
-                            `INSERT INTO audit_logs (action, details) VALUES ('TRANSACTION_CONFIRMED', ?)`,
-                            [JSON.stringify({ conversationId, itemId: c.item_id, reportPath: publicPath })],
-                            () => {}
-                        );
+                        createAuditLog(req, 'TRANSACTION_CONFIRMED', { conversationId, itemId: c.item_id, reportPath: publicPath });
 
                         res.json({ success: true, reportPath: publicPath });
                     }

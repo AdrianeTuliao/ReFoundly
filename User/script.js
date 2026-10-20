@@ -400,6 +400,12 @@ function handleLoginSubmit() {
                     return;
                 }
 
+                // --- 2b. DEACTIVATED ACCOUNT -> show modal instead of plain red text ---
+                if (result.isDeactivated) {
+                    showDeactivationModal();
+                    return;
+                }
+
                 // --- 3. HANDLE INVALID CREDENTIALS LOGGING ---
                 if (!response.ok) {
                     await fetch(`${API_URL}/api/admin/audit_logs`, {
@@ -659,6 +665,15 @@ function closeSuspensionModal() {
         modal.style.display = 'none';
     }
 }
+
+function showDeactivationModal() {
+    const modal = document.getElementById('deactivation-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+document.getElementById('close-deactivation-btn')?.addEventListener('click', () => {
+    document.getElementById('deactivation-modal').style.display = 'none';
+});
 
 // Close Button Event Listener
 document.getElementById('close-suspension-btn')?.addEventListener('click', () => {
