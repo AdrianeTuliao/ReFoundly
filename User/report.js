@@ -63,6 +63,10 @@ function setupIncidentDateLimits() {
     });
 }
 
+/* Words that suggest the photo shows real money / an ID or document */
+const MONEY_REGEX = /\b(money|cash|banknotes?|bills?\s+of|pesos?|pera|salapi|paper\s+money|coins?)\b|₱|\bphp\s?\d/i;
+const ID_DOC_REGEX = /\b(id|i\.d\.|passport|license|licence|driver'?s|umid|philhealth|sss|tin|voter'?s|national\s+id|philsys|birth\s+certificate|diploma|transcript|certificate|document)\b/i;
+
 /* 1. IMAGE PREVIEW & REMOVE LOGIC */
 document.addEventListener('DOMContentLoaded', () => {
     setupIncidentDateLimits();
@@ -78,7 +82,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalImg = document.getElementById('modalImg');
     const closeModal = document.getElementById('closeModal');
 
-    const maxSize = 10 * 1024 * 1024; // 10MB Limit
+    const maxSize = 5 * 1024 * 1024; // 5MB Limit (matches the server's multer limit)
+
+    const categoryEl = document.querySelector('select[name="category"]');
+    const itemNameEl = document.getElementById('itemName');
+    const descEl = document.querySelector('textarea[name="description"]');
+    const formEl = document.getElementById('mainForm');
+
+    // Hidden flag sent to the server (server also re-checks this on its own)
+    let sensitiveFlag = document.getElementById('isSensitiveImage');
+    if (!sensitiveFlag && formEl) {
+        sensitiveFlag = document.createElement('input');
+        sensitiveFlag.type = 'hidden';
+        sensitiveFlag.name = 'isSensitiveImage';
+        sensitiveFlag.id = 'isSensitiveImage';
+        sensitiveFlag.value = '0';
+        formEl.appendChild(sensitiveFlag);
+    }
+
+    // Clears the chosen image and restores the empty upload box
+    const resetImage = () => {
+        if (fileInput) fileInput.value = '';
+        if (imagePreview) imagePreview.src = '';
+        if (previewContainer) previewContainer.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'flex';
+        if (sensitiveFlag) sensitiveFlag.value = '0';
+    };
+
+    // Looks at what the reporter chose/typed to decide if the photo is risky
+    const classifyUpload = () => {
+        const category = categoryEl ? categoryEl.value.toLowerCase() : '';
+        const text = `${itemNameEl ? itemNameEl.value : ''} ${descEl ? descEl.value : ''}`;
+        if (MONEY_REGEX.test(text)) return 'money';
+        if (category === 'id' || category === 'documents' || ID_DOC_REGEX.test(text)) return 'sensitive';
+        return 'normal';
+    };
+
+    // Runs the warning popups and handles automatic RePeso fallback for money
+    const checkUploadSafety = () => {
+        const kind = classifyUpload();
+
+        if (kind === 'money') {
+            showCustomAlert(
+                "Default Money Illustration Applied",
+                "For safety and privacy, ReFoundly automatically displays the default Peso Image instead of real photos of cash. No actual money photo is needed."
+            );
+            
+            // Clear any physical file attached to form data
+            if (fileInput) fileInput.value = '';
+
+            // Automatically set the preview box to show RePeso.png
+            if (imagePreview) imagePreview.src = 'RePeso.png';
+            if (placeholder) placeholder.style.display = 'none';
+            if (previewContainer) previewContainer.style.display = 'block';
+            
+            if (sensitiveFlag) sensitiveFlag.value = '0';
+            return false; // Handled via default illustration
+        }
+
+        if (kind === 'sensitive') {
+            if (sensitiveFlag) sensitiveFlag.value = '1';
+            showCustomAlert(
+                "Image Will Be Blurred",
+                "IDs and documents contain personal information. For security and fraud prevention, this image will be blurred automatically when the report is posted."
+            );
+        } else if (sensitiveFlag) {
+            sensitiveFlag.value = '0';
+        }
+        return true;
+    };
+
+    // Re-check if they change category / name / description AFTER picking an image
+    [categoryEl, itemNameEl, descEl].forEach(el => {
+        if (el) el.addEventListener('change', checkUploadSafety);
+    });
 
     if (fileInput) {
         // Handle File Selection
@@ -87,16 +164,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (file) {
                 // Validation
                 if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-                    alert("Only JPG and PNG files are allowed!");
+                    showCustomAlert("Invalid File", "Only JPG and PNG files are allowed!");
                     fileInput.value = '';
                     return;
                 }
 
                 if (file.size > maxSize) {
-                    alert("File is too big! Please upload an image smaller than 10MB.");
+                    showCustomAlert("File Too Big", "Please upload an image smaller than 5MB.");
                     fileInput.value = '';
                     return;
                 }
+
+                // Money/ID/document warnings (money rejects the image)
+                if (!checkUploadSafety()) return;
 
                 const reader = new FileReader();
                 reader.onload = (event) => {
@@ -113,10 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (removeBtn) {
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent opening file dialog
-            if (fileInput) fileInput.value = ''; // Reset input
-            if (imagePreview) imagePreview.src = '';
-            if (previewContainer) previewContainer.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'flex';
+            resetImage();
         });
     }
 

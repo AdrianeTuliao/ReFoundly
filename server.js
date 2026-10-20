@@ -909,7 +909,29 @@ app.post('/submit-report', requireUser, upload.single('image'), async (req, res)
             return res.status(400).json({ success: false, message: errors.join(' ') });
         }
 
-        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+        let imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+        if (req.file) {
+            const textToScan = `${clean.itemName} ${clean.description}`;
+            
+            // If money keywords are found, delete the uploaded file and assign the default RePeso.png
+            if (/\b(money|cash|banknotes?|bills?\s+of|pesos?|pera|salapi|paper\s+money|coins?)\b|₱|\bphp\s?\d/i.test(textToScan)) {
+                fs.unlink(req.file.path, () => {});
+                imagePath = 'RePeso.png';
+            } else if (/\b(id|i\.d\.|passport|licen[sc]e|driver'?s|umid|philhealth|sss|tin|voter'?s|national\s+id|philsys|birth\s+certificate|diploma|transcript|certificate|document)\b/i.test(textToScan)) {
+                clean.isSensitiveImage = 1;
+            }
+        }
+
+        // Also check if the category itself is cash/money
+        if (clean.category && (clean.category.toLowerCase() === 'cash' || clean.category.toLowerCase() === 'money')) {
+            if (imagePath && imagePath.startsWith('/uploads/')) {
+                // If a file was uploaded under a cash category, remove it and use the default
+                const localFilePath = path.join(__dirname, 'User', imagePath);
+                fs.unlink(localFilePath, () => {});
+            }
+            imagePath = 'RePeso.png';
+        }
 
         const insertQuery = `
             INSERT INTO items (
