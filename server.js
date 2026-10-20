@@ -3098,7 +3098,7 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
         const publicPath = `/uploads/reports/${fileName}`;
 
         try {
-            const doc = new PDFDocument({ margin: 60 });
+            const doc = new PDFDocument({ size: 'A4', margins: { top: 45, bottom: 40, left: 50, right: 50 } });
             const stream = fs.createWriteStream(filePath);
             doc.pipe(stream);
 
@@ -3125,7 +3125,7 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
                 return `${hours}:${minutes} ${ampm}`;
             };
 
-            const pageWidth = 480;
+            const pageWidth = 495;
             const adminName = (req.session.admin && req.session.admin.name) || 'ReFoundly Admin';
             const todayFormatted = formatNiceDate(new Date());
             const barangayName = c.meetup_barangay || 'the designated Barangay Hall';
@@ -3148,94 +3148,89 @@ app.post('/api/admin/transactions/:conversationId/confirm', requireAdmin, (req, 
             const formattedMeetupTime = formatNiceTime(c.meetup_time);
 
             // --- Letterhead ---
-            doc.fontSize(16).font('Helvetica-Bold').fillColor('#5D8252').text('ReFoundly', { align: 'left' });
+            doc.fontSize(15).font('Helvetica-Bold').fillColor('#5D8252').text('ReFoundly', { align: 'left' });
             doc.fontSize(9).font('Helvetica').fillColor('#666')
                 .text('Digital Lost & Found Portal  ·  refoundly@gmail.com  ·  +63 912 345 6789');
             doc.moveDown(0.3);
-            doc.moveTo(60, doc.y).lineTo(60 + pageWidth, doc.y).strokeColor('#ddd').stroke();
-            doc.moveDown(1.5);
+            doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).strokeColor('#ddd').stroke();
+            doc.moveDown(0.9);
 
             // --- Date ---
-            doc.fontSize(11).fillColor('#000').font('Helvetica').text(todayFormatted);
-            doc.moveDown(1.2);
+            doc.fontSize(10).fillColor('#000').font('Helvetica').text(todayFormatted);
+            doc.moveDown(0.7);
 
             // --- Addressee ---
             doc.text('The Barangay Captain');
             doc.text(barangayName);
-            doc.moveDown(1.2);
+            doc.moveDown(0.7);
 
             // --- Subject ---
-            doc.font('Helvetica-Bold').text('Re: Endorsement for Use of Barangay Hall — Lost and Found Item Handover');
+            doc.font('Helvetica-Bold').text('Re: Endorsement for Use of Barangay Hall — Lost and Found Item Handover', { width: pageWidth });
             doc.font('Helvetica');
-            doc.moveDown(1);
+            doc.moveDown(0.6);
 
             // --- Salutation ---
             doc.text('Dear Sir/Madam,');
-            doc.moveDown(0.8);
+            doc.moveDown(0.5);
 
             // --- Body: intro / request ---
             doc.text(
                 `This letter is to formally inform your office that two verified users of the ReFoundly digital ` +
-                `lost-and-found platform have mutually agreed, through our platform's messaging system and following ` +
-                `admin verification, to meet at ${barangayName} to complete the handover of the item described below. ` +
-                `We respectfully request permission to use your barangay hall as the venue for this meeting and, if ` +
-                `possible, the presence of a barangay official during the handover to ensure the safety of both parties.`,
+                `lost-and-found platform have mutually agreed, following admin verification, to meet at ${barangayName} ` +
+                `to complete the handover of the item described below. We respectfully request permission to use your ` +
+                `barangay hall as the venue and, if possible, the presence of a barangay official during the handover ` +
+                `to ensure the safety of both parties.`,
                 { align: 'justify', width: pageWidth }
             );
-            doc.moveDown(1.2);
+            doc.moveDown(0.8);
 
             // --- Item Details ---
+            const shortDesc = (c.description || 'N/A').toString().replace(/\s+/g, ' ').trim();
+            const descText = shortDesc.length > 220 ? shortDesc.slice(0, 217) + '...' : shortDesc;
             doc.font('Helvetica-Bold').text('Item Details');
-            doc.font('Helvetica').moveDown(0.3);
+            doc.font('Helvetica').moveDown(0.2);
             doc.text(`Item Name: ${c.item_name || 'N/A'}`);
-            doc.text(`Category: ${c.category || 'N/A'}`);
-            doc.text(`Brand: ${c.brand || 'N/A'}`);
-            doc.text(`Report Type: ${c.report_type || 'N/A'}`);
-            doc.text(`Location Reported: ${c.location || 'N/A'}`);
+            doc.text(`Category: ${c.category || 'N/A'}   |   Brand: ${c.brand || 'N/A'}   |   Report Type: ${c.report_type || 'N/A'}`, { width: pageWidth });
+            doc.text(`Location Reported: ${c.location || 'N/A'}`, { width: pageWidth });
             doc.text(`Date and Time Reported: ${formattedIncidentDate}${formattedIncidentTime ? ' at ' + formattedIncidentTime : ''}`);
-            doc.moveDown(0.5);
-            doc.text('Description:');
-            doc.text(c.description || 'N/A', { width: pageWidth, align: 'justify' });
-            doc.moveDown(1.2);
+            doc.text(`Description: ${descText}`, { width: pageWidth, align: 'justify' });
+            doc.moveDown(0.8);
 
             // --- Parties Involved ---
             doc.font('Helvetica-Bold').text('Parties Involved');
-            doc.font('Helvetica').moveDown(0.3);
+            doc.font('Helvetica').moveDown(0.2);
             doc.text(`${posterRole}: ${posterName || 'N/A'}  —  Contact: ${posterContact || 'N/A'}`);
             doc.text(`${otherRole}: ${otherName || 'N/A'}  —  Contact: ${otherContact || 'N/A'}`);
-            doc.moveDown(1.2);
+            doc.moveDown(0.8);
 
             // --- Scheduled Meetup ---
             doc.font('Helvetica-Bold').text('Scheduled Meetup');
-            doc.font('Helvetica').moveDown(0.3);
+            doc.font('Helvetica').moveDown(0.2);
             doc.text(`Venue: ${barangayName}`);
-            doc.text(`Date: ${formattedMeetupDate}`);
-            doc.text(`Time: ${formattedMeetupTime || 'To be arranged'}`);
-            doc.moveDown(1.2);
+            doc.text(`Date: ${formattedMeetupDate}   |   Time: ${formattedMeetupTime || 'To be arranged'}`);
+            doc.moveDown(0.8);
 
             // --- Closing ---
             doc.text(
                 `Both parties have formally confirmed through the ReFoundly platform their agreement to proceed with the ` +
-                `handover of the item at the venue and on the schedule indicated above. This agreement has been reviewed and ` +
-                `verified by the ReFoundly Administration prior to the issuance of this letter. Should your office require any ` +
-                `further verification or clarification, please do not hesitate to contact us using the contact information ` +
-                `provided above.`,
+                `handover at the venue and schedule indicated above. This agreement has been reviewed and verified by the ` +
+                `ReFoundly Administration. Should your office require further verification or clarification, please do not ` +
+                `hesitate to contact us using the contact information provided above. Thank you for your cooperation and ` +
+                `support in facilitating safe community handovers.`,
                 { align: 'justify', width: pageWidth }
             );
             doc.moveDown(1);
-            doc.text('Thank you for your cooperation and support in facilitating safe community handovers.');
-            doc.moveDown(2);
 
             // --- Signature block ---
             doc.text('Respectfully yours,');
-            doc.moveDown(2.5);
+            doc.moveDown(1.6);
             doc.text('_______________________________');
             doc.font('Helvetica-Bold').text(adminName);
-            doc.font('Helvetica').fontSize(10).fillColor('#555').text('ReFoundly Verification Team');
-            doc.moveDown(1.5);
+            doc.font('Helvetica').fontSize(9).fillColor('#555').text('ReFoundly Verification Team');
+            doc.moveDown(0.8);
 
             // --- Footer note ---
-            doc.fontSize(8).fillColor('#999').text(
+            doc.fontSize(7.5).fillColor('#999').text(
                 `This letter was system-generated by ReFoundly following in-app verification of both parties' ` +
                 `agreement. Reference: Agreement #AGR-${conversationId} · Generated ${new Date().toLocaleString()}`,
                 { width: pageWidth }
