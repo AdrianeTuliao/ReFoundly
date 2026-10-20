@@ -87,11 +87,17 @@ function renderActivityTable(activity) {
     tbody.innerHTML = "";
 
     activity.forEach(item => {
-        let statusClass = "pending"; 
-        const type = (item.report_type || "").toLowerCase();
-        
-        if (type === 'lost') statusClass = "lost-badge"; 
-        else if (type === 'found') statusClass = "found-badge";
+        // Status badge = the item's REAL status (Pending Approval / Published / Resolved / Denied)
+        const statusText = item.status || "Pending Approval";
+        const statusKey = statusText.toLowerCase().replace(/\s+/g, '-');
+        const statusClassMap = {
+            'resolved': 'claimed-badge',
+            'published': (item.report_type || '').toLowerCase() === 'lost' ? 'lost-badge' : 'found-badge',
+            'pending-approval': 'pending-badge',
+            'denied': 'lost-badge'
+        };
+        const statusClass = statusClassMap[statusKey] || 'pending-badge';
+        const typeLabel = item.report_type || "";
 
         // --- 12-HOUR FORMAT LOGIC ---
         let displayTime = "N/A";
@@ -106,9 +112,9 @@ function renderActivityTable(activity) {
 
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td><strong>${item.item_name}</strong></td>
+            <td><strong>${item.item_name}</strong><br><small style="color:#777;">${typeLabel}</small></td>
             <td>${item.category}</td>
-            <td><span class="badge ${statusClass}">${item.report_type}</span></td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
             <td>${item.formattedDate || "N/A"}</td> 
             <td>${displayTime}</td> <td class="action-cell"></td>
         `;
@@ -117,7 +123,7 @@ function renderActivityTable(activity) {
         manageBtn.className = 'btn-view';
         manageBtn.textContent = 'Manage';
         manageBtn.addEventListener('click', () => {
-            window.location.href = 'AdReport.html';
+            window.location.href = `AdReport.html?id=${encodeURIComponent(item.id)}`;
         });
 
         row.querySelector('.action-cell').appendChild(manageBtn);
@@ -233,10 +239,11 @@ function renderNotifDropdown() {
 }
 
 function handleNotifClick(index) {
+    const itemId = notifications[index].itemId;
     notifications[index].read = true;
     localStorage.setItem('refoundly_notifications', JSON.stringify(notifications));
     updateNotifBadge();
-    window.location.href = 'AdReport.html';
+    window.location.href = itemId ? `AdReport.html?id=${encodeURIComponent(itemId)}` : 'AdReport.html';
 }
 
 function clearAllNotifs() {

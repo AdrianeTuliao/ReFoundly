@@ -38,19 +38,15 @@ function getTooltip(input) {
 }
 
 function placeTooltip(tooltip, input) {
-    const anchor = getAnchor(input);
-    if (window.innerWidth > 1200) {
-        tooltip.style.position = 'absolute';
-        tooltip.style.left = `${anchor.offsetLeft + anchor.offsetWidth + 15}px`;
-        tooltip.style.top = `${anchor.offsetTop + (anchor.offsetHeight / 2)}px`;
-        tooltip.style.transform = 'translateY(-50%)';
-    } else {
-        tooltip.style.top = '0';
-        tooltip.style.transform = 'none';
-        tooltip.style.marginTop = '4px';
-        tooltip.style.marginBottom = '10px';
-        tooltip.style.width = '100%';
-    }
+    /* Always show the hint directly under the field (inside the form).
+       A side-tooltip gets cut off by the card on desktop because Sign Up sits on the right half. */
+    tooltip.style.position = 'relative';
+    tooltip.style.left = '0';
+    tooltip.style.top = '0';
+    tooltip.style.transform = 'none';
+    tooltip.style.marginTop = '4px';
+    tooltip.style.marginBottom = '10px';
+    tooltip.style.width = '100%';
 }
 
 function updateChecklist(input, requirements) {

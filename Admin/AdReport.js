@@ -420,12 +420,23 @@ function checkUrlForHighlight() {
     const targetId = urlParams.get('id');
 
     if (targetId) {
+        // Make sure the filters don't hide it and the right page is showing
+        const idx = itemsData.findIndex(i => String(i.id) === String(targetId));
+        if (idx !== -1) {
+            const sf = document.getElementById("statusFilter");
+            const si = document.getElementById("searchInput");
+            if (sf) sf.value = "all";
+            if (si) si.value = "";
+            filteredData = [...itemsData];
+            currentPage = Math.floor(idx / itemsPerPage) + 1;
+            renderTable();
+        }
         setTimeout(() => {
             const targetRow = document.querySelector(`tr[data-id="${targetId}"]`);
             if (targetRow) {
                 targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 targetRow.classList.add('highlight-glow');
-                showDetails(Number(targetId));
+                showDetails(itemsData.find(i => String(i.id) === String(targetId))?.id);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }, 300);

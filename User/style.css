@@ -771,7 +771,8 @@ input:not(:placeholder-shown) + label {
         transform: translateY(-20px) !important;
     }
 }
-@media screen and (max-width: 1200px) {
+/* Hints sit under the field on ALL screen sizes (desktop too) */
+@media screen {
     .input-tooltip-neat {
         position: relative !important;
         left: 0 !important;
@@ -786,6 +787,7 @@ input:not(:placeholder-shown) + label {
         border: 1px solid #f5c6cb !important;
         border-radius: 6px;
         padding: 6px 10px;
+        flex-shrink: 0;
     }
     
     .input-tooltip-neat::before {
